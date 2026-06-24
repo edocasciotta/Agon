@@ -1,8 +1,16 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import create_tables
 
-app = FastAPI(title="Agon API", version="0.1.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    create_tables()
+    yield
+
+
+app = FastAPI(title="Agon API", version="0.1.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -12,9 +20,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from app.routers import auth as auth_router
+app.include_router(auth_router.router)
+
 # Router registrations (uncomment as phases are implemented)
-# from app.routers import auth
-# app.include_router(auth.router)
 # from app.routers import clients
 # app.include_router(clients.router)
 # from app.routers import instructors
@@ -37,11 +46,6 @@ app.add_middleware(
 # app.include_router(studio.router)
 # from app.routers import migration
 # app.include_router(migration.router)
-
-
-@app.on_event("startup")
-async def startup_event():
-    create_tables()
 
 
 @app.get("/health")
