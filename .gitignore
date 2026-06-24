@@ -1,0 +1,40 @@
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Claude Code settings (local only)
+.claude/settings.local.json
+
+# Python virtualenvs
+backend/.venv/
+**/__pycache__/
+**/*.py[cod]
+
+# Node modules
+node_modules/
+
+# Build outputs
+frontend/out/
+frontend/dist/
+docs-site/build/
+docs-site/.docusaurus/
+mobile/.expo/
+mobile/ios/
+mobile/android/
+
+# Env files
+.env
+backend/.env
+
+# Databases
+backend/agon.db
+backend/test_agon.db
+
+# Misc
+*.log
+.coverage
+htmlcov/

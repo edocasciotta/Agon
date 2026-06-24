@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+agon.db
+test_agon.db
+.pytest_cache/
+htmlcov/
+.coverage
