@@ -44,17 +44,17 @@ All tables include `created_at`, `updated_at`, and `location_id` (for V2 multi-l
 
 ## Build Order (from CLAUDE.md)
 
-### Phase 0 — Project Scaffolding ⬅ CURRENT
-- [ ] 0.1 Rename agent instruction files to `CLAUDE.md` in each sub-directory
-- [ ] 0.2 Initialize git repository and create initial commit
-- [ ] 0.3 Initialize FastAPI project structure in `/backend`
-- [ ] 0.4 Initialize Electron + React project in `/frontend`
-- [ ] 0.5 Initialize React Native + Expo project in `/mobile`
-- [ ] 0.6 Initialize Docusaurus in `/docs-site`
-- [ ] 0.7 Set up GitHub Actions CI pipeline
-- [ ] 0.8 Configure Alembic for database migrations (part of backend scaffolding)
+### Phase 0 — Project Scaffolding ✅ COMPLETE
+- [x] 0.1 Rename agent instruction files to `CLAUDE.md` in each sub-directory
+- [x] 0.2 Initialize git repository and create initial commit
+- [x] 0.3 Initialize FastAPI project structure in `/backend` — FastAPI 0.111, SQLAlchemy 2.0, Pydantic v2, /health endpoint, pytest 1 test passing
+- [x] 0.4 Initialize Electron + React project in `/frontend` — electron-vite, React 18, TypeScript, Vitest, Tailwind, TanStack Query, 1 test passing
+- [x] 0.5 Initialize React Native + Expo project in `/mobile` — Expo SDK 51, Expo Router, Zustand, jest-expo, 1 test passing
+- [x] 0.6 Initialize Docusaurus in `/docs-site` — Docusaurus 3 latest, full sidebar, getting-started docs, build succeeds
+- [x] 0.7 Set up GitHub Actions CI pipeline — `.github/workflows/ci.yml` runs all three test suites on push
+- [x] 0.8 Configure Alembic for database migrations — `alembic.ini`, `alembic/env.py` with Base.metadata wired
 
-### Phase 1 — Database and Authentication
+### Phase 1 — Database and Authentication ⬅ CURRENT
 - [ ] 1.1 Create all SQLAlchemy models (TECHNICAL_SPEC.md §4)
 - [ ] 1.2 Create all Alembic migrations
 - [ ] 1.3 Implement JWT authentication (TECHNICAL_SPEC.md §5)
@@ -125,14 +125,30 @@ All tables include `created_at`, `updated_at`, and `location_id` (for V2 multi-l
 
 ## Completed Tasks
 
-*(none yet)*
+### Phase 0 — Project Scaffolding (2026-06-24/25)
+All tasks complete. 98 files committed in two commits.
+
+**Commits:**
+- `1e23d67` — initial repository setup (specs, CLAUDE.md files, TASK_LOG)
+- `80780f1` — Phase 0 complete project scaffolding
+
+**Test status at Phase 0 completion:**
+- `backend/`: `pytest tests/ -v` → 1 passed
+- `frontend/`: `npm test` → 1 passed  
+- `mobile/`: `npm test` → 1 passed
+- `docs-site/`: `npm run build` → success (0 errors)
+
+**Known minor issues to fix in later phases:**
+- backend/app/database.py: `declarative_base()` import is the SQLAlchemy 1.x style (works, but shows deprecation warning in 2.0) — fix when writing models
+- backend/main.py: uses `@app.on_event("startup")` (deprecated, prefer `lifespan`) — fix in Phase 1
+- mobile: requires `--legacy-peer-deps` for npm install due to peer dep conflict between `@testing-library/react-native` and React 18
 
 ---
 
 ## Next Task
 
-**Phase 0, Task 0.1**: Rename agent instruction files to `CLAUDE.md` in each sub-directory, initialize git, then delegate backend scaffolding to the Backend Agent.
+**Phase 1, Task 1.1 + 1.2**: Create all SQLAlchemy models (14 tables from TECHNICAL_SPEC.md §4) and generate the initial Alembic migration. Delegate to Backend Agent.
 
 ---
 
-*Last updated: 2026-06-24 — Initial session, no code written yet.*
+*Last updated: 2026-06-25 — Phase 0 complete, all tests passing.*
