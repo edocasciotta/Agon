@@ -54,13 +54,18 @@ All tables include `created_at`, `updated_at`, and `location_id` (for V2 multi-l
 - [x] 0.7 Set up GitHub Actions CI pipeline — `.github/workflows/ci.yml` runs all three test suites on push
 - [x] 0.8 Configure Alembic for database migrations — `alembic.ini`, `alembic/env.py` with Base.metadata wired
 
-### Phase 1 — Database and Authentication ⬅ CURRENT
-- [ ] 1.1 Create all SQLAlchemy models (TECHNICAL_SPEC.md §4)
-- [ ] 1.2 Create all Alembic migrations
-- [ ] 1.3 Implement JWT authentication (TECHNICAL_SPEC.md §5)
-- [ ] 1.4 Implement auth endpoints (TECHNICAL_SPEC.md §6.1)
+### Phase 1 — Database and Authentication ✅ COMPLETE
+- [x] 1.1 Create all 14 SQLAlchemy models (TECHNICAL_SPEC.md §4)
+- [x] 1.2 Alembic migration `5584d5240ba6_initial_schema.py` — all 14 tables
+- [x] 1.3 JWT auth: bcrypt hashing, access/refresh tokens, get_current_user, get_current_client, require_manager
+- [x] 1.4 Auth endpoints: POST /register/client, POST /login (unified), POST /refresh, POST /logout, POST /forgot-password (stub), POST /reset-password (stub), GET /me
 
-### Phase 2 — Core Backend
+**Notes:**
+- Replaced `passlib[bcrypt]` with direct `bcrypt 5.0.0` (passlib 1.7.4 incompatible with bcrypt 4+)
+- Test conftest uses `StaticPool` for SQLite in-memory isolation (one connection shared per test)
+- pytest: **18 passed, 0 failed** (commit c02c9ca)
+
+### Phase 2 — Core Backend ⬅ CURRENT
 - [ ] 2.1 Studio settings endpoints
 - [ ] 2.2 Client management endpoints
 - [ ] 2.3 Instructor management endpoints
@@ -124,6 +129,9 @@ All tables include `created_at`, `updated_at`, and `location_id` (for V2 multi-l
 ---
 
 ## Completed Tasks
+
+### Phase 1 — Database and Authentication (2026-06-25)
+All tasks complete. 18 tests passing. Commit: c02c9ca.
 
 ### Phase 0 — Project Scaffolding (2026-06-24/25)
 All tasks complete. 98 files committed in two commits.
