@@ -103,11 +103,11 @@ All tables include `created_at`, `updated_at`, and `location_id` (for V2 multi-l
 - [x] 7.3 GDPR data export and account deletion (with full anonymization)
 - [x] 7.4 Consent log (record consent, get log)
 
-### Phase 8 — Migration Assistant
-- [ ] 8.1 File upload and analysis endpoint
-- [ ] 8.2 Column mapping engine (LLM-assisted)
-- [ ] 8.3 Import execution
-- [ ] 8.4 Client invitation flow
+### Phase 8 — Migration Assistant ✅ COMPLETE
+- [x] 8.1 File upload and analysis — POST /migration/analyse (CSV, multipart)
+- [x] 8.2 LLM-assisted column mapping with heuristic fallback (litellm)
+- [x] 8.3 Import execution — POST /migration/confirm (client import with dupe detection)
+- [x] 8.4 Client invitation flow — token generation, CSV export, GET /auth/invite/{token}
 
 ### Phase 9 — Frontend (Desktop)
 - [ ] 9.1 Onboarding wizard (5 steps)
@@ -131,6 +131,19 @@ All tables include `created_at`, `updated_at`, and `location_id` (for V2 multi-l
 ---
 
 ## Completed Tasks
+
+### Phase 8 — Migration Assistant (2026-06-25)
+All tasks complete. 10 new tests + 117 Phase 1–7 = **127 passed, 0 failed**.
+
+**Files produced:**
+- `app/models/migration_job.py`, `app/models/invitation_token.py`
+- `app/services/migration_service.py` — CSV parsing, LLM mapping, client import, invitation tokens
+- `app/routers/migration.py` — 7 endpoints
+- `app/routers/auth.py` — GET /auth/invite/{token} added
+- `alembic/versions/06ae94d7aa0e_add_migration_jobs_and_invitation_tokens.py`
+- `tests/test_migration.py`
+
+---
 
 ### Phase 7 — Reports and GDPR (2026-06-25)
 All tasks complete. 11 new tests + 106 Phase 1–6 = **117 passed, 0 failed**.
@@ -235,8 +248,8 @@ All tasks complete. 98 files committed in two commits.
 
 ## Next Task
 
-**Phase 8 — Migration Assistant**: booking creation with all validation rules, cancellation with credit refund, waitlist management, waitlist expiry background task (TECHNICAL_SPEC.md §7.1–7.3, §8.1).
+**Phase 9 — Frontend (Desktop)**: booking creation with all validation rules, cancellation with credit refund, waitlist management, waitlist expiry background task (TECHNICAL_SPEC.md §7.1–7.3, §8.1).
 
 ---
 
-*Last updated: 2026-06-25 — Phase 7 complete, 117 tests passing.*
+*Last updated: 2026-06-25 — Phase 8 complete, 127 tests passing.*

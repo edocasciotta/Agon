@@ -12,9 +12,12 @@ from app.models.membership import Membership
 from app.models.payment import Payment
 from app.models.checkin import Checkin
 from app.models.notification_log import NotificationLog
+from app.models.migration_job import MigrationJob
+from app.models.invitation_token import InvitationToken
 
 __all__ = [
     "User", "StudioSettings", "Client", "ConsentLog", "Instructor",
     "ClassTemplate", "ScheduledClass", "Booking", "Waitlist",
     "MembershipType", "Membership", "Payment", "Checkin", "NotificationLog",
+    "MigrationJob", "InvitationToken",
 ]

@@ -23,6 +23,7 @@ from app.schemas.auth import (
 )
 from app.models.user import User
 from app.models.client import Client
+from app.models.invitation_token import InvitationToken
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
@@ -143,6 +144,40 @@ async def forgot_password(payload: ForgotPasswordRequest):
 async def reset_password(payload: ResetPasswordRequest):
     """Reset password using a token. Stub — email not implemented in V1."""
     return {"message": "Password reset functionality not yet implemented"}
+
+
+@router.get("/invite/{token}", status_code=200)
+async def validate_invite_token(token: str, db: Session = Depends(get_db)):
+    """Validate an invitation token and return basic client info."""
+    from datetime import datetime
+    inv = db.query(InvitationToken).filter(InvitationToken.token == token).first()
+    if not inv:
+        raise HTTPException(
+            status_code=404,
+            detail={"error": {"code": "INVITATION_NOT_FOUND", "message": "Invitation token not found"}},
+        )
+    if inv.used:
+        raise HTTPException(
+            status_code=409,
+            detail={"error": {"code": "INVITATION_ALREADY_USED", "message": "This invitation has already been used"}},
+        )
+    if inv.expires_at < datetime.utcnow():
+        raise HTTPException(
+            status_code=409,
+            detail={"error": {"code": "INVITATION_EXPIRED", "message": "This invitation has expired"}},
+        )
+    client_obj = db.query(Client).filter(Client.id == inv.client_id).first()
+    if not client_obj:
+        raise HTTPException(
+            status_code=404,
+            detail={"error": {"code": "CLIENT_NOT_FOUND", "message": "Client not found"}},
+        )
+    return {
+        "client_id": client_obj.id,
+        "email": client_obj.email,
+        "full_name": client_obj.full_name,
+        "token_valid": True,
+    }
 
 
 @router.get("/me", status_code=200)
