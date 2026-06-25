@@ -151,6 +151,24 @@ def scheduled_class_fixture(db_session, manager_user):
 
 
 @pytest.fixture
+def confirmed_booking(db_session, registered_client, client_membership, scheduled_class_fixture):
+    """Creates a confirmed booking for the registered_client on scheduled_class_fixture."""
+    from app.models.booking import Booking
+    from app.models.client import Client
+    client_obj = db_session.query(Client).filter_by(email=registered_client["email"]).first()
+    b = Booking(
+        client_id=client_obj.id,
+        scheduled_class_id=scheduled_class_fixture.id,
+        status="confirmed",
+        credit_deducted=True,
+    )
+    db_session.add(b)
+    db_session.commit()
+    db_session.refresh(b)
+    return b
+
+
+@pytest.fixture
 def full_class_fixture(db_session, manager_user):
     """Creates a scheduled class with capacity=1, already full."""
     from app.models.class_template import ClassTemplate

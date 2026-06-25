@@ -40,9 +40,9 @@ app.include_router(classes.router)
 
 from app.routers import bookings
 app.include_router(bookings.router)
-# Router registrations (uncomment as phases are implemented)
-# from app.routers import checkins
-# app.include_router(checkins.router)
+
+from app.routers import checkins
+app.include_router(checkins.router)
 # from app.routers import memberships
 # app.include_router(memberships.router)
 # from app.routers import payments

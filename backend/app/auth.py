@@ -97,6 +97,33 @@ def get_current_client(token: str = Depends(oauth2_scheme), db: Session = Depend
     return client
 
 
+def create_qr_token(booking_id: int) -> str:
+    """Create a signed QR token for check-in."""
+    to_encode = {
+        "booking_id": booking_id,
+        "type": "qr_checkin",
+        "exp": datetime.utcnow() + timedelta(hours=24),
+    }
+    return jwt.encode(to_encode, settings.AGON_JWT_SECRET, algorithm="HS256")
+
+
+def decode_qr_token(token: str) -> dict:
+    """Decode and validate a QR token. Raises HTTPException on failure."""
+    try:
+        payload = jwt.decode(token, settings.AGON_JWT_SECRET, algorithms=["HS256"])
+        if payload.get("type") != "qr_checkin":
+            raise HTTPException(
+                400,
+                detail={"error": {"code": "CHECKIN_INVALID_QR", "message": "Invalid QR token type"}},
+            )
+        return payload
+    except JWTError:
+        raise HTTPException(
+            400,
+            detail={"error": {"code": "CHECKIN_INVALID_QR", "message": "Invalid or expired QR code"}},
+        )
+
+
 def require_manager(current_user=Depends(get_current_user)):
     """Dependency: requires the user to have role='manager'."""
     if current_user.role != "manager":

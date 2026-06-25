@@ -79,10 +79,10 @@ All tables include `created_at`, `updated_at`, and `location_id` (for V2 multi-l
 - [x] 3.4 Background task: waitlist expiry checker every 5 min (TECHNICAL_SPEC.md §8.1)
 - [x] Class cancellation cascade: refund credits, decline waitlist (TECHNICAL_SPEC.md §7.6)
 
-### Phase 4 — Check-In System
-- [ ] 4.1 Check-in endpoint (all three methods: app, QR, manual)
-- [ ] 4.2 QR code generation
-- [ ] 4.3 Check-in validation logic (TECHNICAL_SPEC.md §7.4)
+### Phase 4 — Check-In System ✅ COMPLETE
+- [x] 4.1 Check-in endpoint (app, QR, manual methods) with time-window validation
+- [x] 4.2 QR code generation (signed JWT + PNG base64)
+- [x] 4.3 Check-in validation logic (TECHNICAL_SPEC.md §7.4)
 
 ### Phase 5 — Memberships and Payments
 - [ ] 5.1 Membership types CRUD
@@ -130,6 +130,18 @@ All tables include `created_at`, `updated_at`, and `location_id` (for V2 multi-l
 ---
 
 ## Completed Tasks
+
+### Phase 4 — Check-In System (2026-06-25)
+All tasks complete. 10 new tests + 71 Phase 1–3 = **81 passed, 0 failed**.
+
+**Files produced:**
+- `app/schemas/checkin.py` — CheckinCreate, CheckinResponse, QRCodeResponse
+- `app/routers/checkins.py` — POST /checkins, GET /checkins/qr/{id}, GET /checkins/class/{id}
+- `tests/test_checkins.py` — 10 tests
+- `app/auth.py` — create_qr_token, decode_qr_token added
+- `requirements.txt` — qrcode[pil]==7.4.2 added
+
+---
 
 ### Phase 3 — Booking Engine (2026-06-25)
 All tasks complete. 18 new tests + 53 Phase 1–2 = **71 passed, 0 failed**.
@@ -186,8 +198,8 @@ All tasks complete. 98 files committed in two commits.
 
 ## Next Task
 
-**Phase 4 — Check-In System**: booking creation with all validation rules, cancellation with credit refund, waitlist management, waitlist expiry background task (TECHNICAL_SPEC.md §7.1–7.3, §8.1).
+**Phase 5 — Memberships and Payments**: booking creation with all validation rules, cancellation with credit refund, waitlist management, waitlist expiry background task (TECHNICAL_SPEC.md §7.1–7.3, §8.1).
 
 ---
 
-*Last updated: 2026-06-25 — Phase 3 complete, 71 tests passing.*
+*Last updated: 2026-06-25 — Phase 4 complete, 81 tests passing.*
