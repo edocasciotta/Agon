@@ -23,15 +23,14 @@ app.add_middleware(
 from app.routers import auth as auth_router
 app.include_router(auth_router.router)
 
+from app.routers import studio, clients, instructors, class_templates, classes
+app.include_router(studio.router)
+app.include_router(clients.router)
+app.include_router(instructors.router)
+app.include_router(class_templates.router)
+app.include_router(classes.router)
+
 # Router registrations (uncomment as phases are implemented)
-# from app.routers import clients
-# app.include_router(clients.router)
-# from app.routers import instructors
-# app.include_router(instructors.router)
-# from app.routers import class_templates
-# app.include_router(class_templates.router)
-# from app.routers import scheduled_classes
-# app.include_router(scheduled_classes.router)
 # from app.routers import bookings
 # app.include_router(bookings.router)
 # from app.routers import checkins
@@ -42,8 +41,6 @@ app.include_router(auth_router.router)
 # app.include_router(payments.router)
 # from app.routers import reports
 # app.include_router(reports.router)
-# from app.routers import studio
-# app.include_router(studio.router)
 # from app.routers import migration
 # app.include_router(migration.router)
 

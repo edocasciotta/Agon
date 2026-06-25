@@ -65,12 +65,12 @@ All tables include `created_at`, `updated_at`, and `location_id` (for V2 multi-l
 - Test conftest uses `StaticPool` for SQLite in-memory isolation (one connection shared per test)
 - pytest: **18 passed, 0 failed** (commit c02c9ca)
 
-### Phase 2 — Core Backend ⬅ CURRENT
-- [ ] 2.1 Studio settings endpoints
-- [ ] 2.2 Client management endpoints
-- [ ] 2.3 Instructor management endpoints
-- [ ] 2.4 Class templates endpoints
-- [ ] 2.5 Scheduled classes endpoints
+### Phase 2 — Core Backend ✅ COMPLETE
+- [x] 2.1 Studio settings endpoints (`GET/PUT /api/v1/studio`, `GET /studio/status`, `POST /studio/backup`)
+- [x] 2.2 Client management endpoints (list, get, update, GDPR delete, bookings, memberships, `/me` endpoints)
+- [x] 2.3 Instructor management endpoints (list, create, get, update)
+- [x] 2.4 Class templates endpoints (list, create, get, update, soft-delete)
+- [x] 2.5 Scheduled classes endpoints (list, create, create-recurring, get, update, cancel, roster, waitlist, complete)
 
 ### Phase 3 — Booking Engine
 - [ ] 3.1 Booking creation with all validation rules (TECHNICAL_SPEC.md §7.1)
@@ -130,6 +130,19 @@ All tables include `created_at`, `updated_at`, and `location_id` (for V2 multi-l
 
 ## Completed Tasks
 
+### Phase 2 — Core Backend (2026-06-25)
+All tasks complete. 35 new tests + 18 Phase 1 = **53 passed, 0 failed**.
+
+**Files produced:**
+- `app/schemas/`: studio.py, client.py, instructor.py, class_template.py, scheduled_class.py
+- `app/routers/`: studio.py, clients.py, instructors.py, class_templates.py, classes.py
+- `tests/`: test_studio.py, test_clients.py, test_instructors.py, test_class_templates.py, test_classes.py
+- `main.py` updated to register all 5 routers
+
+**31 new endpoints** covering studio settings, client management, instructor management, class templates, and scheduled classes.
+
+---
+
 ### Phase 1 — Database and Authentication (2026-06-25)
 All tasks complete. 18 tests passing. Commit: c02c9ca.
 
@@ -155,8 +168,8 @@ All tasks complete. 98 files committed in two commits.
 
 ## Next Task
 
-**Phase 1, Task 1.1 + 1.2**: Create all SQLAlchemy models (14 tables from TECHNICAL_SPEC.md §4) and generate the initial Alembic migration. Delegate to Backend Agent.
+**Phase 3 — Booking Engine**: booking creation with all validation rules, cancellation with credit refund, waitlist management, waitlist expiry background task (TECHNICAL_SPEC.md §7.1–7.3, §8.1).
 
 ---
 
-*Last updated: 2026-06-25 — Phase 0 complete, all tests passing.*
+*Last updated: 2026-06-25 — Phase 2 complete, 53 tests passing.*
