@@ -97,11 +97,11 @@ All tables include `created_at`, `updated_at`, and `location_id` (for V2 multi-l
 - [x] 6.4 Nightly backup task daily, retains 30 copies (TECHNICAL_SPEC.md §8.4)
 - [x] Notifications router (GET /notifications, POST /send, PUT /{id}/read)
 
-### Phase 7 — Reports and GDPR
-- [ ] 7.1 Attendance, revenue, membership, retention reports
-- [ ] 7.2 CSV export for all reports
-- [ ] 7.3 GDPR data export and deletion
-- [ ] 7.4 Consent log
+### Phase 7 — Reports and GDPR ✅ COMPLETE
+- [x] 7.1 Attendance, revenue, membership, retention reports
+- [x] 7.2 CSV export for attendance and revenue reports
+- [x] 7.3 GDPR data export and account deletion (with full anonymization)
+- [x] 7.4 Consent log (record consent, get log)
 
 ### Phase 8 — Migration Assistant
 - [ ] 8.1 File upload and analysis endpoint
@@ -131,6 +131,17 @@ All tables include `created_at`, `updated_at`, and `location_id` (for V2 multi-l
 ---
 
 ## Completed Tasks
+
+### Phase 7 — Reports and GDPR (2026-06-25)
+All tasks complete. 11 new tests + 106 Phase 1–6 = **117 passed, 0 failed**.
+
+**Files produced:**
+- `app/routers/reports.py` — attendance, revenue, membership, retention, + 2 CSV exports
+- `app/routers/gdpr.py` — export, delete, consent-log, consent
+- `app/schemas/gdpr.py`
+- `tests/test_reports.py`, `tests/test_gdpr.py`
+
+---
 
 ### Phase 6 — Notifications and Background Tasks (2026-06-25)
 All tasks complete. 5 new tests + 101 Phase 1–5 = **106 passed, 0 failed**.
@@ -224,8 +235,8 @@ All tasks complete. 98 files committed in two commits.
 
 ## Next Task
 
-**Phase 7 — Reports and GDPR**: booking creation with all validation rules, cancellation with credit refund, waitlist management, waitlist expiry background task (TECHNICAL_SPEC.md §7.1–7.3, §8.1).
+**Phase 8 — Migration Assistant**: booking creation with all validation rules, cancellation with credit refund, waitlist management, waitlist expiry background task (TECHNICAL_SPEC.md §7.1–7.3, §8.1).
 
 ---
 
-*Last updated: 2026-06-25 — Phase 6 complete, 106 tests passing.*
+*Last updated: 2026-06-25 — Phase 7 complete, 117 tests passing.*

@@ -61,8 +61,10 @@ app.include_router(payments.router)
 
 from app.routers import notifications
 app.include_router(notifications.router)
-# from app.routers import reports
-# app.include_router(reports.router)
+
+from app.routers import reports, gdpr
+app.include_router(reports.router)
+app.include_router(gdpr.router)
 # from app.routers import migration
 # app.include_router(migration.router)
 
