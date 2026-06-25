@@ -90,11 +90,12 @@ All tables include `created_at`, `updated_at`, and `location_id` (for V2 multi-l
 - [x] 5.3 Stripe checkout session creation + webhook receiver (checkout.session.completed)
 - [x] 5.4 Payment recording (manual + Stripe), refund endpoint
 
-### Phase 6 — Notifications and Background Tasks
-- [ ] 6.1 Push notification sender (Expo)
-- [ ] 6.2 Class reminder background task (TECHNICAL_SPEC.md §8.3)
-- [ ] 6.3 Membership expiry checker (TECHNICAL_SPEC.md §8.2)
-- [ ] 6.4 Nightly backup task (TECHNICAL_SPEC.md §8.4)
+### Phase 6 — Notifications and Background Tasks ✅ COMPLETE
+- [x] 6.1 Expo push notification sender with NotificationLog (app/services/push_service.py)
+- [x] 6.2 Class reminder background task every 15 min (TECHNICAL_SPEC.md §8.3)
+- [x] 6.3 Membership expiry checker daily (TECHNICAL_SPEC.md §8.2)
+- [x] 6.4 Nightly backup task daily, retains 30 copies (TECHNICAL_SPEC.md §8.4)
+- [x] Notifications router (GET /notifications, POST /send, PUT /{id}/read)
 
 ### Phase 7 — Reports and GDPR
 - [ ] 7.1 Attendance, revenue, membership, retention reports
@@ -130,6 +131,17 @@ All tables include `created_at`, `updated_at`, and `location_id` (for V2 multi-l
 ---
 
 ## Completed Tasks
+
+### Phase 6 — Notifications and Background Tasks (2026-06-25)
+All tasks complete. 5 new tests + 101 Phase 1–5 = **106 passed, 0 failed**.
+
+**Files produced:**
+- `app/services/push_service.py` — Expo sender with NotificationLog persistence
+- `app/schemas/notification.py`, `app/routers/notifications.py`
+- `app/tasks/membership_expiry.py`, `app/tasks/class_reminders.py`, `app/tasks/nightly_backup.py`
+- `tests/test_notifications.py`
+
+---
 
 ### Phase 5 — Memberships and Payments (2026-06-25)
 All tasks complete. 20 new tests + 81 Phase 1–4 = **101 passed, 0 failed**.
@@ -212,8 +224,8 @@ All tasks complete. 98 files committed in two commits.
 
 ## Next Task
 
-**Phase 6 — Notifications and Background Tasks**: booking creation with all validation rules, cancellation with credit refund, waitlist management, waitlist expiry background task (TECHNICAL_SPEC.md §7.1–7.3, §8.1).
+**Phase 7 — Reports and GDPR**: booking creation with all validation rules, cancellation with credit refund, waitlist management, waitlist expiry background task (TECHNICAL_SPEC.md §7.1–7.3, §8.1).
 
 ---
 
-*Last updated: 2026-06-25 — Phase 5 complete, 101 tests passing.*
+*Last updated: 2026-06-25 — Phase 6 complete, 106 tests passing.*

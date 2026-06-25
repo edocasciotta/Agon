@@ -4,18 +4,28 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import create_tables
 from app.tasks.waitlist_expiry import run_waitlist_expiry_loop
+from app.tasks.membership_expiry import run_membership_expiry_loop
+from app.tasks.class_reminders import run_class_reminder_loop
+from app.tasks.nightly_backup import run_nightly_backup_loop
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     create_tables()
-    task = asyncio.create_task(run_waitlist_expiry_loop())
+    tasks = [
+        asyncio.create_task(run_waitlist_expiry_loop()),
+        asyncio.create_task(run_membership_expiry_loop()),
+        asyncio.create_task(run_class_reminder_loop()),
+        asyncio.create_task(run_nightly_backup_loop()),
+    ]
     yield
-    task.cancel()
-    try:
-        await task
-    except asyncio.CancelledError:
-        pass
+    for t in tasks:
+        t.cancel()
+    for t in tasks:
+        try:
+            await t
+        except asyncio.CancelledError:
+            pass
 
 
 app = FastAPI(title="Agon API", version="0.1.0", lifespan=lifespan)
@@ -48,6 +58,9 @@ from app.routers import membership_types, memberships, payments
 app.include_router(membership_types.router)
 app.include_router(memberships.router)
 app.include_router(payments.router)
+
+from app.routers import notifications
+app.include_router(notifications.router)
 # from app.routers import reports
 # app.include_router(reports.router)
 # from app.routers import migration
