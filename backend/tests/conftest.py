@@ -88,3 +88,96 @@ def manager_auth_headers(client, manager_user):
     assert response.status_code == 200
     token = response.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
+def membership_type(db_session):
+    from app.models.membership_type import MembershipType
+    mt = MembershipType(
+        name="10-Class Pack",
+        type="credit_pack",
+        price=100.0,
+        credits_included=10,
+        is_active=True,
+    )
+    db_session.add(mt)
+    db_session.commit()
+    db_session.refresh(mt)
+    return mt
+
+
+@pytest.fixture
+def client_membership(db_session, registered_client, membership_type):
+    """Gives the registered client an active membership with 5 credits."""
+    from app.models.membership import Membership
+    from app.models.client import Client
+    import datetime
+    client_obj = db_session.query(Client).filter_by(email=registered_client["email"]).first()
+    m = Membership(
+        client_id=client_obj.id,
+        membership_type_id=membership_type.id,
+        status="active",
+        starts_at=datetime.date.today(),
+        credits_remaining=5,
+        credits_used=0,
+    )
+    db_session.add(m)
+    db_session.commit()
+    db_session.refresh(m)
+    return m
+
+
+@pytest.fixture
+def scheduled_class_fixture(db_session, manager_user):
+    """Creates a scheduled class in the future."""
+    from app.models.class_template import ClassTemplate
+    from app.models.scheduled_class import ScheduledClass
+    import datetime
+    tmpl = ClassTemplate(name="Yoga", duration_minutes=60, default_capacity=10, color="#000000", is_active=True)
+    db_session.add(tmpl)
+    db_session.commit()
+    future = datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+    sc = ScheduledClass(
+        template_id=tmpl.id,
+        starts_at=future,
+        ends_at=future + datetime.timedelta(hours=1),
+        capacity=10,
+        status="scheduled",
+    )
+    db_session.add(sc)
+    db_session.commit()
+    db_session.refresh(sc)
+    return sc
+
+
+@pytest.fixture
+def full_class_fixture(db_session, manager_user):
+    """Creates a scheduled class with capacity=1, already full."""
+    from app.models.class_template import ClassTemplate
+    from app.models.scheduled_class import ScheduledClass
+    from app.models.booking import Booking
+    from app.models.client import Client
+    from app.auth import hash_password
+    import datetime
+    tmpl = ClassTemplate(name="Pilates", duration_minutes=45, default_capacity=1, color="#000000", is_active=True)
+    db_session.add(tmpl)
+    db_session.commit()
+    future = datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+    sc = ScheduledClass(
+        template_id=tmpl.id,
+        starts_at=future,
+        ends_at=future + datetime.timedelta(hours=1),
+        capacity=1,
+        status="scheduled",
+    )
+    db_session.add(sc)
+    db_session.commit()
+    # Add a different client to fill the spot
+    filler = Client(email="filler@example.com", password_hash=hash_password("pass12345"), full_name="Filler", is_active=True)
+    db_session.add(filler)
+    db_session.commit()
+    b = Booking(client_id=filler.id, scheduled_class_id=sc.id, status="confirmed", credit_deducted=False)
+    db_session.add(b)
+    db_session.commit()
+    db_session.refresh(sc)
+    return sc

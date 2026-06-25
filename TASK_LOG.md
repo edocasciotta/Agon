@@ -72,11 +72,12 @@ All tables include `created_at`, `updated_at`, and `location_id` (for V2 multi-l
 - [x] 2.4 Class templates endpoints (list, create, get, update, soft-delete)
 - [x] 2.5 Scheduled classes endpoints (list, create, create-recurring, get, update, cancel, roster, waitlist, complete)
 
-### Phase 3 — Booking Engine
-- [ ] 3.1 Booking creation with all validation rules (TECHNICAL_SPEC.md §7.1)
-- [ ] 3.2 Booking cancellation with credit refund logic (TECHNICAL_SPEC.md §7.2)
-- [ ] 3.3 Waitlist management (TECHNICAL_SPEC.md §7.3)
-- [ ] 3.4 Background task: waitlist expiry checker (TECHNICAL_SPEC.md §8.1)
+### Phase 3 — Booking Engine ✅ COMPLETE
+- [x] 3.1 Booking creation with all validation rules (TECHNICAL_SPEC.md §7.1)
+- [x] 3.2 Booking cancellation with credit refund + late-cancellation policy (TECHNICAL_SPEC.md §7.2)
+- [x] 3.3 Waitlist join, leave, confirm offer with race-condition safety (TECHNICAL_SPEC.md §7.3)
+- [x] 3.4 Background task: waitlist expiry checker every 5 min (TECHNICAL_SPEC.md §8.1)
+- [x] Class cancellation cascade: refund credits, decline waitlist (TECHNICAL_SPEC.md §7.6)
 
 ### Phase 4 — Check-In System
 - [ ] 4.1 Check-in endpoint (all three methods: app, QR, manual)
@@ -130,6 +131,23 @@ All tables include `created_at`, `updated_at`, and `location_id` (for V2 multi-l
 
 ## Completed Tasks
 
+### Phase 3 — Booking Engine (2026-06-25)
+All tasks complete. 18 new tests + 53 Phase 1–2 = **71 passed, 0 failed**.
+
+**Files produced:**
+- `app/schemas/booking.py` — BookingCreate, BookingResponse, WaitlistJoinRequest, WaitlistResponse
+- `app/services/booking_service.py` — get_active_membership, can_book, deduct_credit, refund_credit, process_waitlist
+- `app/routers/bookings.py` — 7 endpoints (list, create, get, cancel, join/leave/confirm waitlist)
+- `app/tasks/waitlist_expiry.py` — background loop, 5-min expiry checker
+- `tests/test_bookings.py` — 18 tests
+
+**Modified:**
+- `main.py` — bookings router + waitlist expiry background task wired into lifespan
+- `app/routers/classes.py` — DELETE now cascades: refunds credits, declines waitlist
+- `tests/conftest.py` — added membership_type, client_membership, scheduled_class_fixture, full_class_fixture
+
+---
+
 ### Phase 2 — Core Backend (2026-06-25)
 All tasks complete. 35 new tests + 18 Phase 1 = **53 passed, 0 failed**.
 
@@ -168,8 +186,8 @@ All tasks complete. 98 files committed in two commits.
 
 ## Next Task
 
-**Phase 3 — Booking Engine**: booking creation with all validation rules, cancellation with credit refund, waitlist management, waitlist expiry background task (TECHNICAL_SPEC.md §7.1–7.3, §8.1).
+**Phase 4 — Check-In System**: booking creation with all validation rules, cancellation with credit refund, waitlist management, waitlist expiry background task (TECHNICAL_SPEC.md §7.1–7.3, §8.1).
 
 ---
 
-*Last updated: 2026-06-25 — Phase 2 complete, 53 tests passing.*
+*Last updated: 2026-06-25 — Phase 3 complete, 71 tests passing.*

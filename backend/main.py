@@ -1,13 +1,21 @@
+import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import create_tables
+from app.tasks.waitlist_expiry import run_waitlist_expiry_loop
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     create_tables()
+    task = asyncio.create_task(run_waitlist_expiry_loop())
     yield
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
 
 
 app = FastAPI(title="Agon API", version="0.1.0", lifespan=lifespan)
@@ -30,9 +38,9 @@ app.include_router(instructors.router)
 app.include_router(class_templates.router)
 app.include_router(classes.router)
 
+from app.routers import bookings
+app.include_router(bookings.router)
 # Router registrations (uncomment as phases are implemented)
-# from app.routers import bookings
-# app.include_router(bookings.router)
 # from app.routers import checkins
 # app.include_router(checkins.router)
 # from app.routers import memberships

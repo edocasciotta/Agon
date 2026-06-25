@@ -174,13 +174,44 @@ def cancel_class(
     db: Session = Depends(get_db),
     current_user=Depends(require_manager),
 ):
+    from app.models.membership import Membership
+    from app.models.membership_type import MembershipType
+    from app.services.booking_service import get_active_membership, refund_credit
+
     sc = db.query(ScheduledClass).filter(ScheduledClass.id == class_id).first()
     if not sc:
         raise HTTPException(
             status_code=404,
             detail={"error": {"code": "NOT_FOUND", "message": "Scheduled class not found"}},
         )
+
+    now = datetime.utcnow()
     sc.status = "cancelled"
+
+    # Cancel all confirmed bookings and refund credits
+    confirmed_bookings = (
+        db.query(Booking)
+        .filter(Booking.scheduled_class_id == class_id, Booking.status == "confirmed")
+        .all()
+    )
+    for booking in confirmed_bookings:
+        booking.status = "cancelled"
+        booking.cancelled_at = now
+        booking.cancellation_reason = "Class cancelled by studio"
+        if booking.credit_deducted:
+            membership = get_active_membership(db, booking.client_id)
+            refund_credit(db, membership, True)
+
+    # Decline all waitlist entries
+    waitlist_entries = (
+        db.query(Waitlist)
+        .filter(Waitlist.scheduled_class_id == class_id)
+        .all()
+    )
+    for entry in waitlist_entries:
+        entry.status = "declined"
+        entry.updated_at = now
+
     db.commit()
     db.refresh(sc)
     return sc
