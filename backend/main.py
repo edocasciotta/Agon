@@ -43,10 +43,11 @@ app.include_router(bookings.router)
 
 from app.routers import checkins
 app.include_router(checkins.router)
-# from app.routers import memberships
-# app.include_router(memberships.router)
-# from app.routers import payments
-# app.include_router(payments.router)
+
+from app.routers import membership_types, memberships, payments
+app.include_router(membership_types.router)
+app.include_router(memberships.router)
+app.include_router(payments.router)
 # from app.routers import reports
 # app.include_router(reports.router)
 # from app.routers import migration

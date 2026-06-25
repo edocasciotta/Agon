@@ -15,7 +15,8 @@ class Settings(BaseSettings):
     LLM_BASE_URL: str = "http://localhost:11434"
     LLM_API_KEY: str = ""
     STUDIO_TIMEZONE: str = "Europe/Rome"
-    STRIPE_WEBHOOK_SECRET: str = ""
+    STRIPE_SECRET_KEY: str = ""
+    STRIPE_WEBHOOK_SECRET: str = "whsec_test"
     EXPO_ACCESS_TOKEN: str = ""
 
     class Config:

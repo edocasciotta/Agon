@@ -84,11 +84,11 @@ All tables include `created_at`, `updated_at`, and `location_id` (for V2 multi-l
 - [x] 4.2 QR code generation (signed JWT + PNG base64)
 - [x] 4.3 Check-in validation logic (TECHNICAL_SPEC.md §7.4)
 
-### Phase 5 — Memberships and Payments
-- [ ] 5.1 Membership types CRUD
-- [ ] 5.2 Membership assignment and lifecycle
-- [ ] 5.3 Stripe integration + webhook receiver
-- [ ] 5.4 Payment recording (manual + Stripe)
+### Phase 5 — Memberships and Payments ✅ COMPLETE
+- [x] 5.1 Membership types CRUD (list, create, get, update, soft-delete)
+- [x] 5.2 Membership assignment and lifecycle (assign, update, cancel, pause, resume)
+- [x] 5.3 Stripe checkout session creation + webhook receiver (checkout.session.completed)
+- [x] 5.4 Payment recording (manual + Stripe), refund endpoint
 
 ### Phase 6 — Notifications and Background Tasks
 - [ ] 6.1 Push notification sender (Expo)
@@ -130,6 +130,20 @@ All tables include `created_at`, `updated_at`, and `location_id` (for V2 multi-l
 ---
 
 ## Completed Tasks
+
+### Phase 5 — Memberships and Payments (2026-06-25)
+All tasks complete. 20 new tests + 81 Phase 1–4 = **101 passed, 0 failed**.
+
+**Files produced:**
+- `app/schemas/`: membership_type.py, membership.py, payment.py
+- `app/routers/`: membership_types.py, memberships.py, payments.py
+- `tests/`: test_membership_types.py, test_memberships.py, test_payments.py
+- `requirements.txt` — stripe==9.5.0
+- `app/config.py` — STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET defaults
+
+**Endpoints:** 5 membership-types, 7 memberships (incl. pause/resume), 6 payments (incl. Stripe checkout + webhook)
+
+---
 
 ### Phase 4 — Check-In System (2026-06-25)
 All tasks complete. 10 new tests + 71 Phase 1–3 = **81 passed, 0 failed**.
@@ -198,8 +212,8 @@ All tasks complete. 98 files committed in two commits.
 
 ## Next Task
 
-**Phase 5 — Memberships and Payments**: booking creation with all validation rules, cancellation with credit refund, waitlist management, waitlist expiry background task (TECHNICAL_SPEC.md §7.1–7.3, §8.1).
+**Phase 6 — Notifications and Background Tasks**: booking creation with all validation rules, cancellation with credit refund, waitlist management, waitlist expiry background task (TECHNICAL_SPEC.md §7.1–7.3, §8.1).
 
 ---
 
-*Last updated: 2026-06-25 — Phase 4 complete, 81 tests passing.*
+*Last updated: 2026-06-25 — Phase 5 complete, 101 tests passing.*
