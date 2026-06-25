@@ -109,13 +109,14 @@ All tables include `created_at`, `updated_at`, and `location_id` (for V2 multi-l
 - [x] 8.3 Import execution — POST /migration/confirm (client import with dupe detection)
 - [x] 8.4 Client invitation flow — token generation, CSV export, GET /auth/invite/{token}
 
-### Phase 9 — Frontend (Desktop)
-- [ ] 9.1 Onboarding wizard (5 steps)
-- [ ] 9.2 Calendar view
-- [ ] 9.3 Client management screens
-- [ ] 9.4 Membership management screens
-- [ ] 9.5 Reports screens
-- [ ] 9.6 Settings screens
+### Phase 9 — Frontend (Desktop) ✅ COMPLETE
+- [x] 9.1 Onboarding wizard (5 steps): studio info, account, connectivity, Stripe, complete
+- [x] 9.2 Calendar view (react-big-calendar, weekly, cancel panel on click)
+- [x] 9.3 Client management (list + search, detail with bookings/memberships tabs, assign membership)
+- [x] 9.4 Membership management (types CRUD + all memberships table)
+- [x] 9.5 Reports (tabbed: attendance, revenue, memberships, retention; CSV export)
+- [x] 9.6 Settings (full studio settings form)
+- [x] Dashboard (4 stat cards), Login page, Layout with sidebar nav
 
 ### Phase 10 — Mobile App
 - [ ] 10.1 Client onboarding + studio QR connect
@@ -131,6 +132,18 @@ All tables include `created_at`, `updated_at`, and `location_id` (for V2 multi-l
 ---
 
 ## Completed Tasks
+
+### Phase 9 — Frontend Desktop App (2026-06-25)
+All tasks complete. **9 tests pass, build zero TypeScript errors.**
+
+**Files produced (30+ files in frontend/src/renderer/src/):**
+- `api/`: auth, studio, clients, classes, memberships, reports
+- `components/`: Layout (sidebar), LoadingSpinner, ErrorMessage, PageHeader
+- `pages/`: Login, Onboarding (5-step wizard), Dashboard, Calendar, Clients/index, Clients/ClientDetail, Memberships, Reports, Settings
+- `store/authStore.ts`, `types/index.ts`, `lib/errorMessages.ts`
+- `tests/unit/`: 4 new component/lib/store test files
+
+---
 
 ### Phase 8 — Migration Assistant (2026-06-25)
 All tasks complete. 10 new tests + 117 Phase 1–7 = **127 passed, 0 failed**.
@@ -248,8 +261,8 @@ All tasks complete. 98 files committed in two commits.
 
 ## Next Task
 
-**Phase 9 — Frontend (Desktop)**: booking creation with all validation rules, cancellation with credit refund, waitlist management, waitlist expiry background task (TECHNICAL_SPEC.md §7.1–7.3, §8.1).
+**Phase 10 — Mobile App**: booking creation with all validation rules, cancellation with credit refund, waitlist management, waitlist expiry background task (TECHNICAL_SPEC.md §7.1–7.3, §8.1).
 
 ---
 
-*Last updated: 2026-06-25 — Phase 8 complete, 127 tests passing.*
+*Last updated: 2026-06-25 — Phase 9 complete. Backend: 127 tests. Frontend: 9 tests, build clean.*

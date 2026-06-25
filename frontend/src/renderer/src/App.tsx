@@ -1,14 +1,51 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { useAuthStore } from './store/authStore'
+import { Layout } from './components/Layout'
+import { Login } from './pages/Login'
+import { Dashboard } from './pages/Dashboard'
+import { CalendarPage } from './pages/Calendar'
+import { ClientsPage } from './pages/Clients/index'
+import { ClientDetail } from './pages/Clients/ClientDetail'
+import { MembershipsPage } from './pages/Memberships'
+import { ReportsPage } from './pages/Reports'
+import { SettingsPage } from './pages/Settings'
+import { OnboardingPage } from './pages/Onboarding/index'
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
+})
+
+function RequireAuth({ children }: { children: React.ReactNode }) {
+  const token = useAuthStore((s) => s.accessToken)
+  if (!token) return <Navigate to="/login" replace />
+  return <>{children}</>
+}
 
 function App(): JSX.Element {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<div className="p-8"><h1 className="text-2xl font-bold">Agon Studio</h1><p className="text-gray-500 mt-2">Loading...</p></div>} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/onboarding" element={<OnboardingPage />} />
+          <Route
+            path="/"
+            element={
+              <RequireAuth>
+                <Layout />
+              </RequireAuth>
+            }
+          >
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="calendar" element={<CalendarPage />} />
+            <Route path="clients" element={<ClientsPage />} />
+            <Route path="clients/:id" element={<ClientDetail />} />
+            <Route path="memberships" element={<MembershipsPage />} />
+            <Route path="reports" element={<ReportsPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+          </Route>
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
