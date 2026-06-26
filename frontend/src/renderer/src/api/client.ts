@@ -23,7 +23,7 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError<{ detail: { error: ApiError } }>) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !error.config?.url?.includes('/auth/login')) {
       localStorage.removeItem('agon_access_token')
       localStorage.removeItem('agon_refresh_token')
       window.location.href = '/login'

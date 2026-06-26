@@ -6,18 +6,34 @@ slug: /
 
 # Welcome to Agon
 
-Agon is a free, open-source fitness studio management platform. Install it on your own computer or VPS — your data never leaves your machine.
+Agon is a free, open-source fitness studio management platform. Install it on your own computer — your data never leaves your machine, and you never pay a monthly fee.
 
 ## What Agon does
 
-Agon helps you manage your fitness studio:
+Agon helps you run your fitness studio from a single desktop app:
 
-- **Schedule classes** — create recurring classes with a few clicks
-- **Manage clients** — keep profiles, booking history, and memberships in one place
-- **Handle bookings** — clients book from their phone, you see everything in real time
-- **Check in clients** — via app, QR code, or manual entry at reception
-- **Accept payments** — connect your own Stripe account, or record cash payments manually
+- **Schedule classes** — create one-off or recurring classes in a few clicks
+- **Manage clients** — profiles, booking history, and memberships all in one place
+- **Handle bookings** — clients book from their phone; you see everything in real time
+- **Check in clients** — via mobile app, QR code, or manual entry at reception
+- **Manage memberships** — recurring subscriptions and credit packs with full lifecycle tracking
+- **Accept payments** — connect your own Stripe account, or record cash and bank transfer payments manually
+- **Generate reports** — attendance, revenue, membership, and retention reports with CSV export
 - **Stay GDPR compliant** — built-in data export and deletion tools
+
+## Who Agon is for
+
+Agon is designed for independent fitness studio owners and managers who want a simple, reliable system without ongoing subscription costs and without handing their client data to a third party.
+
+## How it works
+
+You install the Agon desktop application on your Mac, Windows PC, or Linux machine. The app runs a local server on your computer and automatically creates a secure internet connection (via Cloudflare Tunnel) so that your clients can reach it from their phones anywhere in the world.
+
+Your clients download the **Agon Studio** mobile app, scan your studio's QR code, and can immediately browse and book your classes.
+
+## License
+
+Agon is released under the **AGPL v3 license**. The source code is freely available. You can self-host, modify, and redistribute Agon as long as you share any modifications under the same license.
 
 ## Quick glossary
 
@@ -25,15 +41,21 @@ When using Agon, these words always mean the same thing:
 
 | Term | Meaning |
 |---|---|
-| **Class** | A scheduled fitness session clients can book |
+| **Class** | A scheduled fitness session that clients can book |
 | **Booking** | A client's confirmed spot in a class |
-| **Studio manager** | You — the person who installed Agon and runs the studio |
+| **Studio manager** | The person who installed Agon and runs the studio |
 | **Client** | A person who attends classes and uses the Agon mobile app |
 | **Membership** | A client's active subscription or credit pack |
-| **Check-in** | Confirming a client's arrival at a class |
+| **Check-in** | Confirming a client's physical arrival at a class |
+| **Credit** | A single class credit included in a membership |
+| **Waitlist** | A queue for clients who want to join a full class |
 
 ## Getting started
 
-If you are setting up Agon for the first time, start with [Installation](getting-started/installation).
+If you are setting up Agon for the first time:
 
-If you are migrating from another platform, see [Migration Overview](migration/overview).
+1. [Install the desktop app](getting-started/installation)
+2. [Complete the setup wizard](getting-started/onboarding)
+3. [Set up your clients](getting-started/client-setup)
+
+If you are migrating from another platform, see the [Migration Guide](migration/overview).

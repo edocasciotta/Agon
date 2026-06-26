@@ -39,7 +39,8 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'Migration',
       items: [
-        'migration/overview'
+        'migration/overview',
+        'migration/column-mapping'
       ]
     },
     {
@@ -47,6 +48,13 @@ const sidebars: SidebarsConfig = {
       label: 'GDPR',
       items: [
         'gdpr/studio-manager-guide'
+      ]
+    },
+    {
+      type: 'category',
+      label: 'API Reference',
+      items: [
+        'api/overview'
       ]
     }
   ]

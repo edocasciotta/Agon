@@ -1,62 +1,117 @@
 ---
-title: Studio Onboarding
+title: Studio Setup Wizard
 sidebar_label: Studio Setup
 ---
 
-# Setting up your studio
+# Studio Setup Wizard
 
-This page explains the five-step setup wizard that runs when you open Agon for the first time.
+When you open Agon for the first time, a five-step wizard guides you through configuring your studio. This page explains what each step does and what to expect.
 
-## Steps
+The wizard takes about 10 minutes to complete. You can change all settings again later from **Settings**.
 
-### Step 1 — Studio profile
+---
 
-Enter your studio name, address, and timezone. Upload your studio logo (optional).
+## Step 1 — Studio profile
 
-The timezone is important — all class times are shown in this timezone.
+Enter your studio's basic information:
 
-### Step 2 — Your account
+- **Studio name** — the name shown to your clients in the mobile app (required)
+- **Address** — your physical studio address (required)
+- **Timezone** — the timezone for all class scheduling (required)
+- **Logo** — upload a logo image (optional, but recommended — it appears in the client app)
 
-Create your studio manager account with your name, email address, and a password (at least 12 characters).
+The timezone is the most important setting here. All class times are stored and displayed in this timezone. Choose the timezone where your studio is physically located.
 
-This is the only account with full access to everything in Agon. Keep your password safe.
+Click **Continue** when done.
 
-### Step 3 — Connectivity
+---
 
-Agon automatically sets up a secure connection so your clients can reach your studio from anywhere. This happens in the background while you watch a progress indicator.
+## Step 2 — Your manager account
 
-At the end of this step, your studio has a unique web address. You do not need to interact with this address directly — Agon handles it automatically.
+Your manager account is created automatically during installation. This step confirms the account details:
 
-### Step 4 — Payments
+- Your **full name**
+- Your **email address** — used to log in
+- Your **password** — must be at least 12 characters
+
+This is the only account with full access to everything in Agon: client data, financial reports, settings. Keep your password safe.
+
+Click **Create Account** to proceed.
+
+---
+
+## Step 3 — Connectivity
+
+Agon automatically sets up a secure internet connection so your clients can reach your studio from anywhere. You do not need to do anything technical — this happens entirely in the background.
+
+You will see a progress indicator while the connection is established. This usually takes 30–60 seconds.
+
+When complete, your studio receives a unique web address (for example: `your-studio.trycloudflare.com`). Agon uses this address internally — you do not need to write it down or share it. Your clients will use your QR code instead.
+
+**If connectivity setup fails:** the error is shown in plain language with a link to the relevant help page. The most common cause is a firewall or corporate network blocking outgoing connections. Check your internet connection and try again.
+
+---
+
+## Step 4 — Payment setup
 
 Choose how you handle payments:
-- **Connect Stripe** — recommended if you want clients to pay online
-- **Manual payments** — if you handle all payments in person (cash, bank transfer, physical card reader)
 
-You can change this later in Settings.
+**Connect Stripe (recommended)**
+If you want clients to be able to purchase memberships directly from the mobile app, connect your Stripe account. Agon uses Stripe to process payments — money goes directly to your bank account, and Agon is never involved in the transaction.
 
-### Step 5 — Backups
+You will be redirected to Stripe to connect your existing account or create a new one. The process takes about 5 minutes.
 
-Choose where Agon saves automatic daily backups of your data:
-- **Google Drive** — requires connecting your Google account
-- **Dropbox** — requires connecting your Dropbox account
-- **Local folder only** — saves only on this computer (not recommended)
+**Handle payments manually**
+If you prefer to handle all payments in person — cash, bank transfer, or a physical card reader — choose this option. You can still record payments in Agon for your records. You can connect Stripe later from **Settings → Payments**.
 
-You can change this later in Settings.
+---
 
-## At the end of setup
+## Step 5 — Backup setup
 
-Agon generates a printed sheet with a QR code. Print this and put it at your reception desk. Clients scan this code to download the Agon app and connect to your studio automatically.
+Agon runs a daily automatic backup of your database at 3:00 AM. Choose where to save it:
+
+**Google Drive**
+Click **Connect Google Drive** and sign in to your Google account. Agon will save backups to a folder called **Agon Backups** in your Drive. You will need to authorise access.
+
+**Dropbox**
+Click **Connect Dropbox** and sign in. Agon will save backups to an **Agon Backups** folder in your Dropbox.
+
+**Local folder only**
+Saves backups only on this computer. This option is shown with a warning — if your computer is lost, stolen, or damaged, you will lose your data. Use cloud backup whenever possible.
+
+You can change your backup location later from **Settings → Backups**.
+
+---
+
+## Finishing setup
+
+At the end of the wizard, Agon shows a summary screen and generates your **studio onboarding sheet** — a printable page with:
+
+- Your studio name and QR code
+- Instructions for clients on how to download the app
+
+Print this sheet and put it at your reception desk. When clients scan the QR code with their phone camera, they are taken directly to download the Agon Studio app, pre-configured to connect to your studio.
+
+You can also save the sheet as a PDF to share digitally.
+
+---
 
 ## What if something goes wrong?
 
-**Step 3 stays on "Connecting..." for a long time**
-Check your internet connection. If the problem continues, see the [connectivity troubleshooting guide].
+**Step 3 stays on "Connecting..." for more than 2 minutes**
+Check your internet connection. Make sure your computer can reach the internet. If you are on a corporate or school network, a firewall may be blocking the connection. Try connecting from a home network.
 
-**I made a mistake in Step 1**
-You can change all studio details later in Settings > Studio Profile.
+**I made a mistake in my studio details**
+You can change all studio information after setup. Go to **Settings → Studio Profile**.
+
+**I accidentally skipped Stripe — can I connect it later?**
+Yes. Go to **Settings → Payments → Connect Stripe** at any time.
+
+**The backup didn't authorise — can I set it up later?**
+Yes. Go to **Settings → Backups**. Until cloud backup is configured, a yellow banner appears at the top of the app as a reminder.
 
 ## Related pages
 
 - [Setting up the client app](client-setup)
-- [Settings](../studio-manager/settings)
+- [Studio Settings](../studio-manager/settings)
+- [Payments](../studio-manager/payments)

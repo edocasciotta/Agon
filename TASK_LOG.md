@@ -125,13 +125,26 @@ All tables include `created_at`, `updated_at`, and `location_id` (for V2 multi-l
 - [x] 10.4 Membership view (active membership, credits, expiry) + purchase stub
 - [x] 10.5 Push notification registration (expo-notifications, token sent to backend)
 
-### Phase 11 — Docs Site
-- [ ] 11.1 Documentation for every feature
-- [ ] 11.2 AI support agent integration
+### Phase 11 — Docs Site ✅ COMPLETE
+- [x] 11.1 Documentation for every feature (19 pages, zero stubs remaining)
+- [ ] 11.2 AI support agent integration (deferred — requires LLM endpoint wiring in docs-site)
 
 ---
 
 ## Completed Tasks
+
+### Phase 11 — Docs Site (2026-06-26)
+All tasks complete. Build passes cleanly (EN + IT locales).
+
+**19 pages written** — all stubs replaced with real user-facing documentation:
+- Getting Started (installation, onboarding, client setup)
+- Studio Manager (classes, clients, memberships, payments, check-in, reports, settings)
+- For Clients (booking, check-in, memberships, notifications)
+- Migration (overview, column-mapping guide)
+- GDPR guide, API Reference overview
+- Sidebar updated with new pages
+
+---
 
 ### Phase 10 — Mobile App (2026-06-25)
 All tasks complete. **9 tests pass.**
@@ -276,7 +289,7 @@ All tasks complete. 98 files committed in two commits.
 
 ## Next Task
 
-**Phase 11 — Docs Site**: booking creation with all validation rules, cancellation with credit refund, waitlist management, waitlist expiry background task (TECHNICAL_SPEC.md §7.1–7.3, §8.1).
+**All phases complete.** Remaining: 11.2 AI support agent integration in docs-site (deferred — requires LLM endpoint wiring).
 
 ---
 
