@@ -118,12 +118,12 @@ All tables include `created_at`, `updated_at`, and `location_id` (for V2 multi-l
 - [x] 9.6 Settings (full studio settings form)
 - [x] Dashboard (4 stat cards), Login page, Layout with sidebar nav
 
-### Phase 10 — Mobile App
-- [ ] 10.1 Client onboarding + studio QR connect
-- [ ] 10.2 Class browser and booking
-- [ ] 10.3 Check-in screen (app + QR)
-- [ ] 10.4 Membership view
-- [ ] 10.5 Push notification setup (Expo)
+### Phase 10 — Mobile App ✅ COMPLETE
+- [x] 10.1 Client onboarding: QR scan (expo-camera) + manual URL entry, login, register
+- [x] 10.2 Class browser (weekly, grouped by day), class detail with book/waitlist
+- [x] 10.3 Check-in via app button (POST /checkins method=app); QR display in bookings
+- [x] 10.4 Membership view (active membership, credits, expiry) + purchase stub
+- [x] 10.5 Push notification registration (expo-notifications, token sent to backend)
 
 ### Phase 11 — Docs Site
 - [ ] 11.1 Documentation for every feature
@@ -132,6 +132,21 @@ All tables include `created_at`, `updated_at`, and `location_id` (for V2 multi-l
 ---
 
 ## Completed Tasks
+
+### Phase 10 — Mobile App (2026-06-25)
+All tasks complete. **9 tests pass.**
+
+**Files produced (30+ files in mobile/):**
+- `src/api/`: auth, classes, bookings, memberships, notifications
+- `src/store/`: authStore, studioStore (SecureStore-backed)
+- `src/components/`: LoadingView, ErrorView
+- `src/lib/errorMessages.ts`, `src/types/index.ts`, `src/notifications.ts`
+- `app/`: _layout, index (auth router), onboarding/scan, onboarding/login, onboarding/register
+- `app/(tabs)/`: _layout (5 tabs), index (home), classes, bookings, membership, profile
+- `app/class/[id].tsx`, `app/membership/purchase.tsx`
+- `__tests__/`: 4 new test files
+
+---
 
 ### Phase 9 — Frontend Desktop App (2026-06-25)
 All tasks complete. **9 tests pass, build zero TypeScript errors.**
@@ -261,8 +276,8 @@ All tasks complete. 98 files committed in two commits.
 
 ## Next Task
 
-**Phase 10 — Mobile App**: booking creation with all validation rules, cancellation with credit refund, waitlist management, waitlist expiry background task (TECHNICAL_SPEC.md §7.1–7.3, §8.1).
+**Phase 11 — Docs Site**: booking creation with all validation rules, cancellation with credit refund, waitlist management, waitlist expiry background task (TECHNICAL_SPEC.md §7.1–7.3, §8.1).
 
 ---
 
-*Last updated: 2026-06-25 — Phase 9 complete. Backend: 127 tests. Frontend: 9 tests, build clean.*
+*Last updated: 2026-06-25 — Phase 10 complete. Backend: 127 tests. Desktop: 9 tests. Mobile: 9 tests.*

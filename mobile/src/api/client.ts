@@ -1,16 +1,38 @@
-import axios from 'axios'
+import axios, { type AxiosError } from 'axios'
+import * as SecureStore from 'expo-secure-store'
 
-// Studio URL is set dynamically from QR scan — see studioStore
-let studioBaseUrl = 'http://localhost:8000'
+export interface ApiError {
+  code: string
+  message: string
+}
 
-export const setStudioUrl = (url: string) => { studioBaseUrl = url }
+export const TOKEN_KEY = 'agon_access_token'
+export const STUDIO_URL_KEY = 'agon_studio_url'
 
 export const apiClient = axios.create({
-  headers: { 'Content-Type': 'application/json' }
+  headers: { 'Content-Type': 'application/json' },
 })
 
-// Attach studio URL dynamically on each request
-apiClient.interceptors.request.use((config) => {
-  config.baseURL = studioBaseUrl
+// Attach studio URL + JWT token dynamically
+apiClient.interceptors.request.use(async (config) => {
+  const studioUrl = await SecureStore.getItemAsync(STUDIO_URL_KEY)
+  config.baseURL = studioUrl ?? 'http://localhost:8000'
+
+  const token = await SecureStore.getItemAsync(TOKEN_KEY)
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
   return config
 })
+
+// Normalise error shape
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError<{ detail: { error: ApiError } }>) => {
+    const apiError: ApiError = error.response?.data?.detail?.error ?? {
+      code: 'SERVER_ERROR',
+      message: error.message ?? 'An unexpected error occurred',
+    }
+    return Promise.reject(apiError)
+  }
+)

@@ -31,6 +31,12 @@
           "icon": "./assets/icon.png",
           "color": "#4F46E5"
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Agon to scan QR codes to connect to your studio."
+        }
       ]
     ],
     "scheme": "agon"
