@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     AGON_JWT_SECRET: str = "dev-jwt-secret-change-in-production"
     LOG_LEVEL: str = "INFO"
     LLM_PROVIDER: str = "ollama"
-    LLM_MODEL: str = "llama3.2"
+    LLM_MODEL: str = "ollama/llama3.2"
     LLM_BASE_URL: str = "http://localhost:11434"
     LLM_API_KEY: str = ""
     STUDIO_TIMEZONE: str = "Europe/Rome"
