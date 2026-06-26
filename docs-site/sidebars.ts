@@ -22,7 +22,8 @@ const sidebars: SidebarsConfig = {
         'studio-manager/payments',
         'studio-manager/check-in',
         'studio-manager/reports',
-        'studio-manager/settings'
+        'studio-manager/settings',
+        'studio-manager/ai-support'
       ]
     },
     {

@@ -69,6 +69,9 @@ app.include_router(gdpr.router)
 from app.routers import migration
 app.include_router(migration.router)
 
+from app.routers import support
+app.include_router(support.router)
+
 
 @app.get("/health")
 async def health():

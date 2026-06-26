@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
+import { SupportChat } from './SupportChat'
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: '📊' },
@@ -48,6 +49,7 @@ export function Layout() {
       <main className="flex-1 overflow-auto p-6">
         <Outlet />
       </main>
+      <SupportChat />
     </div>
   )
 }

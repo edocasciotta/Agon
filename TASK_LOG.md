@@ -127,11 +127,29 @@ All tables include `created_at`, `updated_at`, and `location_id` (for V2 multi-l
 
 ### Phase 11 — Docs Site ✅ COMPLETE
 - [x] 11.1 Documentation for every feature (19 pages, zero stubs remaining)
-- [ ] 11.2 AI support agent integration (deferred — requires LLM endpoint wiring in docs-site)
+- [x] 11.2 AI support agent integration — POST /api/v1/support/chat (litellm + docs KB) + SupportChat widget (frontend) + documentation page
 
 ---
 
 ## Completed Tasks
+
+### Phase 11.2 — AI Support Agent (2026-06-26)
+Task complete. **3 new backend tests + 3 new frontend tests.**
+
+**Files produced:**
+- `backend/app/routers/support.py` — POST /api/v1/support/chat endpoint (litellm + docs as KB, fallback on LLM error)
+- `backend/tests/test_support.py` — 3 tests (success, unauthenticated, LLM error fallback)
+- `backend/main.py` — support router registered
+- `frontend/src/renderer/src/api/support.ts` — API client for /support/chat
+- `frontend/src/renderer/src/components/SupportChat.tsx` — floating chat widget (bottom-right)
+- `frontend/src/renderer/src/components/Layout.tsx` — SupportChat wired into layout
+- `frontend/tests/unit/components/SupportChat.test.tsx` — 3 tests
+- `docs-site/docs/studio-manager/ai-support.md` — documentation page
+- `docs-site/sidebars.ts` — ai-support added to studio-manager section
+
+**Test totals:** Backend 130 passed | Frontend 12 passed | Docs build: zero errors
+
+---
 
 ### Phase 11 — Docs Site (2026-06-26)
 All tasks complete. Build passes cleanly (EN + IT locales).
@@ -289,8 +307,14 @@ All tasks complete. 98 files committed in two commits.
 
 ## Next Task
 
-**All phases complete.** Remaining: 11.2 AI support agent integration in docs-site (deferred — requires LLM endpoint wiring).
+**All phases complete. The Agon V1 platform is fully built.**
+
+Summary of test counts at completion:
+- Backend: **130 tests**
+- Frontend (desktop): **12 tests**
+- Mobile: **9 tests**
+- Docs site: **build clean (EN + IT)**
 
 ---
 
-*Last updated: 2026-06-25 — Phase 10 complete. Backend: 127 tests. Desktop: 9 tests. Mobile: 9 tests.*
+*Last updated: 2026-06-26 — Phase 11.2 complete. All V1 phases done.*
