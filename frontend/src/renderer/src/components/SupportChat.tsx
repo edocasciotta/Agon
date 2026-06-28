@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import i18n from '../i18n'
 import { supportApi, type ChatMessage } from '../api/support'
 import { LoadingSpinner } from './LoadingSpinner'
 
@@ -15,15 +16,11 @@ function generateId(): string {
   return Math.random().toString(36).slice(2) + Date.now().toString(36)
 }
 
-function createNewSession(welcomeMessage: string): ChatSession {
-  return {
-    id: generateId(),
-    title: 'New Chat',
-    messages: [{ role: 'assistant', content: welcomeMessage }],
-  }
+function createEmptySession(): ChatSession {
+  return { id: generateId(), title: 'New Chat', messages: [] }
 }
 
-function loadSessions(welcomeMessage: string): ChatSession[] {
+function loadSessions(): ChatSession[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
@@ -33,7 +30,7 @@ function loadSessions(welcomeMessage: string): ChatSession[] {
   } catch {
     // ignore
   }
-  return [createNewSession(welcomeMessage)]
+  return [createEmptySession()]
 }
 
 function saveSessions(sessions: ChatSession[]): void {
@@ -46,14 +43,10 @@ function saveSessions(sessions: ChatSession[]): void {
 
 export function SupportChat() {
   const { t } = useTranslation()
-  const welcomeMessage = t('support.welcome')
 
   const [isOpen, setIsOpen] = useState(false)
-  const [sessions, setSessions] = useState<ChatSession[]>(() => loadSessions(welcomeMessage))
-  const [activeSessionId, setActiveSessionId] = useState<string>(() => {
-    const stored = loadSessions(welcomeMessage)
-    return stored[0].id
-  })
+  const [sessions, setSessions] = useState<ChatSession[]>(loadSessions)
+  const [activeSessionId, setActiveSessionId] = useState<string>(() => loadSessions()[0].id)
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -75,7 +68,7 @@ export function SupportChat() {
   }
 
   const handleNewChat = () => {
-    const newSession = createNewSession(t('support.welcome'))
+    const newSession = createEmptySession()
     setSessions((prev) => [newSession, ...prev])
     setActiveSessionId(newSession.id)
     setInputValue('')
@@ -85,13 +78,11 @@ export function SupportChat() {
     setSessions((prev) => {
       const next = prev.filter((s) => s.id !== id)
       if (next.length === 0) {
-        const newSession = createNewSession(t('support.welcome'))
-        if (activeSessionId === id) setActiveSessionId(newSession.id)
-        return [newSession]
+        const empty = createEmptySession()
+        if (activeSessionId === id) setActiveSessionId(empty.id)
+        return [empty]
       }
-      if (activeSessionId === id) {
-        setActiveSessionId(next[0].id)
-      }
+      if (activeSessionId === id) setActiveSessionId(next[0].id)
       return next
     })
   }
@@ -115,9 +106,7 @@ export function SupportChat() {
     setIsLoading(true)
 
     try {
-      // Send only real conversation messages (exclude the static welcome message)
-      const conversationMessages = updatedMessages.slice(1)
-      const response = await supportApi.chat(conversationMessages)
+      const response = await supportApi.chat(updatedMessages, i18n.language)
       updateSession(activeSession.id, (s) => ({
         ...s,
         messages: [...s.messages, { role: 'assistant', content: response.reply }],
@@ -197,19 +186,24 @@ export function SupportChat() {
                 <span className="text-lg">💬</span>
                 <span className="font-semibold text-sm">{t('support.title')}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setIsOpen(false)}
-                  aria-label={t('support.close')}
-                  className="text-indigo-200 hover:text-white transition-colors text-lg leading-none"
-                >
-                  ✕
-                </button>
-              </div>
+              <button
+                onClick={() => setIsOpen(false)}
+                aria-label={t('support.close')}
+                className="text-indigo-200 hover:text-white transition-colors text-lg leading-none"
+              >
+                ✕
+              </button>
             </div>
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {activeSession?.messages.length === 0 && (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-xs text-gray-400 text-center px-4">
+                    {t('support.emptyHint')}
+                  </p>
+                </div>
+              )}
               {activeSession?.messages.map((msg, index) => (
                 <div
                   key={index}

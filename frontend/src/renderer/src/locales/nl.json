@@ -7,7 +7,9 @@
     "newChat": "Nieuwe chat",
     "errorConnect": "Sorry, ik kon geen verbinding maken. Probeer het opnieuw.",
     "close": "Ondersteuning sluiten",
-    "open": "Ondersteuning openen"
+    "open": "Ondersteuning openen",
+    "greeting": "Hoi! Hoe kan ik u helpen met Agon? U kunt mij vragen stellen over klassen, klanten, lidmaatschappen, boekingen, check-ins, rapporten of instellingen.",
+    "emptyHint": "Stel me een vraag over Agon."
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -100,10 +102,10 @@
     "skipForNow": "Overslaan",
     "step5Title": "AI-assistent",
     "step5Subtitle": "Activeer uw AI-ondersteuningsagent (gratis)",
-    "step5Info": "De AI-assistent van Agon werkt op Google Gemini, wat gratis is. U hebt een gratis API-sleutel van Google AI Studio nodig.",
-    "step5Link": "Haal uw gratis API-sleutel op aistudio.google.com →",
-    "geminiApiKey": "Gemini API-sleutel",
-    "geminiPlaceholder": "AIzaSy...",
+    "step5Info": "De AI-assistent van Agon werkt op Groq, wat gratis is. U hebt een gratis API-sleutel van Groq nodig — geen creditcard vereist.",
+    "step5Link": "Haal uw gratis API-sleutel op console.groq.com →",
+    "geminiApiKey": "Groq API-sleutel",
+    "geminiPlaceholder": "gsk_...",
     "saveAndContinue": "Opslaan en doorgaan",
     "savingKey": "Opslaan...",
     "saveKeyError": "API-sleutel kon niet worden opgeslagen. Controleer de sleutel en probeer het opnieuw.",

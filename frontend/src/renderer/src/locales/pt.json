@@ -7,7 +7,9 @@
     "newChat": "Novo chat",
     "errorConnect": "Desculpe, não foi possível conectar agora. Por favor, tente novamente.",
     "close": "Fechar suporte",
-    "open": "Abrir suporte"
+    "open": "Abrir suporte",
+    "greeting": "Olá! Como posso ajudá-lo com o Agon? Pode perguntar-me sobre aulas, clientes, associações, reservas, check-ins, relatórios ou definições.",
+    "emptyHint": "Faça-me uma pergunta sobre o Agon."
   },
   "nav": {
     "dashboard": "Painel",
@@ -100,10 +102,10 @@
     "skipForNow": "Pular por enquanto",
     "step5Title": "Assistente IA",
     "step5Subtitle": "Ative seu agente de suporte IA (gratuito)",
-    "step5Info": "O assistente IA do Agon é alimentado pelo Google Gemini, que é gratuito. Você precisa de uma chave de API gratuita do Google AI Studio.",
-    "step5Link": "Obtenha sua chave de API gratuita em aistudio.google.com →",
-    "geminiApiKey": "Chave de API Gemini",
-    "geminiPlaceholder": "AIzaSy...",
+    "step5Info": "O assistente IA do Agon é alimentado pelo Groq, que é gratuito. Você precisa de uma chave de API gratuita do Groq — sem cartão de crédito.",
+    "step5Link": "Obtenha sua chave de API gratuita em console.groq.com →",
+    "geminiApiKey": "Chave de API Groq",
+    "geminiPlaceholder": "gsk_...",
     "saveAndContinue": "Salvar e continuar",
     "savingKey": "Salvando...",
     "saveKeyError": "Falha ao salvar a chave de API. Por favor, verifique a chave e tente novamente.",

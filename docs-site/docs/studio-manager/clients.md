@@ -3,20 +3,22 @@ title: Managing Clients
 sidebar_label: Clients
 ---
 
-# Managing clients
+# Managing Clients
 
 This page explains how to find, view, and manage your client list in Agon.
+
+**Navigation label — Clients:**
+EN: Clients · IT: Clienti · FR: Clients · DE: Kunden · ES: Clientes · PT: Clientes · NL: Klanten · PL: Klienci · TR: Müşteriler
 
 ---
 
 ## Browsing and searching clients
 
-Go to **Clients** in the left sidebar to see your full client list.
+Go to **Clients** (IT: *Clienti*) in the left sidebar to see your full client list.
 
-By default, all active clients are shown in alphabetical order. To find a specific client:
-
-- **Search by name or email** — type in the search bar at the top of the list
-- **Filter by membership status** — use the **Filter** dropdown to show only clients with an active membership, only those with an expired or no membership, or all clients
+To find a specific client:
+- **Search** — type a name or email in the search bar. IT: *Cerca per nome o email*
+- **Filter by status** — use the status filter to show active or inactive clients
 
 ---
 
@@ -24,90 +26,71 @@ By default, all active clients are shown in alphabetical order. To find a specif
 
 Click on any client's name to open their profile. A client profile shows:
 
-- **Personal information** — name, email, phone number, date of birth (if provided)
-- **Current membership** — the active membership type, credits remaining, and expiry date
-- **Booking history** — all past and upcoming bookings with status (Confirmed, Cancelled, No-show)
-- **Attendance history** — how many booked classes they actually checked in to
-- **Payment history** — all payments recorded for this client
-- **Notes** — a free-text field only visible to studio managers and instructors
-- **GDPR consent log** — when they accepted the privacy policy and terms of service
+- **Name, email, phone** — personal information
+- **Status** — Active (IT: *Attivo*) or Inactive (IT: *Inattivo*)
+- **Bookings tab** — all past and upcoming bookings. IT: *Prenotazioni*
+- **Memberships tab** — active and past memberships. IT: *Abbonamenti*
 
 ---
 
 ## Editing a client profile
 
-Studio managers can update a client's name and phone number from the client profile.
+1. Open the client profile.
+2. Click **Edit** (IT: *Modifica*).
+3. Update the **Name** (IT: *Nome*) or **Phone** (IT: *Telefono*).
+4. Click **Save** (IT: *Salva*).
+
+> A client's email address cannot be changed — it is their login identifier.
+
+---
+
+## Assigning a membership to a client
 
 1. Open the client profile.
-2. Click **Edit**.
-3. Update the **full name** or **phone number**.
-4. Click **Save**.
-
-> **Note:** A client's email address cannot be changed — it is their login identifier. If a client needs to change their email address, they will need to create a new account.
-
-Clients can also update their own name and phone number from the mobile app under **Profile → Edit profile**.
+2. Go to the **Memberships** tab (IT: *Abbonamenti*).
+3. Click **+ Assign membership** (IT: *+ Assegna abbonamento*).
+4. Select the **Membership type** (IT: *Tipo abbonamento*).
+5. Set the **Start date** (IT: *Data di inizio*).
+6. Click **Assign** (IT: *Assegna*).
 
 ---
 
-## What clients see vs what managers see
+## Adding a new client
 
-| Information | Manager sees | Client sees (in mobile app) |
-|---|---|---|
-| Full name | Yes | Their own |
-| Email address | Yes | Their own |
-| Phone number | Yes | Their own |
-| Date of birth | Yes | Their own |
-| Notes | Yes | No |
-| Payment history | Yes (all detail) | Their own |
-| Booking history | Yes (all clients) | Their own |
-| Consent log | Yes | Their own |
-| Instructor contact details | Yes | No |
+Clients register themselves via the Agon mobile app. Share your studio QR code and they can create an account and book classes immediately.
 
-Instructors can see the class roster (names and check-in status) but cannot access payment history, full booking history, or personal contact details.
+To view the QR code or invite instructions, click **+ Add client** (IT: *+ Aggiungi cliente*) in the Clients section.
 
 ---
 
-## Deleting a client (GDPR anonymisation)
+## Client statuses
 
-Under GDPR, a client has the right to request deletion of their personal data. In Agon, "deleting" a client replaces their personal information with anonymous placeholders while preserving their booking and attendance records for statistical and financial reporting purposes.
+| English | IT | FR | DE | ES | PT | NL | PL | TR |
+|---|---|---|---|---|---|---|---|---|
+| Active | Attivo | Actif | Aktiv | Activo | Ativo | Actief | Aktywny | Aktif |
+| Inactive | Inattivo | Inactif | Inaktiv | Inactivo | Inativo | Inactief | Nieaktywny | Pasif |
 
-**What gets removed:**
-- Name (replaced with "Deleted Client")
-- Email address (replaced with an anonymised placeholder)
-- Phone number
-- Date of birth
-- Profile photo
+---
 
-**What is kept:**
-- Booking history (anonymised — no personal identifiers)
-- Attendance records
-- Payment records (required by law for financial record-keeping)
+## Deleting a client (GDPR)
 
-To anonymise a client:
+Under GDPR, a client has the right to request deletion of their personal data. In Agon, "deleting" a client replaces personal information with anonymous placeholders while preserving booking and payment records.
 
 1. Open the client's profile.
-2. Click **Delete client**.
-3. Read the confirmation message explaining what will be removed and what will be kept.
-4. Click **Confirm deletion**.
+2. Click **Delete client** (IT: *Elimina cliente*).
+3. Confirm the action.
 
 This action cannot be undone.
-
-> Clients can also request deletion themselves from the mobile app under **Profile → Privacy → Delete my account**.
-
-For more information on GDPR obligations, see the [GDPR guide for studio managers](../gdpr/studio-manager-guide).
 
 ---
 
 ## What if something goes wrong?
 
 **I can't find a client**
-Try searching by their email address instead of their name. If they signed up with a different name than expected, email is always a reliable identifier.
+Search by email address — it is always a reliable identifier.
 
-**I accidentally deleted (anonymised) a client**
-Anonymisation cannot be reversed. The client's personal information is permanently removed. If you need to restore a working relationship with this client, they will need to create a new account.
-
-**A client says they can't log in**
-Their account may have been deactivated, or they may be entering the wrong password. Ask them to use the **Forgot password** option in the mobile app login screen. If the problem continues, check that their email address is shown as active in their profile.
+**A client can't log in**
+Ask them to use the **Forgot password** option in the mobile app login screen.
 
 ## Related pages
 

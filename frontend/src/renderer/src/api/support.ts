@@ -10,8 +10,8 @@ export interface SupportChatResponse {
 }
 
 export const supportApi = {
-  chat: async (messages: ChatMessage[]): Promise<SupportChatResponse> => {
-    const response = await apiClient.post('/api/v1/support/chat', { messages })
+  chat: async (messages: ChatMessage[], language?: string): Promise<SupportChatResponse> => {
+    const response = await apiClient.post('/api/v1/support/chat', { messages, language })
     return response.data
   },
 }

@@ -5,111 +5,104 @@ sidebar_label: Reports
 
 # Reports
 
-This page explains the four reports available in Agon, what each one shows, and how to export the data as a CSV file.
+This page explains the four reports available in Agon and how to export them as CSV.
 
-All reports are available from the **Reports** section in the left sidebar. Only studio managers can access reports.
+**Navigation label — Reports:**
+EN: Reports · IT: Report · FR: Rapports · DE: Berichte · ES: Informes · PT: Relatórios · NL: Rapporten · PL: Raporty · TR: Raporlar
+
+All reports are available from **Reports** in the left sidebar. Only studio managers can access reports.
 
 ---
 
 ## Attendance report
 
-The attendance report shows how many clients are booking and showing up to your classes over a selected time period.
+IT: *Presenze* · FR: *Présences* · DE: *Anwesenheit* · ES: *Asistencia* · PT: *Presença* · NL: *Aanwezigheid* · PL: *Frekwencja* · TR: *Katılım*
 
 **What it shows:**
-- Total classes scheduled in the period
-- Total confirmed bookings
-- Total check-ins (clients who actually attended)
-- **Check-in rate** — the percentage of bookings that resulted in a check-in (e.g. 82%)
-- **No-show rate** — the percentage of bookings where the client did not check in
-- **Busiest day of the week** — which day had the most check-ins
-- **Breakdown by class template** — for each class type, the number of sessions, total bookings, total check-ins, and average occupancy
+- Total classes scheduled (IT: *Lezioni totali*)
+- Total confirmed bookings (IT: *Prenotazioni totali*)
+- Total check-ins (IT: *Check-in totali*)
+- Check-in rate (IT: *Tasso check-in*)
+- Average class size (IT: *Dim. media classe*)
+- Classes cancelled / completed (IT: *Lezioni cancellate / completate*)
 
 **How to run it:**
-1. Go to **Reports → Attendance**.
-2. Set the **start date** and **end date**.
+1. Go to **Reports** (IT: *Report*) → **Attendance** (IT: *Presenze*).
+2. Set the **From** date (IT: *Da*) and **To** date (IT: *A*).
 3. The report updates automatically.
+4. Click **Export CSV** (IT: *Esporta CSV*) to download.
 
 ---
 
 ## Revenue report
 
-The revenue report shows total income recorded in Agon over a selected time period.
+IT: *Ricavi* · FR: *Revenus* · DE: *Einnahmen* · ES: *Ingresos* · PT: *Receitas* · NL: *Omzet* · PL: *Przychody* · TR: *Gelir*
 
 **What it shows:**
-- Total revenue for the period
-- **Breakdown by payment method** — how much came from Stripe vs manual payments
-- **Breakdown by membership type** — how much each membership type contributed to revenue
-
-**Important note:** The revenue report only includes payments recorded in Agon. If you collect payments outside of Agon without recording them, they will not appear here.
+- Total revenue (IT: *Ricavi totali*)
+- Number of payments (IT: *Numero pagamenti*)
+- Average payment (IT: *Pagamento medio*)
 
 **How to run it:**
-1. Go to **Reports → Revenue**.
-2. Set the **start date** and **end date**.
-3. The report updates automatically.
+1. Go to **Reports → Revenue** (IT: *Ricavi*).
+2. Set the date range.
+3. Click **Export CSV** (IT: *Esporta CSV*) to download.
+
+> Only payments recorded in Agon appear here. Payments collected outside Agon will not appear.
 
 ---
 
 ## Membership report
 
-The membership report shows the state of your memberships at a glance.
+IT: *Abbonamenti* · FR: *Abonnements* · DE: *Mitgliedschaften* · ES: *Membresías* · PT: *Associações* · NL: *Lidmaatschappen* · PL: *Członkostwa* · TR: *Üyelikler*
 
 **What it shows:**
-- Total **active memberships** (broken down by membership type)
-- Total **expired memberships** in the period
-- Total **cancelled memberships** in the period
-- **New memberships** started in the period
-- Total **revenue from memberships** in the period
+- Total active memberships (IT: *Totale attivi*)
+- Total expired (IT: *Totale scaduti*)
+- Total cancelled (IT: *Totale cancellati*)
 
 **How to run it:**
-1. Go to **Reports → Memberships**.
-2. Set the **start date** and **end date**.
-3. The report updates automatically.
+1. Go to **Reports → Memberships** (IT: *Abbonamenti*).
+2. Set the date range.
+3. Click **Export CSV** (IT: *Esporta CSV*) to download.
 
 ---
 
 ## Retention report
 
-The retention report helps you spot clients who are at risk of churning — clients who have not attended a class recently.
+IT: *Fidelizzazione* · FR: *Fidélisation* · DE: *Kundenbindung* · ES: *Retención* · PT: *Retenção* · NL: *Retentie* · PL: *Retencja* · TR: *Elde tutma*
 
 **What it shows:**
-- Total **active clients** (have attended at least once in the past 30 days)
-- **New clients** who joined in the selected period
-- **Churned clients** — clients who were active before the period but have not attended in the last 30 days
-- **Retention rate** — percentage of previously active clients who are still attending
-
-The 30-day activity window is based on check-in history, not booking history. A client who books but never shows up is not counted as active.
+- Total clients (IT: *Clienti totali*)
+- Active clients — attended at least once in the past 30 days (IT: *Clienti attivi*)
+- New clients joined in the period (IT: *Nuovi clienti*)
+- Churned clients — were active before but have not attended recently (IT: *Clienti persi*)
+- Retention rate (IT: *Tasso fidelizzazione*)
 
 **How to run it:**
-1. Go to **Reports → Retention**.
-2. Set the **date range** for the report period.
-3. The report updates automatically.
-
-You can click on the list of churned clients to see their profiles and decide whether to reach out to them.
+1. Go to **Reports → Retention** (IT: *Fidelizzazione*).
+2. Set the date range.
+3. Click **Export CSV** (IT: *Esporta CSV*) to download.
 
 ---
 
 ## Exporting reports as CSV
 
-Every report can be exported as a CSV file, which you can open in Excel, Google Sheets, or any spreadsheet application.
+Every report can be exported.
 
-1. Run the report you want with the date range you need.
-2. Click **Export CSV** in the top-right corner of the report.
+1. Run the report with the date range you need.
+2. Click **Export CSV** (IT: *Esporta CSV* · FR: *Exporter CSV* · DE: *CSV exportieren* · ES: *Exportar CSV*).
 3. The CSV file downloads to your computer.
-
-The CSV includes all the data shown in the report, with one row per class (for the attendance report) or one row per payment (for the revenue report).
 
 ---
 
 ## What if something goes wrong?
 
-**The report shows no data for a period**
-Check that you have classes and bookings in the selected date range. If you are new to Agon, your history may be limited.
+**The report shows no data**
+Check that you have classes and bookings in the selected date range.
 
 **The revenue numbers don't match my Stripe dashboard**
-Agon only records payments that were processed through its integration. Check that all relevant Stripe payments are linked to memberships in Agon. Payments made directly in Stripe without going through Agon will not appear here.
-
-**The CSV export is empty**
-Try running the report first and verifying it shows data on screen, then export.
+Agon only records payments processed through its integration.
 
 ## Related pages
 

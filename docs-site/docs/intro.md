@@ -50,6 +50,36 @@ When using Agon, these words always mean the same thing:
 | **Credit** | A single class credit included in a membership |
 | **Waitlist** | A queue for clients who want to join a full class |
 
+## Multilingual navigation reference
+
+The Agon interface is available in 9 languages. The sidebar navigation labels in each language:
+
+| Section | EN | IT | FR | DE | ES | PT | NL | PL | TR |
+|---|---|---|---|---|---|---|---|---|---|
+| Dashboard | Dashboard | Dashboard | Tableau de bord | Dashboard | Panel | Painel | Dashboard | Panel | Panel |
+| Calendar | Calendar | Calendario | Calendrier | Kalender | Calendario | Calendário | Kalender | Kalendarz | Takvim |
+| Class Types | Class Types | Tipi di lezione | Types de cours | Kurstypen | Tipos de clase | Tipos de aula | Klassen | Typy zajęć | Ders türleri |
+| Clients | Clients | Clienti | Clients | Kunden | Clientes | Clientes | Klanten | Klienci | Müşteriler |
+| Memberships | Memberships | Abbonamenti | Abonnements | Mitgliedschaften | Membresías | Associações | Lidmaatschappen | Członkostwa | Üyelikler |
+| Reports | Reports | Report | Rapports | Berichte | Informes | Relatórios | Rapporten | Raporty | Raporlar |
+| Settings | Settings | Impostazioni | Paramètres | Einstellungen | Configuración | Definições | Instellingen | Ustawienia | Ayarlar |
+
+## Key terms in all languages
+
+| EN | IT | FR | DE | ES | PT | NL | PL | TR |
+|---|---|---|---|---|---|---|---|---|
+| class / lesson | lezione / classe | cours | Kurs | clase | aula | klas | zajęcia | ders |
+| booking | prenotazione | réservation | Buchung | reserva | reserva | boeking | rezerwacja | rezervasyon |
+| membership | abbonamento | abonnement | Mitgliedschaft | membresía | associação | lidmaatschap | członkostwo | üyelik |
+| client | cliente | client | Kunde | cliente | cliente | klant | klient | müşteri |
+| check-in | check-in | enregistrement | Eincheck-in | registro | check-in | inchecken | zameldowanie | giriş |
+| credit | credito | crédit | Guthaben | crédito | crédito | krediet | kredyt | kredi |
+| waitlist | lista d'attesa | liste d'attente | Warteliste | lista de espera | lista de espera | wachtlijst | lista oczekujących | bekleme listesi |
+| instructor | istruttore | instructeur | Instruktor | instructor | instrutor | instructeur | instruktor | eğitmen |
+| schedule class | pianifica lezione | planifier cours | Kurs planen | programar clase | agendar aula | les plannen | zaplanuj zajęcia | ders planla |
+| cancel | annulla | annuler | stornieren | cancelar | cancelar | annuleren | anulować | iptal et |
+| save | salva | enregistrer | speichern | guardar | guardar | opslaan | zapisz | kaydet |
+
 ## Getting started
 
 If you are setting up Agon for the first time:

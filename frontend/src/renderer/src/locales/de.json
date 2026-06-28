@@ -7,7 +7,9 @@
     "newChat": "Neuer Chat",
     "errorConnect": "Es tut mir leid, ich konnte gerade keine Verbindung herstellen. Bitte versuchen Sie es erneut.",
     "close": "Support schließen",
-    "open": "Support öffnen"
+    "open": "Support öffnen",
+    "greeting": "Hallo! Wie kann ich Ihnen mit Agon helfen? Sie können mich zu Kursen, Kunden, Mitgliedschaften, Buchungen, Check-ins, Berichten oder Einstellungen befragen.",
+    "emptyHint": "Stellen Sie mir eine Frage zu Agon."
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -100,10 +102,10 @@
     "skipForNow": "Vorerst überspringen",
     "step5Title": "KI-Assistent",
     "step5Subtitle": "Aktivieren Sie Ihren KI-Support-Agenten (kostenlos)",
-    "step5Info": "Der KI-Assistent von Agon wird von Google Gemini betrieben, das kostenlos ist. Sie benötigen einen kostenlosen API-Schlüssel von Google AI Studio.",
-    "step5Link": "Holen Sie sich Ihren kostenlosen API-Schlüssel auf aistudio.google.com →",
-    "geminiApiKey": "Gemini API-Schlüssel",
-    "geminiPlaceholder": "AIzaSy...",
+    "step5Info": "Der KI-Assistent von Agon wird von Groq betrieben, das kostenlos ist. Sie benötigen einen kostenlosen API-Schlüssel von Groq — keine Kreditkarte erforderlich.",
+    "step5Link": "Holen Sie sich Ihren kostenlosen API-Schlüssel auf console.groq.com →",
+    "geminiApiKey": "Groq API-Schlüssel",
+    "geminiPlaceholder": "gsk_...",
     "saveAndContinue": "Speichern und weiter",
     "savingKey": "Speichern...",
     "saveKeyError": "API-Schlüssel konnte nicht gespeichert werden. Bitte überprüfen Sie den Schlüssel und versuchen Sie es erneut.",

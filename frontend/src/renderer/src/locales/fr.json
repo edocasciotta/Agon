@@ -7,7 +7,9 @@
     "newChat": "Nouvelle discussion",
     "errorConnect": "Désolé, je n'ai pas pu me connecter. Veuillez réessayer.",
     "close": "Fermer le support",
-    "open": "Ouvrir le support"
+    "open": "Ouvrir le support",
+    "greeting": "Bonjour ! Comment puis-je vous aider avec Agon ? Posez-moi des questions sur les cours, les clients, les abonnements, les réservations, les check-ins, les rapports ou les paramètres.",
+    "emptyHint": "Posez-moi une question sur Agon."
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -100,10 +102,10 @@
     "skipForNow": "Ignorer pour l'instant",
     "step5Title": "Assistant IA",
     "step5Subtitle": "Activez votre agent de support IA (gratuit)",
-    "step5Info": "L'assistant IA d'Agon est alimenté par Google Gemini, gratuit. Vous avez besoin d'une clé API gratuite de Google AI Studio.",
-    "step5Link": "Obtenez votre clé API gratuite sur aistudio.google.com →",
-    "geminiApiKey": "Clé API Gemini",
-    "geminiPlaceholder": "AIzaSy...",
+    "step5Info": "L'assistant IA d'Agon est propulsé par Groq, gratuit. Vous avez besoin d'une clé API gratuite de Groq — aucune carte de crédit requise.",
+    "step5Link": "Obtenez votre clé API gratuite sur console.groq.com →",
+    "geminiApiKey": "Clé API Groq",
+    "geminiPlaceholder": "gsk_...",
     "saveAndContinue": "Enregistrer et continuer",
     "savingKey": "Enregistrement...",
     "saveKeyError": "Échec de l'enregistrement de la clé API. Veuillez vérifier la clé et réessayer.",

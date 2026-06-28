@@ -7,7 +7,9 @@
     "newChat": "Nuova chat",
     "errorConnect": "Mi dispiace, non riesco a connettermi. Riprova tra poco.",
     "close": "Chiudi chat di supporto",
-    "open": "Apri chat di supporto"
+    "open": "Apri chat di supporto",
+    "greeting": "Ciao! Come posso aiutarti con Agon? Puoi chiedermi informazioni su lezioni, clienti, abbonamenti, prenotazioni, check-in, report o impostazioni.",
+    "emptyHint": "Chiedimi qualcosa su Agon."
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -84,34 +86,29 @@
     "saving": "Salvataggio...",
     "studioNameRequired": "Il nome dello studio è obbligatorio",
     "saveError": "Impossibile salvare le impostazioni. Riprova.",
-
     "step2Title": "Account Manager",
     "step2Subtitle": "Il tuo account amministratore è pronto.",
     "step2Ready": "Account manager pronto",
     "step2ReadyDetail": "Hai già effettuato l'accesso come responsabile dello studio. Non è richiesta alcuna configurazione aggiuntiva.",
-
     "step3Title": "Connettività",
     "step3Subtitle": "Configurazione del tunnel sicuro.",
     "step3Info": "Il tunnel Cloudflare si avvierà automaticamente",
     "step3InfoDetail": "Un tunnel sicuro consente all'app mobile di connettersi al tuo studio. Si avvia automaticamente quando Agon viene avviato.",
     "continue": "Continua",
-
     "step4Title": "Pagamenti",
     "step4Subtitle": "Collega Stripe per accettare pagamenti online.",
     "step4Detail": "Stripe ti consente di riscuotere pagamenti per abbonamenti e acquisti unici dai clienti. Puoi collegarlo ora o farlo in seguito nelle Impostazioni.",
     "connectStripe": "Collega Stripe (opzionale)",
     "skipForNow": "Salta per ora",
-
     "step5Title": "Assistente AI",
     "step5Subtitle": "Attiva il tuo agente di supporto AI (gratuito)",
-    "step5Info": "L'assistente AI di Agon è alimentato da Google Gemini, gratuito da usare. Hai bisogno di una chiave API gratuita da Google AI Studio.",
-    "step5Link": "Ottieni la tua chiave API gratuita su aistudio.google.com →",
-    "geminiApiKey": "Chiave API Gemini",
-    "geminiPlaceholder": "AIzaSy...",
+    "step5Info": "L'assistente AI di Agon è alimentato da Groq, gratuito da usare. Hai bisogno di una chiave API gratuita da Groq — nessuna carta di credito richiesta.",
+    "step5Link": "Ottieni la tua chiave API gratuita su console.groq.com →",
+    "geminiApiKey": "Chiave API Groq",
+    "geminiPlaceholder": "gsk_...",
     "saveAndContinue": "Salva e continua",
     "savingKey": "Salvataggio...",
     "saveKeyError": "Impossibile salvare la chiave API. Verifica la chiave e riprova.",
-
     "step6Title": "Configurazione completata!",
     "step6Subtitle": "Il tuo studio è pronto. Connetti l'app mobile per iniziare.",
     "qrPlaceholder": "Il codice QR apparirà qui — scansionalo per connettere l'app mobile",

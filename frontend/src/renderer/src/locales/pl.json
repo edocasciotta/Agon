@@ -7,7 +7,9 @@
     "newChat": "Nowy czat",
     "errorConnect": "Przepraszam, nie udało mi się połączyć. Proszę spróbować ponownie.",
     "close": "Zamknij wsparcie",
-    "open": "Otwórz wsparcie"
+    "open": "Otwórz wsparcie",
+    "greeting": "Cześć! Jak mogę ci pomóc w Agon? Możesz zapytać mnie o zajęcia, klientów, członkostwa, rezerwacje, check-iny, raporty lub ustawienia.",
+    "emptyHint": "Zadaj mi pytanie o Agon."
   },
   "nav": {
     "dashboard": "Pulpit",
@@ -100,10 +102,10 @@
     "skipForNow": "Pomiń na razie",
     "step5Title": "Asystent AI",
     "step5Subtitle": "Włącz agenta wsparcia AI (bezpłatnie)",
-    "step5Info": "Asystent AI Agon jest obsługiwany przez Google Gemini, który jest bezpłatny. Potrzebujesz bezpłatnego klucza API z Google AI Studio.",
-    "step5Link": "Uzyskaj bezpłatny klucz API na aistudio.google.com →",
-    "geminiApiKey": "Klucz API Gemini",
-    "geminiPlaceholder": "AIzaSy...",
+    "step5Info": "Asystent AI Agon jest obsługiwany przez Groq, który jest bezpłatny. Potrzebujesz bezpłatnego klucza API z Groq — bez karty kredytowej.",
+    "step5Link": "Uzyskaj bezpłatny klucz API na console.groq.com →",
+    "geminiApiKey": "Klucz API Groq",
+    "geminiPlaceholder": "gsk_...",
     "saveAndContinue": "Zapisz i kontynuuj",
     "savingKey": "Zapisywanie...",
     "saveKeyError": "Nie udało się zapisać klucza API. Sprawdź klucz i spróbuj ponownie.",

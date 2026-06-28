@@ -84,9 +84,9 @@ Copy `.env.example` to `backend/.env` if available, or create the file manually:
 DATABASE_URL=sqlite:///./agon.db
 AGON_JWT_SECRET=          # auto-generated on first run if empty
 AGON_SECRET_KEY=          # auto-generated on first run if empty
-LLM_PROVIDER=gemini
-LLM_MODEL=gemini/gemini-1.5-flash
-LLM_API_KEY=              # optional — AI features require a Gemini API key
+LLM_PROVIDER=groq
+LLM_MODEL=groq/llama-3.3-70b-versatile
+LLM_API_KEY=              # optional — AI features require a Groq API key (free at console.groq.com)
 STRIPE_SECRET_KEY=        # optional — payment features require Stripe
 STRIPE_WEBHOOK_SECRET=    # optional
 ```

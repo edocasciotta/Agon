@@ -19,8 +19,8 @@ class Settings(BaseSettings):
     AGON_SECRET_KEY: str = _DEFAULT_SECRET_KEY
     AGON_JWT_SECRET: str = _DEFAULT_JWT_SECRET
     LOG_LEVEL: str = "INFO"
-    LLM_PROVIDER: str = "gemini"
-    LLM_MODEL: str = "gemini/gemini-1.5-flash"
+    LLM_PROVIDER: str = "groq"
+    LLM_MODEL: str = "groq/llama-3.3-70b-versatile"
     LLM_API_KEY: str = ""
     STUDIO_TIMEZONE: str = "Europe/Rome"
     STRIPE_SECRET_KEY: str = ""

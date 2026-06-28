@@ -26,7 +26,10 @@ export const useAuthStore = create<AuthStore>()(
       accessToken: null,
       user: null,
       setAuth: (accessToken, user) => set({ accessToken, user }),
-      logout: () => set({ accessToken: null, user: null }),
+      logout: () => {
+        localStorage.removeItem('agon-chat-sessions')
+        set({ accessToken: null, user: null })
+      },
     }),
     {
       name: 'agon-auth',

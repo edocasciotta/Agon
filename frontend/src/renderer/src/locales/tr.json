@@ -7,7 +7,9 @@
     "newChat": "Yeni sohbet",
     "errorConnect": "Üzgünüm, şu anda bağlanamadım. Lütfen tekrar deneyin.",
     "close": "Desteği kapat",
-    "open": "Desteği aç"
+    "open": "Desteği aç",
+    "greeting": "Merhaba! Agon ile ilgili size nasıl yardımcı olabilirim? Dersler, müşteriler, üyelikler, rezervasyonlar, check-in, raporlar veya ayarlar hakkında soru sorabilirsiniz.",
+    "emptyHint": "Agon hakkında bir soru sorun."
   },
   "nav": {
     "dashboard": "Panel",
@@ -100,10 +102,10 @@
     "skipForNow": "Şimdilik atla",
     "step5Title": "AI Asistanı",
     "step5Subtitle": "AI destek ajanınızı etkinleştirin (ücretsiz)",
-    "step5Info": "Agon'un AI asistanı ücretsiz olan Google Gemini tarafından desteklenmektedir. Google AI Studio'dan ücretsiz bir API anahtarına ihtiyacınız var.",
-    "step5Link": "Ücretsiz API anahtarınızı aistudio.google.com'dan edinin →",
-    "geminiApiKey": "Gemini API Anahtarı",
-    "geminiPlaceholder": "AIzaSy...",
+    "step5Info": "Agon'un AI asistanı ücretsiz olan Groq tarafından desteklenmektedir. Groq'tan ücretsiz bir API anahtarına ihtiyacınız var — kredi kartı gerekmez.",
+    "step5Link": "Ücretsiz API anahtarınızı console.groq.com'dan edinin →",
+    "geminiApiKey": "Groq API Anahtarı",
+    "geminiPlaceholder": "gsk_...",
     "saveAndContinue": "Kaydet ve devam et",
     "savingKey": "Kaydediliyor...",
     "saveKeyError": "API anahtarı kaydedilemedi. Lütfen anahtarı kontrol edip tekrar deneyin.",

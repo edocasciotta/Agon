@@ -7,124 +7,89 @@ sidebar_label: Settings
 
 This page explains every setting available in Agon and what each one does.
 
-All settings are available from **Settings** in the left sidebar. Only studio managers can access Settings.
+**Navigation label — Settings:**
+EN: Settings · IT: Impostazioni · FR: Paramètres · DE: Einstellungen · ES: Configuración · PT: Definições · NL: Instellingen · PL: Ustawienia · TR: Ayarlar
+
+Go to **Settings** (IT: *Impostazioni*) in the left sidebar. Only studio managers can access Settings.
 
 ---
 
 ## Studio profile
 
-| Setting | Description |
-|---|---|
-| **Studio name** | The name shown to clients in the mobile app |
-| **Address** | Your studio's physical address |
-| **Timezone** | All class times are stored and displayed in this timezone. Change only if you are relocating — this will affect the display of all existing classes |
-| **Logo** | Displayed in the client app and on the onboarding QR code sheet |
+IT: *Studio* · FR: *Studio* · DE: *Studio* · ES: *Estudio* · PT: *Estúdio*
+
+| Setting | EN | IT | FR | DE | ES |
+|---|---|---|---|---|---|
+| Studio name | Studio name | Nome studio | Nom du studio | Studioname | Nombre del estudio |
+| Address | Address | Indirizzo | Adresse | Adresse | Dirección |
+| Timezone | Timezone | Fuso orario | Fuseau horaire | Zeitzone | Zona horaria |
 
 ---
 
 ## Booking policy
 
-### Cancellation policy
+IT: *Prenotazioni e cancellazioni* · FR: *Réservations* · DE: *Buchungsrichtlinie*
 
-| Setting | Default | Description |
-|---|---|---|
-| **Cancellation hours** | 2 | The number of hours before a class starts within which a client cannot cancel for free. Set to 0 to allow free cancellation up until class start. |
-| **Late cancellation deducts credit** | Off | If enabled, a client who cancels inside the cancellation window loses the credit for that booking — it is not refunded. If disabled, credits are always refunded on cancellation. |
+### Cancellation window
 
-**Example:** With **Cancellation hours** set to 2 and **Late cancellation deducts credit** enabled, a client who cancels a 10:00 AM class at 9:30 AM will lose their credit. A client who cancels at 7:00 AM will get their credit back.
+| Setting | EN | IT | FR | DE | ES |
+|---|---|---|---|---|---|
+| Cancellation window (hours) | Cancellation window | Finestra di cancellazione (ore) | Délai d'annulation (heures) | Stornierungsfenster (Stunden) | Ventana de cancelación (horas) |
+| Late cancellation deducts credit | Late cancellation deducts credit | La cancellazione scala un credito | L'annulation tardive déduit un crédit | Späte Stornierung zieht Guthaben ab | La cancelación tardía deduce crédito |
+
+**Example:** With cancellation window set to 2 hours, a client who cancels a 10:00 AM class before 8:00 AM gets their credit back. Cancelling at 9:30 AM loses the credit (if late cancellation deducts credit is enabled).
 
 ### Check-in window
 
-| Setting | Default | Description |
-|---|---|---|
-| **Check-in opens (minutes before class)** | 30 | How many minutes before class start the check-in window opens. |
-| **Check-in closes (minutes after class)** | 15 | How many minutes after class start the check-in window closes. After this, only manual check-in from the desktop app is possible. |
+| Setting | EN | IT | FR | DE | ES |
+|---|---|---|---|---|---|
+| Opens before class (minutes) | Check-in opens before | Apertura minuti prima | Ouverture avant le cours | Öffnet vor Kurs (Min.) | Apertura antes de clase (min) |
+| Closes after class (minutes) | Check-in closes after | Chiusura minuti dopo | Fermeture après le cours | Schließt nach Kurs (Min.) | Cierre después de clase (min) |
 
 ### Waitlist
 
-| Setting | Default | Description |
-|---|---|---|
-| **Waitlist confirmation window (minutes)** | 30 | When a spot opens up in a full class, the first person on the waitlist has this many minutes to confirm. If they don't confirm in time, the spot is offered to the next person on the waitlist. |
+| Setting | EN | IT | FR | DE | ES |
+|---|---|---|---|---|---|
+| Waitlist confirmation window (minutes) | Waitlist confirmation window | Finestra conferma lista attesa | Délai de confirmation liste d'attente | Wartelistenbestätigungsfenster | Ventana de confirmación lista de espera |
 
 ---
 
 ## Client access
 
-| Setting | Default | Description |
-|---|---|---|
-| **Guest bookings enabled** | Off | If enabled, clients without an active membership or credits can still book classes. Useful for trial sessions or events where you don't require a membership. |
-| **Self-service purchases enabled** | On | If enabled, clients can purchase memberships directly from the mobile app using Stripe. Disable this if you prefer to assign all memberships manually. Requires Stripe to be connected. |
+| Setting | EN | IT | FR | DE | ES |
+|---|---|---|---|---|---|
+| Guest bookings | Guest bookings enabled | Prenotazioni ospiti abilitate | Réservations invités activées | Gastbuchungen aktiviert | Reservas de invitados habilitadas |
 
 ---
 
 ## Notifications
 
-| Setting | Default | Description |
-|---|---|---|
-| **Class reminder (hours before)** | 2 | How many hours before a class starts clients receive a reminder push notification. Set to 0 to disable reminders. |
+| Setting | EN | IT | FR | DE | ES |
+|---|---|---|---|---|---|
+| Class reminder | Reminder hours before | Ore di promemoria prima della lezione | Heures de rappel avant le cours | Erinnerungsstunden vor dem Kurs | Horas de recordatorio antes de la clase |
 
 ---
 
-## Payments
+## Save settings
 
-See the full [Payments](payments) guide for step-by-step instructions on connecting Stripe.
+Click **Save settings** to apply your changes.
 
-| Setting | Description |
-|---|---|
-| **Stripe account** | Shows the connected Stripe account ID. Click **Disconnect** to remove the connection. |
-| **Connect Stripe** | Opens the Stripe OAuth flow to connect your account. |
-
----
-
-## Backups
-
-Agon runs a nightly backup at **3:00 AM** (studio local time). The last 30 daily backups are kept; older backups are deleted automatically.
-
-| Setting | Description |
-|---|---|
-| **Backup provider** | Google Drive, Dropbox, or Local folder only |
-| **Last backup** | Timestamp of the most recent successful backup |
-| **Trigger manual backup** | Click **Back up now** to run a backup immediately. Useful before making major changes or before an update. |
-| **Connect / Disconnect** | Authorise or remove your cloud backup provider connection |
-
-**Warning:** If only **Local folder** is selected, your data is not protected against hardware failure. Connect Google Drive or Dropbox for off-site backup.
-
----
-
-## Connectivity
-
-This section shows the status of your Cloudflare Tunnel — the secure connection that lets clients reach your studio from anywhere.
-
-| Setting | Description |
-|---|---|
-| **Tunnel URL** | Your studio's unique public web address (read-only). Clients don't need this directly — they use the QR code instead. |
-| **Tunnel status** | Shows **Active** (green) or **Inactive** (red). |
-| **Restart tunnel** | If the tunnel shows as Inactive, click **Restart tunnel** to re-establish the connection. |
-
-If the tunnel is offline, clients cannot reach the studio from the mobile app. The desktop app continues to work normally on your local network.
-
----
-
-## Account
-
-| Setting | Description |
-|---|---|
-| **Full name** | Your display name in the application |
-| **Email address** | Your login email (changing this also changes your login) |
-| **Change password** | Enter your current password and a new password (minimum 12 characters) |
+| Action | EN | IT | FR | DE | ES | PT | NL | PL | TR |
+|---|---|---|---|---|---|---|---|---|---|
+| Save | Save settings | Salva impostazioni | Enregistrer paramètres | Einstellungen speichern | Guardar configuración | Guardar definições | Instellingen opslaan | Zapisz ustawienia | Ayarları kaydet |
 
 ---
 
 ## What if something goes wrong?
 
-**I changed the timezone and now all my classes show wrong times**
-The timezone setting affects how existing class times are displayed. If you need to correct this, change the timezone back to its previous value and contact support for guidance on migrating class times.
+**I changed the timezone and now class times look wrong**
+Change the timezone back to its previous value and restart the backend.
 
 **Backups show "Last backup: Never"**
-This means no successful backup has run yet. Click **Back up now** to run an immediate backup. If it fails, check that your cloud backup provider is connected and authorised.
+Click **Back up now** to run an immediate backup.
 
 **The tunnel shows as Inactive**
-Click **Restart tunnel**. If it remains inactive after a minute, check your internet connection. See the [connectivity troubleshooting guide] for more help.
+Click **Restart tunnel**. If it remains inactive, check your internet connection.
 
 ## Related pages
 

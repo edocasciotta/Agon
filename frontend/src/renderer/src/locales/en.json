@@ -7,7 +7,9 @@
     "newChat": "New Chat",
     "errorConnect": "I'm sorry, I couldn't connect right now. Please try again.",
     "close": "Close support chat",
-    "open": "Open support chat"
+    "open": "Open support chat",
+    "greeting": "Hello! How can I help you with Agon today? You can ask me about classes, clients, memberships, bookings, check-ins, reports, or settings.",
+    "emptyHint": "Ask me anything about Agon."
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -84,34 +86,29 @@
     "saving": "Saving...",
     "studioNameRequired": "Studio name is required",
     "saveError": "Failed to save studio settings. Please try again.",
-
     "step2Title": "Manager Account",
     "step2Subtitle": "Your admin account is ready.",
     "step2Ready": "Manager account ready",
     "step2ReadyDetail": "You are already logged in as the studio manager. No additional setup is required.",
-
     "step3Title": "Connectivity",
     "step3Subtitle": "Setting up your secure tunnel.",
     "step3Info": "Cloudflare Tunnel will start automatically",
     "step3InfoDetail": "A secure tunnel allows the mobile app to connect to your studio. It starts automatically when Agon launches.",
     "continue": "Continue",
-
     "step4Title": "Payments",
     "step4Subtitle": "Connect Stripe to accept payments online.",
     "step4Detail": "Stripe allows you to collect membership payments and one-time purchases from clients. You can connect it now or skip and set it up later in Settings.",
     "connectStripe": "Connect Stripe (optional)",
     "skipForNow": "Skip for now",
-
     "step5Title": "AI Assistant",
     "step5Subtitle": "Enable your AI support agent (free)",
-    "step5Info": "Agon's AI assistant is powered by Google Gemini, which is free to use. You need a free API key from Google AI Studio.",
-    "step5Link": "Get your free API key at aistudio.google.com →",
-    "geminiApiKey": "Gemini API Key",
-    "geminiPlaceholder": "AIzaSy...",
+    "step5Info": "Agon's AI assistant is powered by Groq, which is free to use. You need a free API key from Groq — no credit card required.",
+    "step5Link": "Get your free API key at console.groq.com →",
+    "geminiApiKey": "Groq API Key",
+    "geminiPlaceholder": "gsk_...",
     "saveAndContinue": "Save & continue",
     "savingKey": "Saving...",
     "saveKeyError": "Failed to save API key. Please check the key and try again.",
-
     "step6Title": "Setup complete!",
     "step6Subtitle": "Your studio is ready. Connect the mobile app to get started.",
     "qrPlaceholder": "QR code will appear here — scan to connect mobile app",
