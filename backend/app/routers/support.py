@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+from collections import Counter
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, field_validator
 from litellm import completion
@@ -20,6 +21,23 @@ OUT_OF_SCOPE_REPLY = (
     "I don't have information about that in the Agon documentation. "
     "Please check docs.agonapp.io or contact your studio directly."
 )
+GREETING_REPLY = (
+    "Hello! How can I help you with Agon today? "
+    "You can ask me about classes, clients, memberships, bookings, check-ins, reports, or settings."
+)
+
+_GREETINGS = {
+    "hi", "hello", "hey", "ciao", "salve", "buongiorno", "buonasera",
+    "hola", "bonjour", "hallo", "olá", "merhaba", "cześć", "hoi",
+    "good morning", "good afternoon", "good evening",
+    "hi there", "hello there",
+}
+
+
+def _is_greeting(message: str) -> bool:
+    """Return True if the message is just a greeting with no question."""
+    normalized = message.strip().lower().rstrip("!.,?")
+    return normalized in _GREETINGS
 
 # Cached at import time — docs are static while the server runs
 _DOCS_CONTEXT: str | None = None
@@ -84,9 +102,13 @@ def _load_docs_context(docs_dir: str, max_chars: int = 60000) -> str:
     combined = "\n\n".join(parts)
     _DOCS_CONTEXT = combined[:max_chars]
 
-    # Build vocabulary from the full loaded context
-    tokens = re.findall(r"[a-zA-Z]{4,}", _DOCS_CONTEXT.lower())
-    _DOCS_VOCABULARY = {t for t in tokens if t not in _STOPWORDS}
+    # Build vocabulary using only words that appear >=2 times (filters out
+    # single-occurrence foreign-language words like "ciao" from i18n docs)
+    token_counts = Counter(re.findall(r"[a-zA-Z]{4,}", _DOCS_CONTEXT.lower()))
+    _DOCS_VOCABULARY = {
+        token for token, count in token_counts.items()
+        if count >= 2 and token not in _STOPWORDS
+    }
 
     logger.info(
         f"Loaded {len(parts)} docs files, {len(_DOCS_CONTEXT)} chars of context, "
@@ -131,6 +153,13 @@ STRICT RULES — follow them exactly, without exception:
 5. Do not speculate. Do not say "usually" or "typically" based on general knowledge.
 6. Respond in the same language the user writes in. If you must refuse, translate the refusal message to the user's language.
 7. Be concise. Use numbered steps for procedures.
+
+RULE FOR SHORT MESSAGES AND GREETINGS:
+If the user sends a greeting (hello, hi, ciao, etc.) or a very short message that is not a specific question about Agon, respond ONLY with:
+"Hello! How can I help you with Agon today?"
+Do NOT elaborate. Do NOT mention features. Do NOT mention data or financial topics.
+
+IMPORTANT: The documentation below is provided as reference only. Do NOT proactively mention data deletion, financial obligations, GDPR, or account removal unless the user specifically asks about those topics.
 
 EXAMPLES OF CORRECT REFUSAL:
 User: "How do I make pasta carbonara?"
@@ -198,6 +227,11 @@ async def support_chat(
         if msg.role == "user":
             last_user_message = msg.content
             break
+
+    # Greeting handler — short-circuit before LLM for common salutations
+    if last_user_message and _is_greeting(last_user_message):
+        logger.info(f"Greeting detected, returning fixed reply: {last_user_message[:80]!r}")
+        return ChatResponse(reply=GREETING_REPLY)
 
     if last_user_message and not _is_in_scope(last_user_message, vocabulary):
         logger.info(f"Pre-screening rejected out-of-scope message: {last_user_message[:80]!r}")
