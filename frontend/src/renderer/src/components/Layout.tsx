@@ -5,6 +5,7 @@ import { SupportChat } from './SupportChat'
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: '📊' },
   { to: '/calendar', label: 'Calendar', icon: '📅' },
+  { to: '/class-types', label: 'Class Types', icon: '🏷️' },
   { to: '/clients', label: 'Clients', icon: '👥' },
   { to: '/memberships', label: 'Memberships', icon: '🎫' },
   { to: '/reports', label: 'Reports', icon: '📈' },

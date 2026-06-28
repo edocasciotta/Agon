@@ -8,6 +8,7 @@ import { Dashboard } from './pages/Dashboard'
 import { CalendarPage } from './pages/Calendar'
 import { ClientsPage } from './pages/Clients/index'
 import { ClientDetail } from './pages/Clients/ClientDetail'
+import { ClassTypesPage } from './pages/ClassTypes'
 import { MembershipsPage } from './pages/Memberships'
 import { ReportsPage } from './pages/Reports'
 import { SettingsPage } from './pages/Settings'
@@ -52,6 +53,7 @@ function App(): JSX.Element {
             <Route path="calendar" element={<CalendarPage />} />
             <Route path="clients" element={<ClientsPage />} />
             <Route path="clients/:id" element={<ClientDetail />} />
+            <Route path="class-types" element={<ClassTypesPage />} />
             <Route path="memberships" element={<MembershipsPage />} />
             <Route path="reports" element={<ReportsPage />} />
             <Route path="settings" element={<SettingsPage />} />

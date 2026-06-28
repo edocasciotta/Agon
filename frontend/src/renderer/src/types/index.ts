@@ -39,8 +39,10 @@ export interface ScheduledClass {
 export interface ClassTemplate {
   id: number
   name: string
+  description?: string
   duration_minutes: number
   default_capacity: number
+  default_instructor_id?: number
   color: string
   is_active: boolean
 }

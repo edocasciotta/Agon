@@ -122,7 +122,7 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
 
   const validateSingle = () => {
     const errors: Record<string, string> = {}
-    if (!singleForm.template_id) errors.template_id = 'Class template is required.'
+    if (!singleForm.template_id) errors.template_id = 'Class Type is required.'
     if (!singleForm.date) errors.date = 'Date is required.'
     if (!singleForm.start_time) errors.start_time = 'Start time is required.'
     if (!singleForm.duration_minutes || singleForm.duration_minutes <= 0)
@@ -135,7 +135,7 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
 
   const validateRecurring = () => {
     const errors: Record<string, string> = {}
-    if (!recurringForm.template_id) errors.template_id = 'Class template is required.'
+    if (!recurringForm.template_id) errors.template_id = 'Class Type is required.'
     if (!recurringForm.first_date) errors.first_date = 'First date is required.'
     if (!recurringForm.start_time) errors.start_time = 'Start time is required.'
     if (!recurringForm.duration_minutes || recurringForm.duration_minutes <= 0)
@@ -257,13 +257,13 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
             <form onSubmit={handleSingleSubmit} className="space-y-4">
               {/* Template */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Class template *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Class Type *</label>
                 <select
                   value={singleForm.template_id}
                   onChange={(e) => setSingleForm((f) => ({ ...f, template_id: e.target.value }))}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
-                  <option value="">Select a template</option>
+                  <option value="">Select a Class Type</option>
                   {templates.map((t: ClassTemplate) => (
                     <option key={t.id} value={t.id}>{t.name}</option>
                   ))}
@@ -382,13 +382,13 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
             <form onSubmit={handleRecurringSubmit} className="space-y-4">
               {/* Template */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Class template *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Class Type *</label>
                 <select
                   value={recurringForm.template_id}
                   onChange={(e) => setRecurringForm((f) => ({ ...f, template_id: e.target.value }))}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
-                  <option value="">Select a template</option>
+                  <option value="">Select a Class Type</option>
                   {templates.map((t: ClassTemplate) => (
                     <option key={t.id} value={t.id}>{t.name}</option>
                   ))}
