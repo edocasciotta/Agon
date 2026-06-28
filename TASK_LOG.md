@@ -133,6 +133,30 @@ All tables include `created_at`, `updated_at`, and `location_id` (for V2 multi-l
 
 ## Completed Tasks
 
+### Gemini Migration — Remove Ollama, add Gemini onboarding step (2026-06-28)
+Task complete. **132 backend tests + 19 frontend tests.**
+
+**Decision:** Replaced Ollama (local LLM) with Google Gemini Flash (free API). Studio managers enter their Gemini API key during onboarding. Key is validated via a live litellm test call and persisted to `backend/.env`.
+
+**Backend files modified:**
+- `backend/app/config.py` — defaults changed to `LLM_PROVIDER="gemini"`, `LLM_MODEL="gemini/gemini-1.5-flash"`, `LLM_BASE_URL` removed
+- `backend/app/routers/studio.py` — added `GET /api/v1/studio/ai` (configured check) + `POST /api/v1/studio/ai` (validate key via litellm, write to .env, update in-memory settings)
+- `backend/app/routers/support.py` — removed `api_base` parameter from litellm call
+- `backend/tests/test_ai_setup.py` — 2 new tests
+
+**Frontend files deleted:**
+- `src/main/ollama.ts`, `src/renderer/src/components/OllamaSetup.tsx`, `src/renderer/src/types/electron.d.ts`, `tests/unit/components/OllamaSetup.test.tsx`
+
+**Frontend files modified:**
+- `src/main/index.ts` — removed Ollama imports, `setupOllama()`, all `ipcMain.handle('ollama:...')` handlers
+- `src/preload/index.ts` — removed `ollamaApi` contextBridge block
+- `src/renderer/src/App.tsx` — removed `OllamaSetup` gate; app renders router directly
+- `src/renderer/src/api/studio.ts` — added `saveAiKey()` method
+- `src/renderer/src/pages/Onboarding/index.tsx` — 5 steps → 6 steps; new Step 5 "AI Assistant" (Gemini key input, validate button, skip option)
+- `tests/unit/pages/Onboarding.test.tsx` — 1 new test (6 step circles)
+
+---
+
 ### Phase 11.2 — AI Support Agent (2026-06-26)
 Task complete. **3 new backend tests + 3 new frontend tests.**
 
@@ -302,6 +326,23 @@ All tasks complete. 98 files committed in two commits.
 - backend/app/database.py: `declarative_base()` import is the SQLAlchemy 1.x style (works, but shows deprecation warning in 2.0) — fix when writing models
 - backend/main.py: uses `@app.on_event("startup")` (deprecated, prefer `lifespan`) — fix in Phase 1
 - mobile: requires `--legacy-peer-deps` for npm install due to peer dep conflict between `@testing-library/react-native` and React 18
+
+---
+
+## Post-V1 Fixes
+
+### Ollama auto-setup (2026-06-26)
+Bug: AI chat showed "couldn't connect" because (1) backend not restarted after support router commit, (2) `LLM_MODEL` default missing `"ollama/"` prefix, (3) Ollama not auto-installed.
+
+**Files modified:**
+- `backend/app/config.py` — `LLM_MODEL` default: `"llama3.2"` → `"ollama/llama3.2"`
+- `frontend/src/main/ollama.ts` — Ollama lifecycle: detect, start server, pull model
+- `frontend/src/main/index.ts` — `setupOllama()` runs non-blocking on startup; IPC handlers registered
+- `frontend/src/preload/index.ts` — `window.ollamaApi` IPC bridge exposed
+- `frontend/src/renderer/src/components/OllamaSetup.tsx` — full-screen setup overlay (5 states)
+- `frontend/src/renderer/src/App.tsx` — OllamaSetup shown before router when in Electron
+
+Backend: 130 tests | Frontend: 15 tests, 0 TS errors
 
 ---
 
