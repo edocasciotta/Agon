@@ -18,6 +18,19 @@ export const classesApi = {
     const res = await apiClient.put(`/api/v1/classes/${id}`, data)
     return res.data
   },
+  createRecurring: async (data: {
+    template_id: number
+    instructor_id?: number
+    first_starts_at: string
+    duration_minutes: number
+    capacity: number
+    recurrence_days: number[]
+    end_date: string
+    notes?: string
+  }): Promise<{ count: number }> => {
+    const res = await apiClient.post('/api/v1/classes/recurring', data)
+    return res.data
+  },
   cancel: async (id: number) => {
     const res = await apiClient.delete(`/api/v1/classes/${id}`)
     return res.data

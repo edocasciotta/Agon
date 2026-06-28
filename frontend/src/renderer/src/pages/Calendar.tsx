@@ -4,9 +4,11 @@ import { Calendar as BigCalendar, dateFnsLocalizer } from 'react-big-calendar'
 import { format, parse, startOfWeek, getDay, startOfWeek as startOfWeekFn, endOfWeek } from 'date-fns'
 import { enUS } from 'date-fns/locale/en-US'
 import { classesApi } from '../api/classes'
+import { classTemplatesApi } from '../api/classTemplates'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { PageHeader } from '../components/PageHeader'
-import type { ScheduledClass } from '../types'
+import { ScheduleClassModal } from '../components/ScheduleClassModal'
+import type { ScheduledClass, ClassTemplate } from '../types'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 
 const localizer = dateFnsLocalizer({
@@ -30,6 +32,8 @@ export function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
   const [cancelError, setCancelError] = useState<string | null>(null)
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false)
+  const [scheduleDefaultDate, setScheduleDefaultDate] = useState<Date | undefined>(undefined)
 
   const weekStart = format(startOfWeekFn(currentDate), 'yyyy-MM-dd')
   const weekEnd = format(endOfWeek(currentDate), 'yyyy-MM-dd')
@@ -38,6 +42,18 @@ export function CalendarPage() {
     queryKey: ['classes', weekStart, weekEnd],
     queryFn: () => classesApi.list({ start_date: weekStart, end_date: weekEnd }),
   })
+
+  const { data: templates } = useQuery({
+    queryKey: ['class-templates'],
+    queryFn: classTemplatesApi.list,
+  })
+
+  const templateMap: Record<number, ClassTemplate> = {}
+  if (templates) {
+    for (const t of templates) {
+      templateMap[t.id] = t
+    }
+  }
 
   const cancelMutation = useMutation({
     mutationFn: (id: number) => classesApi.cancel(id),
@@ -52,7 +68,7 @@ export function CalendarPage() {
 
   const events: CalendarEvent[] = (classes ?? []).map((cls) => ({
     id: cls.id,
-    title: `Class #${cls.id}`,
+    title: templateMap[cls.template_id]?.name ?? `Class #${cls.id}`,
     start: new Date(cls.starts_at),
     end: new Date(cls.ends_at),
     resource: cls,
@@ -68,9 +84,29 @@ export function CalendarPage() {
     setSelectedEvent(null)
   }
 
+  const handleSelectSlot = ({ start }: { start: Date }) => {
+    setScheduleDefaultDate(start)
+    setScheduleModalOpen(true)
+  }
+
+  const handleScheduleSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ['classes'] })
+  }
+
   return (
     <div>
-      <PageHeader title="Calendar" subtitle="Weekly class schedule" />
+      <PageHeader
+        title="Calendar"
+        subtitle="Weekly class schedule"
+        action={
+          <button
+            onClick={() => { setScheduleDefaultDate(undefined); setScheduleModalOpen(true) }}
+            className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors"
+          >
+            Schedule Class
+          </button>
+        }
+      />
       {isLoading ? (
         <div className="flex items-center justify-center h-64">
           <LoadingSpinner size="lg" />
@@ -85,6 +121,8 @@ export function CalendarPage() {
             date={currentDate}
             onNavigate={handleNavigate}
             onSelectEvent={handleSelectEvent}
+            onSelectSlot={handleSelectSlot}
+            selectable
             style={{ height: 500 }}
           />
         </div>
@@ -120,6 +158,13 @@ export function CalendarPage() {
           </button>
         </div>
       )}
+
+      <ScheduleClassModal
+        isOpen={scheduleModalOpen}
+        onClose={() => setScheduleModalOpen(false)}
+        onSuccess={handleScheduleSuccess}
+        defaultDate={scheduleDefaultDate}
+      />
     </div>
   )
 }
