@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { authApi } from '../api/auth'
 import { useAuthStore } from '../store/authStore'
 import { getErrorMessage } from '../lib/errorMessages'
 import type { ApiError } from '../api/client'
 
 export function Login() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const setAuth = useAuthStore((s) => s.setAuth)
   const [email, setEmail] = useState('')
@@ -38,12 +40,12 @@ export function Login() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
           <div className="mb-8 text-center">
             <h1 className="text-3xl font-bold text-indigo-600">Agon</h1>
-            <p className="text-gray-500 mt-1">Studio Management</p>
+            <p className="text-gray-500 mt-1">{t('login.subtitle')}</p>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
+                {t('login.email')}
               </label>
               <input
                 type="email"
@@ -51,12 +53,12 @@ export function Login() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="manager@studio.com"
+                placeholder={t('login.emailPlaceholder')}
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Password
+                {t('login.password')}
               </label>
               <input
                 type="password"
@@ -77,7 +79,7 @@ export function Login() {
               disabled={loading}
               className="w-full py-2 px-4 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? t('login.signingIn') : t('login.signIn')}
             </button>
           </form>
         </div>

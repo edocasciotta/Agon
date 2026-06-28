@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
 import { clientsApi } from '../../api/clients'
 import { membershipTypesApi, membershipsApi } from '../../api/memberships'
@@ -10,6 +11,7 @@ import { PageHeader } from '../../components/PageHeader'
 import type { ApiError } from '../../api/client'
 
 export function ClientDetail() {
+  const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -64,7 +66,7 @@ export function ClientDetail() {
       setAssignError(null)
     },
     onError: (err: ApiError) => {
-      setAssignError(err.message ?? 'Failed to assign membership')
+      setAssignError(err.message ?? t('clientDetail.failedAssign'))
     },
   })
 
@@ -82,7 +84,7 @@ export function ClientDetail() {
 
   const handleAssign = () => {
     if (!assignTypeId) {
-      setAssignError('Please select a membership type')
+      setAssignError(t('clientDetail.assignError'))
       return
     }
     assignMutation.mutate({
@@ -106,7 +108,7 @@ export function ClientDetail() {
             onClick={() => navigate('/clients')}
             className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
           >
-            ← Back
+            {t('clientDetail.back')}
           </button>
         }
       />
@@ -116,7 +118,7 @@ export function ClientDetail() {
         {editing ? (
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('clientDetail.editName')}</label>
               <input
                 type="text"
                 value={editName}
@@ -125,7 +127,7 @@ export function ClientDetail() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('clientDetail.editPhone')}</label>
               <input
                 type="text"
                 value={editPhone}
@@ -139,38 +141,38 @@ export function ClientDetail() {
                 disabled={updateMutation.isPending}
                 className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
               >
-                {updateMutation.isPending ? 'Saving...' : 'Save'}
+                {updateMutation.isPending ? t('clientDetail.saving') : t('clientDetail.save')}
               </button>
               <button
                 onClick={() => setEditing(false)}
                 className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
               >
-                Cancel
+                {t('clientDetail.cancel')}
               </button>
             </div>
           </div>
         ) : (
           <div className="flex items-start justify-between">
             <div className="space-y-2">
-              <p className="text-sm text-gray-600"><span className="font-medium">Email:</span> {client.email}</p>
-              <p className="text-sm text-gray-600"><span className="font-medium">Phone:</span> {client.phone ?? '—'}</p>
+              <p className="text-sm text-gray-600"><span className="font-medium">{t('clientDetail.email')}:</span> {client.email}</p>
+              <p className="text-sm text-gray-600"><span className="font-medium">{t('clientDetail.phone')}:</span> {client.phone ?? '—'}</p>
               <p className="text-sm text-gray-600">
-                <span className="font-medium">Status:</span>{' '}
+                <span className="font-medium">{t('clientDetail.status')}:</span>{' '}
                 <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
                   client.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
                 }`}>
-                  {client.is_active ? 'Active' : 'Inactive'}
+                  {client.is_active ? t('clientDetail.active') : t('clientDetail.inactive')}
                 </span>
               </p>
               <p className="text-sm text-gray-600">
-                <span className="font-medium">Joined:</span> {format(new Date(client.created_at), 'MMM d, yyyy')}
+                <span className="font-medium">{t('clientDetail.joined')}:</span> {format(new Date(client.created_at), 'MMM d, yyyy')}
               </p>
             </div>
             <button
               onClick={startEditing}
               className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
             >
-              Edit
+              {t('clientDetail.edit')}
             </button>
           </div>
         )}
@@ -179,19 +181,26 @@ export function ClientDetail() {
       {/* Tabs */}
       <div className="border-b border-gray-200 mb-4">
         <div className="flex gap-4">
-          {(['bookings', 'memberships'] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`pb-2 px-1 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab
-                  ? 'border-indigo-600 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
+          <button
+            onClick={() => setActiveTab('bookings')}
+            className={`pb-2 px-1 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'bookings'
+                ? 'border-indigo-600 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            {t('clientDetail.bookingsTab')}
+          </button>
+          <button
+            onClick={() => setActiveTab('memberships')}
+            className={`pb-2 px-1 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'memberships'
+                ? 'border-indigo-600 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            {t('clientDetail.membershipsTab')}
+          </button>
         </div>
       </div>
 
@@ -204,9 +213,9 @@ export function ClientDetail() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Class ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Credit Deducted</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('clientDetail.classId')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('clientDetail.bookingStatus')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('clientDetail.creditDeducted')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -214,12 +223,12 @@ export function ClientDetail() {
                   <tr key={booking.id}>
                     <td className="px-6 py-4 text-sm text-gray-900">#{booking.scheduled_class_id}</td>
                     <td className="px-6 py-4 text-sm text-gray-500">{booking.status}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{booking.credit_deducted ? 'Yes' : 'No'}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">{booking.credit_deducted ? t('common.yes') : t('common.no')}</td>
                   </tr>
                 ))}
                 {(!bookings || bookings.length === 0) && (
                   <tr>
-                    <td colSpan={3} className="px-6 py-8 text-center text-sm text-gray-500">No bookings found.</td>
+                    <td colSpan={3} className="px-6 py-8 text-center text-sm text-gray-500">{t('clientDetail.noBookings')}</td>
                   </tr>
                 )}
               </tbody>
@@ -236,7 +245,7 @@ export function ClientDetail() {
               onClick={() => setShowAssignModal(true)}
               className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors"
             >
-              + Assign Membership
+              {t('clientDetail.assignMembership')}
             </button>
           </div>
           <div className="bg-white rounded-lg border border-gray-200">
@@ -246,11 +255,11 @@ export function ClientDetail() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Credits</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Starts</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expires</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('clientDetail.typeId')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('clientDetail.membershipStatus')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('clientDetail.credits')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('clientDetail.starts')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('clientDetail.expires')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -267,7 +276,7 @@ export function ClientDetail() {
                   ))}
                   {(!memberships || memberships.length === 0) && (
                     <tr>
-                      <td colSpan={5} className="px-6 py-8 text-center text-sm text-gray-500">No memberships found.</td>
+                      <td colSpan={5} className="px-6 py-8 text-center text-sm text-gray-500">{t('clientDetail.noMemberships')}</td>
                     </tr>
                   )}
                 </tbody>
@@ -281,23 +290,23 @@ export function ClientDetail() {
       {showAssignModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Assign Membership</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('clientDetail.assignMembershipTitle')}</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Membership Type</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('clientDetail.membershipType')}</label>
                 <select
                   value={assignTypeId}
                   onChange={(e) => setAssignTypeId(e.target.value ? Number(e.target.value) : '')}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
-                  <option value="">Select a type...</option>
+                  <option value="">{t('clientDetail.selectType')}</option>
                   {(membershipTypes ?? []).map((t: { id: number; name: string }) => (
                     <option key={t.id} value={t.id}>{t.name}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('clientDetail.startDate')}</label>
                 <input
                   type="date"
                   value={assignStartDate}
@@ -314,13 +323,13 @@ export function ClientDetail() {
                   disabled={assignMutation.isPending}
                   className="flex-1 py-2 px-4 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
                 >
-                  {assignMutation.isPending ? 'Assigning...' : 'Assign'}
+                  {assignMutation.isPending ? t('clientDetail.assigning') : t('clientDetail.assign')}
                 </button>
                 <button
                   onClick={() => { setShowAssignModal(false); setAssignError(null) }}
                   className="flex-1 py-2 px-4 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
                 >
-                  Cancel
+                  {t('clientDetail.cancel')}
                 </button>
               </div>
             </div>

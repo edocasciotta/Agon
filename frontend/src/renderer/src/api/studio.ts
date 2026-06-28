@@ -14,4 +14,7 @@ export const studioApi = {
     const res = await apiClient.get('/api/v1/studio/status')
     return res.data
   },
+  saveAiKey: async (apiKey: string): Promise<void> => {
+    await apiClient.post('/api/v1/studio/ai', { api_key: apiKey })
+  },
 }

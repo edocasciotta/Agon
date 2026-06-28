@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
 import { clientsApi } from '../../api/clients'
 import { LoadingSpinner } from '../../components/LoadingSpinner'
@@ -9,6 +10,7 @@ import { PageHeader } from '../../components/PageHeader'
 import type { ApiError } from '../../api/client'
 
 export function ClientsPage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -29,14 +31,14 @@ export function ClientsPage() {
   return (
     <div>
       <PageHeader
-        title="Clients"
-        subtitle={clients ? `${clients.length} clients` : undefined}
+        title={t('clients.title')}
+        subtitle={clients ? `${clients.length} ${t('clients.title').toLowerCase()}` : undefined}
         action={
           <button
             onClick={() => setShowAddModal(true)}
             className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors"
           >
-            + Add Client
+            {t('clients.addClient')}
           </button>
         }
       />
@@ -46,7 +48,7 @@ export function ClientsPage() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by name or email..."
+          placeholder={t('clients.searchPlaceholder')}
           className="w-full max-w-md px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
       </div>
@@ -59,11 +61,11 @@ export function ClientsPage() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('clients.name')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('clients.email')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('clients.phone')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('clients.status')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('clients.joined')}</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -80,7 +82,7 @@ export function ClientsPage() {
                     <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
                       client.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
                     }`}>
-                      {client.is_active ? 'Active' : 'Inactive'}
+                      {client.is_active ? t('clients.active') : t('clients.inactive')}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">
@@ -91,7 +93,7 @@ export function ClientsPage() {
               {clients.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-6 py-8 text-center text-sm text-gray-500">
-                    No clients found.
+                    {t('clients.noClients')}
                   </td>
                 </tr>
               )}
@@ -104,17 +106,15 @@ export function ClientsPage() {
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">Add Client</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">{t('clients.addClientTitle')}</h2>
             <div className="rounded-md bg-blue-50 border border-blue-200 p-4 mb-4">
-              <p className="text-blue-700 text-sm">
-                Clients register themselves via the Agon mobile app. Share your studio QR code with them and they can create an account and start booking classes immediately.
-              </p>
+              <p className="text-blue-700 text-sm">{t('clients.addClientInfo')}</p>
             </div>
             <button
               onClick={() => setShowAddModal(false)}
               className="w-full py-2 px-4 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
             >
-              Close
+              {t('clients.close')}
             </button>
           </div>
         </div>

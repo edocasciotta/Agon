@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { Calendar as BigCalendar, dateFnsLocalizer } from 'react-big-calendar'
 import { format, parse, startOfWeek, getDay, startOfWeek as startOfWeekFn, endOfWeek } from 'date-fns'
 import { enUS } from 'date-fns/locale/en-US'
@@ -28,6 +29,7 @@ interface CalendarEvent {
 }
 
 export function CalendarPage() {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
@@ -62,7 +64,7 @@ export function CalendarPage() {
       setSelectedEvent(null)
     },
     onError: () => {
-      setCancelError('Failed to cancel class. Please try again.')
+      setCancelError(t('calendar.cancelError'))
     },
   })
 
@@ -96,14 +98,14 @@ export function CalendarPage() {
   return (
     <div>
       <PageHeader
-        title="Calendar"
-        subtitle="Weekly class schedule"
+        title={t('calendar.title')}
+        subtitle={t('calendar.subtitle')}
         action={
           <button
             onClick={() => { setScheduleDefaultDate(undefined); setScheduleModalOpen(true) }}
             className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors"
           >
-            Schedule Class
+            {t('calendar.scheduleClass')}
           </button>
         }
       />
@@ -132,11 +134,11 @@ export function CalendarPage() {
         <div className="mt-4 bg-white rounded-lg border border-gray-200 p-4">
           <h3 className="font-semibold text-gray-900 mb-2">{selectedEvent.title}</h3>
           <div className="text-sm text-gray-600 space-y-1 mb-4">
-            <p>Start: {format(selectedEvent.start, 'PPpp')}</p>
-            <p>End: {format(selectedEvent.end, 'PPpp')}</p>
-            <p>Status: {selectedEvent.resource.status}</p>
-            <p>Capacity: {selectedEvent.resource.capacity}</p>
-            {selectedEvent.resource.notes && <p>Notes: {selectedEvent.resource.notes}</p>}
+            <p>{t('calendar.start')}: {format(selectedEvent.start, 'PPpp')}</p>
+            <p>{t('calendar.end')}: {format(selectedEvent.end, 'PPpp')}</p>
+            <p>{t('calendar.statusLabel')}: {selectedEvent.resource.status}</p>
+            <p>{t('calendar.capacityLabel')}: {selectedEvent.resource.capacity}</p>
+            {selectedEvent.resource.notes && <p>{t('calendar.notesLabel')}: {selectedEvent.resource.notes}</p>}
           </div>
           {cancelError && (
             <div className="rounded-md bg-red-50 p-3 text-sm text-red-700 border border-red-200 mb-3">{cancelError}</div>
@@ -147,14 +149,14 @@ export function CalendarPage() {
               disabled={cancelMutation.isPending}
               className="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 disabled:opacity-50 transition-colors"
             >
-              {cancelMutation.isPending ? 'Cancelling...' : 'Cancel Class'}
+              {cancelMutation.isPending ? t('calendar.cancelling') : t('calendar.cancelClass')}
             </button>
           )}
           <button
             onClick={() => setSelectedEvent(null)}
             className="ml-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
           >
-            Close
+            {t('calendar.closePanel')}
           </button>
         </div>
       )}

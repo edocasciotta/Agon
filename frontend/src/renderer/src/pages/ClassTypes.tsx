@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { classTemplatesApi, type ClassTemplateCreate } from '../api/classTemplates'
 import { instructorsApi } from '../api/instructors'
 import { LoadingSpinner } from '../components/LoadingSpinner'
@@ -26,6 +27,7 @@ const DEFAULT_FORM: ClassTypeFormData = {
 }
 
 export function ClassTypesPage() {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [showForm, setShowForm] = useState(false)
   const [editingTemplate, setEditingTemplate] = useState<ClassTemplate | null>(null)
@@ -49,7 +51,7 @@ export function ClassTypesPage() {
       handleCloseForm()
     },
     onError: (err: ApiError) => {
-      setFormError(err.message ?? 'Failed to create class type')
+      setFormError(err.message ?? t('classTypes.failedCreate'))
     },
   })
 
@@ -61,7 +63,7 @@ export function ClassTypesPage() {
       handleCloseForm()
     },
     onError: (err: ApiError) => {
-      setFormError(err.message ?? 'Failed to update class type')
+      setFormError(err.message ?? t('classTypes.failedUpdate'))
     },
   })
 
@@ -103,7 +105,7 @@ export function ClassTypesPage() {
   }
 
   const handleDelete = (template: ClassTemplate) => {
-    if (window.confirm('Delete this class type?')) {
+    if (window.confirm(t('classTypes.deleteConfirm'))) {
       deleteMutation.mutate(template.id)
     }
   }
@@ -112,7 +114,7 @@ export function ClassTypesPage() {
     e.preventDefault()
     setFormError(null)
     if (!formData.name.trim()) {
-      setFormError('Name is required')
+      setFormError(t('classTypes.nameRequired'))
       return
     }
     const payload: ClassTemplateCreate = {
@@ -137,13 +139,13 @@ export function ClassTypesPage() {
   return (
     <div>
       <PageHeader
-        title="Class Types"
+        title={t('classTypes.title')}
         action={
           <button
             onClick={handleOpenNew}
             className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors"
           >
-            + New Class Type
+            {t('classTypes.newClassType')}
           </button>
         }
       />
@@ -152,42 +154,42 @@ export function ClassTypesPage() {
       {showForm && (
         <div className="mb-6 bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
           <h2 className="text-base font-semibold text-gray-900 mb-4">
-            {editingTemplate ? 'Edit Class Type' : 'New Class Type'}
+            {editingTemplate ? t('classTypes.editClassType') : t('classTypes.newClassType')}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               {/* Name */}
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Name <span className="text-red-500">*</span>
+                  {t('classTypes.name')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="e.g. Yoga Flow"
+                  placeholder={t('classTypes.namePlaceholder')}
                 />
               </div>
 
               {/* Description */}
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
+                  {t('classTypes.description')}
                 </label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={2}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-                  placeholder="Optional description"
+                  placeholder={t('classTypes.descriptionPlaceholder')}
                 />
               </div>
 
               {/* Duration */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Duration (min) <span className="text-red-500">*</span>
+                  {t('classTypes.durationMin')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
@@ -203,7 +205,7 @@ export function ClassTypesPage() {
               {/* Default capacity */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Default capacity <span className="text-red-500">*</span>
+                  {t('classTypes.defaultCapacity')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
@@ -219,7 +221,7 @@ export function ClassTypesPage() {
               {/* Color */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Color <span className="text-red-500">*</span>
+                  {t('classTypes.color')} <span className="text-red-500">*</span>
                 </label>
                 <div className="flex items-center gap-2">
                   <input
@@ -235,7 +237,7 @@ export function ClassTypesPage() {
               {/* Default instructor */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Default instructor
+                  {t('classTypes.defaultInstructor')}
                 </label>
                 <select
                   value={formData.default_instructor_id}
@@ -244,7 +246,7 @@ export function ClassTypesPage() {
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
-                  <option value="">No default instructor</option>
+                  <option value="">{t('classTypes.noDefaultInstructor')}</option>
                   {instructors.map((inst) => (
                     <option key={inst.id} value={inst.id}>
                       {inst.full_name}
@@ -267,17 +269,17 @@ export function ClassTypesPage() {
                 className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
               >
                 {isPending
-                  ? 'Saving...'
+                  ? t('classTypes.saving')
                   : editingTemplate
-                    ? 'Update Class Type'
-                    : 'Save Class Type'}
+                    ? t('classTypes.updateClassType')
+                    : t('classTypes.saveClassType')}
               </button>
               <button
                 type="button"
                 onClick={handleCloseForm}
                 className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
             </div>
           </form>
@@ -290,15 +292,13 @@ export function ClassTypesPage() {
       {/* Empty state */}
       {!isLoading && (!templates || templates.length === 0) && (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <p className="text-gray-500 mb-4">
-            No class types yet. Create your first one to start scheduling classes.
-          </p>
+          <p className="text-gray-500 mb-4">{t('classTypes.noClassTypes')}</p>
           {!showForm && (
             <button
               onClick={handleOpenNew}
               className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors"
             >
-              + New Class Type
+              {t('classTypes.newClassType')}
             </button>
           )}
         </div>
@@ -325,8 +325,8 @@ export function ClassTypesPage() {
                     style={{ backgroundColor: template.color }}
                   />
                 </div>
-                <p className="text-xs text-gray-500 mb-1">{template.duration_minutes} min</p>
-                <p className="text-xs text-gray-500 mb-2">Max {template.default_capacity}</p>
+                <p className="text-xs text-gray-500 mb-1">{template.duration_minutes} {t('classTypes.minLabel')}</p>
+                <p className="text-xs text-gray-500 mb-2">{t('classTypes.maxLabel')} {template.default_capacity}</p>
                 {template.description && (
                   <p className="text-xs text-gray-400 truncate mb-3">{template.description}</p>
                 )}
@@ -335,14 +335,14 @@ export function ClassTypesPage() {
                     onClick={() => handleOpenEdit(template)}
                     className="px-3 py-1 text-xs font-medium text-indigo-600 bg-indigo-50 rounded hover:bg-indigo-100 transition-colors"
                   >
-                    Edit
+                    {t('common.edit')}
                   </button>
                   <button
                     onClick={() => handleDelete(template)}
                     disabled={deleteMutation.isPending}
                     className="px-3 py-1 text-xs font-medium text-red-600 bg-red-50 rounded hover:bg-red-100 transition-colors disabled:opacity-50"
                   >
-                    Delete
+                    {t('common.delete')}
                   </button>
                 </div>
               </div>

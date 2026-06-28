@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom'
+import '../../src/renderer/src/i18n'
 
 // Provide a full localStorage mock for environments where jsdom's localStorage
 // is incomplete (e.g. when electron-vite stubs it with a limited object)

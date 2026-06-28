@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { format, startOfMonth, endOfMonth } from 'date-fns'
 import { reportsApi } from '../api/reports'
 import { LoadingSpinner } from '../components/LoadingSpinner'
@@ -8,6 +9,7 @@ import { PageHeader } from '../components/PageHeader'
 type ReportTab = 'attendance' | 'revenue' | 'memberships' | 'retention'
 
 export function ReportsPage() {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<ReportTab>('attendance')
   const now = new Date()
   const [startDate, setStartDate] = useState(format(startOfMonth(now), 'yyyy-MM-dd'))
@@ -38,21 +40,21 @@ export function ReportsPage() {
   })
 
   const tabs: { id: ReportTab; label: string }[] = [
-    { id: 'attendance', label: 'Attendance' },
-    { id: 'revenue', label: 'Revenue' },
-    { id: 'memberships', label: 'Memberships' },
-    { id: 'retention', label: 'Retention' },
+    { id: 'attendance', label: t('reports.attendance') },
+    { id: 'revenue', label: t('reports.revenue') },
+    { id: 'memberships', label: t('reports.memberships') },
+    { id: 'retention', label: t('reports.retention') },
   ]
 
   return (
     <div>
-      <PageHeader title="Reports" />
+      <PageHeader title={t('reports.title')} />
 
       {/* Date Range (for attendance + revenue) */}
       {(activeTab === 'attendance' || activeTab === 'revenue') && (
         <div className="flex items-center gap-3 mb-4">
           <div>
-            <label className="block text-xs text-gray-500 mb-1">From</label>
+            <label className="block text-xs text-gray-500 mb-1">{t('reports.from')}</label>
             <input
               type="date"
               value={startDate}
@@ -61,7 +63,7 @@ export function ReportsPage() {
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">To</label>
+            <label className="block text-xs text-gray-500 mb-1">{t('reports.to')}</label>
             <input
               type="date"
               value={endDate}
@@ -99,19 +101,19 @@ export function ReportsPage() {
           ) : attendance ? (
             <div>
               <div className="grid grid-cols-2 gap-4 mb-4 lg:grid-cols-4">
-                <StatCard title="Total Classes" value={attendance.total_classes} />
-                <StatCard title="Total Bookings" value={attendance.total_bookings} />
-                <StatCard title="Total Check-ins" value={attendance.total_checkins} />
-                <StatCard title="Check-in Rate" value={`${(attendance.checkin_rate * 100).toFixed(1)}%`} />
-                <StatCard title="Avg Class Size" value={attendance.avg_class_size?.toFixed(1) ?? '—'} />
-                <StatCard title="Classes Cancelled" value={attendance.classes_cancelled} />
-                <StatCard title="Classes Completed" value={attendance.classes_completed} />
+                <StatCard title={t('reports.totalClasses')} value={attendance.total_classes} />
+                <StatCard title={t('reports.totalBookings')} value={attendance.total_bookings} />
+                <StatCard title={t('reports.totalCheckins')} value={attendance.total_checkins} />
+                <StatCard title={t('reports.checkinRate')} value={`${(attendance.checkin_rate * 100).toFixed(1)}%`} />
+                <StatCard title={t('reports.avgClassSize')} value={attendance.avg_class_size?.toFixed(1) ?? '—'} />
+                <StatCard title={t('reports.classesCancelled')} value={attendance.classes_cancelled} />
+                <StatCard title={t('reports.classesCompleted')} value={attendance.classes_completed} />
               </div>
               <button
                 onClick={() => { window.location.href = reportsApi.exportAttendanceCsv() }}
                 className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
               >
-                Export CSV
+                {t('reports.exportCsv')}
               </button>
             </div>
           ) : null}
@@ -126,15 +128,15 @@ export function ReportsPage() {
           ) : revenue ? (
             <div>
               <div className="grid grid-cols-2 gap-4 mb-4 lg:grid-cols-3">
-                <StatCard title="Total Revenue" value={`${revenue.currency} ${revenue.total_revenue?.toFixed(2)}`} />
-                <StatCard title="Payment Count" value={revenue.payment_count} />
-                <StatCard title="Avg Payment" value={`${revenue.currency} ${revenue.avg_payment?.toFixed(2)}`} />
+                <StatCard title={t('reports.totalRevenue')} value={`${revenue.currency} ${revenue.total_revenue?.toFixed(2)}`} />
+                <StatCard title={t('reports.paymentCount')} value={revenue.payment_count} />
+                <StatCard title={t('reports.avgPayment')} value={`${revenue.currency} ${revenue.avg_payment?.toFixed(2)}`} />
               </div>
               <button
                 onClick={() => { window.location.href = reportsApi.exportRevenueCsv() }}
                 className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
               >
-                Export CSV
+                {t('reports.exportCsv')}
               </button>
             </div>
           ) : null}
@@ -148,9 +150,9 @@ export function ReportsPage() {
             <LoadingSpinner />
           ) : memberships ? (
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-              <StatCard title="Total Active" value={memberships.total_active ?? '—'} />
-              <StatCard title="Total Expired" value={memberships.total_expired ?? '—'} />
-              <StatCard title="Total Cancelled" value={memberships.total_cancelled ?? '—'} />
+              <StatCard title={t('reports.totalActive')} value={memberships.total_active ?? '—'} />
+              <StatCard title={t('reports.totalExpired')} value={memberships.total_expired ?? '—'} />
+              <StatCard title={t('reports.totalCancelled')} value={memberships.total_cancelled ?? '—'} />
             </div>
           ) : null}
         </div>
@@ -163,12 +165,12 @@ export function ReportsPage() {
             <LoadingSpinner />
           ) : retention ? (
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-              <StatCard title="Total Clients" value={retention.total_clients ?? '—'} />
-              <StatCard title="Active Clients" value={retention.active_clients ?? '—'} />
-              <StatCard title="New Clients" value={retention.new_clients ?? '—'} />
-              <StatCard title="Churned Clients" value={retention.churned_clients ?? '—'} />
+              <StatCard title={t('reports.totalClients')} value={retention.total_clients ?? '—'} />
+              <StatCard title={t('reports.activeClients')} value={retention.active_clients ?? '—'} />
+              <StatCard title={t('reports.newClients')} value={retention.new_clients ?? '—'} />
+              <StatCard title={t('reports.churnedClients')} value={retention.churned_clients ?? '—'} />
               {retention.retention_rate !== undefined && (
-                <StatCard title="Retention Rate" value={`${(retention.retention_rate * 100).toFixed(1)}%`} />
+                <StatCard title={t('reports.retentionRate')} value={`${(retention.retention_rate * 100).toFixed(1)}%`} />
               )}
             </div>
           ) : null}

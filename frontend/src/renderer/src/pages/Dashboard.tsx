@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns'
+import { useTranslation } from 'react-i18next'
 import { clientsApi } from '../api/clients'
 import { classesApi } from '../api/classes'
 import { reportsApi } from '../api/reports'
@@ -21,6 +22,7 @@ function StatCard({ title, value, subtitle, loading }: { title: string; value: s
 }
 
 export function Dashboard() {
+  const { t } = useTranslation()
   const now = new Date()
   const weekStart = format(startOfWeek(now), 'yyyy-MM-dd')
   const weekEnd = format(endOfWeek(now), 'yyyy-MM-dd')
@@ -53,28 +55,28 @@ export function Dashboard() {
 
   return (
     <div>
-      <PageHeader title="Dashboard" subtitle="Overview of your studio" />
+      <PageHeader title={t('dashboard.title')} subtitle={t('dashboard.subtitle')} />
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard
-          title="Total Clients"
+          title={t('dashboard.totalClients')}
           value={clients?.length ?? '—'}
-          subtitle="registered clients"
+          subtitle={t('dashboard.registeredClients')}
           loading={clientsLoading}
         />
         <StatCard
-          title="Classes This Week"
+          title={t('dashboard.classesThisWeek')}
           value={weekClasses?.length ?? '—'}
           subtitle={`${weekStart} – ${weekEnd}`}
           loading={classesLoading}
         />
         <StatCard
-          title="Active Memberships"
+          title={t('dashboard.activeMemberships')}
           value={membershipsReport?.total_active ?? '—'}
-          subtitle="currently active"
+          subtitle={t('dashboard.currentlyActive')}
           loading={membershipsLoading}
         />
         <StatCard
-          title="Revenue This Month"
+          title={t('dashboard.revenueThisMonth')}
           value={totalRevenue}
           subtitle={`${monthStart} – ${monthEnd}`}
           loading={revenueLoading}

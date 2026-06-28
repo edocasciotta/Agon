@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
 import { classesApi } from '../api/classes'
 import { classTemplatesApi } from '../api/classTemplates'
@@ -16,6 +17,7 @@ interface ScheduleClassModalProps {
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: ScheduleClassModalProps) {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<'single' | 'recurring'>('single')
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [apiError, setApiError] = useState<string | null>(null)
@@ -70,8 +72,8 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
   })
 
   // Auto-fill duration and capacity from selected template
-  const selectedSingleTemplate = templates.find((t: ClassTemplate) => t.id === Number(singleForm.template_id))
-  const selectedRecurringTemplate = templates.find((t: ClassTemplate) => t.id === Number(recurringForm.template_id))
+  const selectedSingleTemplate = templates.find((tpl: ClassTemplate) => tpl.id === Number(singleForm.template_id))
+  const selectedRecurringTemplate = templates.find((tpl: ClassTemplate) => tpl.id === Number(recurringForm.template_id))
 
   useEffect(() => {
     if (selectedSingleTemplate) {
@@ -93,14 +95,17 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
     }
   }, [recurringForm.template_id]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const queryClient = useQueryClient()
+
   const singleMutation = useMutation({
     mutationFn: classesApi.create,
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['classes'] })
       onSuccess()
       onClose()
     },
     onError: (err: unknown) => {
-      const msg = err instanceof Error ? err.message : 'Failed to schedule class. Please try again.'
+      const msg = err instanceof Error ? err.message : t('scheduleModal.failedSchedule')
       setApiError(msg)
     },
   })
@@ -108,43 +113,43 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
   const recurringMutation = useMutation({
     mutationFn: classesApi.createRecurring,
     onSuccess: (data) => {
-      setSuccessMessage(`${data.count} classes scheduled successfully.`)
+      setSuccessMessage(t('scheduleModal.scheduledSuccess', { count: data.count }))
       setTimeout(() => {
         onSuccess()
         onClose()
       }, 1500)
     },
     onError: (err: unknown) => {
-      const msg = err instanceof Error ? err.message : 'Failed to schedule recurring classes. Please try again.'
+      const msg = err instanceof Error ? err.message : t('scheduleModal.failedScheduleRecurring')
       setApiError(msg)
     },
   })
 
   const validateSingle = () => {
     const errors: Record<string, string> = {}
-    if (!singleForm.template_id) errors.template_id = 'Class Type is required.'
-    if (!singleForm.date) errors.date = 'Date is required.'
-    if (!singleForm.start_time) errors.start_time = 'Start time is required.'
+    if (!singleForm.template_id) errors.template_id = t('scheduleModal.classTypeRequired')
+    if (!singleForm.date) errors.date = t('scheduleModal.dateRequired')
+    if (!singleForm.start_time) errors.start_time = t('scheduleModal.startTimeRequired')
     if (!singleForm.duration_minutes || singleForm.duration_minutes <= 0)
-      errors.duration_minutes = 'Duration must be positive.'
+      errors.duration_minutes = t('scheduleModal.durationPositive')
     if (!singleForm.capacity || singleForm.capacity <= 0)
-      errors.capacity = 'Capacity must be positive.'
+      errors.capacity = t('scheduleModal.capacityPositive')
     setSingleErrors(errors)
     return Object.keys(errors).length === 0
   }
 
   const validateRecurring = () => {
     const errors: Record<string, string> = {}
-    if (!recurringForm.template_id) errors.template_id = 'Class Type is required.'
-    if (!recurringForm.first_date) errors.first_date = 'First date is required.'
-    if (!recurringForm.start_time) errors.start_time = 'Start time is required.'
+    if (!recurringForm.template_id) errors.template_id = t('scheduleModal.classTypeRequired')
+    if (!recurringForm.first_date) errors.first_date = t('scheduleModal.firstDateRequired')
+    if (!recurringForm.start_time) errors.start_time = t('scheduleModal.startTimeRequired')
     if (!recurringForm.duration_minutes || recurringForm.duration_minutes <= 0)
-      errors.duration_minutes = 'Duration must be positive.'
+      errors.duration_minutes = t('scheduleModal.durationPositive')
     if (!recurringForm.capacity || recurringForm.capacity <= 0)
-      errors.capacity = 'Capacity must be positive.'
+      errors.capacity = t('scheduleModal.capacityPositive')
     if (recurringForm.recurrence_days.length === 0)
-      errors.recurrence_days = 'Select at least one day.'
-    if (!recurringForm.end_date) errors.end_date = 'End date is required.'
+      errors.recurrence_days = t('scheduleModal.selectOneDay')
+    if (!recurringForm.end_date) errors.end_date = t('scheduleModal.endDateRequired')
     setRecurringErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -203,10 +208,10 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
       <div className="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 overflow-y-auto max-h-[90vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Schedule Class</h2>
+          <h2 className="text-lg font-semibold text-gray-900">{t('scheduleModal.title')}</h2>
           <button
             onClick={onClose}
-            aria-label="Close modal"
+            aria-label={t('scheduleModal.closeModal')}
             className="text-gray-400 hover:text-gray-600 text-xl leading-none"
           >
             ✕
@@ -223,7 +228,7 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
                 : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
-            Single class
+            {t('scheduleModal.singleClass')}
           </button>
           <button
             onClick={() => { setActiveTab('recurring'); setApiError(null); setSuccessMessage(null) }}
@@ -233,7 +238,7 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
                 : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
-            Recurring class
+            {t('scheduleModal.recurringClass')}
           </button>
         </div>
 
@@ -257,15 +262,15 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
             <form onSubmit={handleSingleSubmit} className="space-y-4">
               {/* Template */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Class Type *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('scheduleModal.classType')}</label>
                 <select
                   value={singleForm.template_id}
                   onChange={(e) => setSingleForm((f) => ({ ...f, template_id: e.target.value }))}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
-                  <option value="">Select a Class Type</option>
-                  {templates.map((t: ClassTemplate) => (
-                    <option key={t.id} value={t.id}>{t.name}</option>
+                  <option value="">{t('scheduleModal.selectClassType')}</option>
+                  {templates.map((tpl: ClassTemplate) => (
+                    <option key={tpl.id} value={tpl.id}>{tpl.name}</option>
                   ))}
                 </select>
                 {singleErrors.template_id && (
@@ -275,7 +280,7 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
 
               {/* Date */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('scheduleModal.date')}</label>
                 <input
                   type="date"
                   value={singleForm.date}
@@ -290,7 +295,7 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
               {/* Start time + Duration */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Start time *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('scheduleModal.startTime')}</label>
                   <input
                     type="time"
                     value={singleForm.start_time}
@@ -302,7 +307,7 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Duration (min) *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('scheduleModal.durationMin')}</label>
                   <input
                     type="number"
                     min={1}
@@ -318,13 +323,13 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
 
               {/* Instructor */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Instructor</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('scheduleModal.instructor')}</label>
                 <select
                   value={singleForm.instructor_id}
                   onChange={(e) => setSingleForm((f) => ({ ...f, instructor_id: e.target.value }))}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
-                  <option value="">No instructor</option>
+                  <option value="">{t('scheduleModal.noInstructor')}</option>
                   {instructors.map((inst) => (
                     <option key={inst.id} value={inst.id}>{inst.full_name}</option>
                   ))}
@@ -333,7 +338,7 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
 
               {/* Capacity */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Capacity *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('scheduleModal.capacity')}</label>
                 <input
                   type="number"
                   min={1}
@@ -348,7 +353,7 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
 
               {/* Notes */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('scheduleModal.notes')}</label>
                 <textarea
                   value={singleForm.notes}
                   onChange={(e) => setSingleForm((f) => ({ ...f, notes: e.target.value }))}
@@ -364,14 +369,14 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
                   onClick={onClose}
                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
                 >
-                  Cancel
+                  {t('scheduleModal.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={singleMutation.isPending}
                   className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 transition-colors"
                 >
-                  {singleMutation.isPending ? 'Scheduling...' : 'Schedule Class'}
+                  {singleMutation.isPending ? t('scheduleModal.scheduling') : t('scheduleModal.scheduleClass')}
                 </button>
               </div>
             </form>
@@ -382,15 +387,15 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
             <form onSubmit={handleRecurringSubmit} className="space-y-4">
               {/* Template */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Class Type *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('scheduleModal.classType')}</label>
                 <select
                   value={recurringForm.template_id}
                   onChange={(e) => setRecurringForm((f) => ({ ...f, template_id: e.target.value }))}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
-                  <option value="">Select a Class Type</option>
-                  {templates.map((t: ClassTemplate) => (
-                    <option key={t.id} value={t.id}>{t.name}</option>
+                  <option value="">{t('scheduleModal.selectClassType')}</option>
+                  {templates.map((tpl: ClassTemplate) => (
+                    <option key={tpl.id} value={tpl.id}>{tpl.name}</option>
                   ))}
                 </select>
                 {recurringErrors.template_id && (
@@ -400,7 +405,7 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
 
               {/* First date */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">First date *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('scheduleModal.firstDate')}</label>
                 <input
                   type="date"
                   value={recurringForm.first_date}
@@ -415,7 +420,7 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
               {/* Start time + Duration */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Start time *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('scheduleModal.startTime')}</label>
                   <input
                     type="time"
                     value={recurringForm.start_time}
@@ -427,7 +432,7 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Duration (min) *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('scheduleModal.durationMin')}</label>
                   <input
                     type="number"
                     min={1}
@@ -443,7 +448,7 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
 
               {/* Days of week */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Days of week *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t('scheduleModal.daysOfWeek')}</label>
                 <div className="flex flex-wrap gap-2">
                   {DAY_LABELS.map((label, idx) => (
                     <label key={idx} className="flex items-center gap-1 cursor-pointer">
@@ -464,7 +469,7 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
 
               {/* End date */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">End date *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('scheduleModal.endDate')}</label>
                 <input
                   type="date"
                   value={recurringForm.end_date}
@@ -478,13 +483,13 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
 
               {/* Instructor */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Instructor</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('scheduleModal.instructor')}</label>
                 <select
                   value={recurringForm.instructor_id}
                   onChange={(e) => setRecurringForm((f) => ({ ...f, instructor_id: e.target.value }))}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
-                  <option value="">No instructor</option>
+                  <option value="">{t('scheduleModal.noInstructor')}</option>
                   {instructors.map((inst) => (
                     <option key={inst.id} value={inst.id}>{inst.full_name}</option>
                   ))}
@@ -493,7 +498,7 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
 
               {/* Capacity */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Capacity *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('scheduleModal.capacity')}</label>
                 <input
                   type="number"
                   min={1}
@@ -508,7 +513,7 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
 
               {/* Notes */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('scheduleModal.notes')}</label>
                 <textarea
                   value={recurringForm.notes}
                   onChange={(e) => setRecurringForm((f) => ({ ...f, notes: e.target.value }))}
@@ -524,14 +529,14 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
                   onClick={onClose}
                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
                 >
-                  Cancel
+                  {t('scheduleModal.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={recurringMutation.isPending}
                   className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 transition-colors"
                 >
-                  {recurringMutation.isPending ? 'Scheduling...' : 'Schedule Classes'}
+                  {recurringMutation.isPending ? t('scheduleModal.scheduling') : t('scheduleModal.scheduleClasses')}
                 </button>
               </div>
             </form>

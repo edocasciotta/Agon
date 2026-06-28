@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { membershipTypesApi, membershipsApi } from '../api/memberships'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { PageHeader } from '../components/PageHeader'
@@ -7,6 +8,7 @@ import type { ApiError } from '../api/client'
 import type { MembershipType } from '../types'
 
 export function MembershipsPage() {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [statusFilter, setStatusFilter] = useState('')
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -38,13 +40,13 @@ export function MembershipsPage() {
       setCreateError(null)
     },
     onError: (err: ApiError) => {
-      setCreateError(err.message ?? 'Failed to create membership type')
+      setCreateError(err.message ?? t('memberships.failedCreate'))
     },
   })
 
   const handleCreate = () => {
     if (!formData.name.trim()) {
-      setCreateError('Name is required')
+      setCreateError(t('memberships.nameRequired'))
       return
     }
     createTypeMutation.mutate({
@@ -63,17 +65,17 @@ export function MembershipsPage() {
 
   return (
     <div>
-      <PageHeader title="Memberships" />
+      <PageHeader title={t('memberships.title')} />
 
       {/* Membership Types */}
       <section className="mb-8">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-gray-900">Membership Types</h2>
+          <h2 className="text-lg font-semibold text-gray-900">{t('memberships.membershipTypes')}</h2>
           <button
             onClick={() => setShowCreateModal(true)}
             className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors"
           >
-            + Create Type
+            {t('memberships.createType')}
           </button>
         </div>
         {typesLoading ? (
@@ -83,34 +85,34 @@ export function MembershipsPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Credits</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Active</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('memberships.name')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('memberships.type')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('memberships.price')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('memberships.credits')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('memberships.isActive')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {(membershipTypes ?? []).map((t) => (
-                  <tr key={t.id}>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{t.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{t.type}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{t.currency} {t.price.toFixed(2)}</td>
+                {(membershipTypes ?? []).map((mt) => (
+                  <tr key={mt.id}>
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{mt.name}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">{mt.type}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">{mt.currency} {mt.price.toFixed(2)}</td>
                     <td className="px-6 py-4 text-sm text-gray-500">
-                      {t.unlimited ? 'Unlimited' : (t.credits_included ?? '—')}
+                      {mt.unlimited ? t('memberships.unlimited') : (mt.credits_included ?? '—')}
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
-                        t.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                        mt.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
                       }`}>
-                        {t.is_active ? 'Yes' : 'No'}
+                        {mt.is_active ? t('memberships.yes') : t('memberships.no')}
                       </span>
                     </td>
                   </tr>
                 ))}
                 {(!membershipTypes || membershipTypes.length === 0) && (
                   <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-sm text-gray-500">No membership types yet.</td>
+                    <td colSpan={5} className="px-6 py-8 text-center text-sm text-gray-500">{t('memberships.noMembershipTypes')}</td>
                   </tr>
                 )}
               </tbody>
@@ -122,16 +124,16 @@ export function MembershipsPage() {
       {/* All Memberships */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-gray-900">All Memberships</h2>
+          <h2 className="text-lg font-semibold text-gray-900">{t('memberships.allMemberships')}</h2>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
-            <option value="">All statuses</option>
-            <option value="active">Active</option>
-            <option value="expired">Expired</option>
-            <option value="cancelled">Cancelled</option>
+            <option value="">{t('memberships.allStatuses')}</option>
+            <option value="active">{t('memberships.active')}</option>
+            <option value="expired">{t('memberships.expired')}</option>
+            <option value="cancelled">{t('memberships.cancelled')}</option>
           </select>
         </div>
         {membershipsLoading ? (
@@ -141,10 +143,10 @@ export function MembershipsPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Credits</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('memberships.clientId')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('memberships.typeId')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('memberships.status')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('memberships.creditsRemaining')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -158,7 +160,7 @@ export function MembershipsPage() {
                 ))}
                 {filteredMemberships.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="px-6 py-8 text-center text-sm text-gray-500">No memberships found.</td>
+                    <td colSpan={4} className="px-6 py-8 text-center text-sm text-gray-500">{t('memberships.noMemberships')}</td>
                   </tr>
                 )}
               </tbody>
@@ -171,32 +173,32 @@ export function MembershipsPage() {
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Create Membership Type</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('memberships.createMembershipType')}</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('memberships.membershipName')}</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="Monthly Unlimited"
+                  placeholder={t('memberships.membershipNamePlaceholder')}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('memberships.membershipType')}</label>
                 <select
                   value={formData.type}
                   onChange={(e) => setFormData({ ...formData, type: e.target.value as 'recurring' | 'credit_pack' })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
-                  <option value="recurring">Recurring</option>
-                  <option value="credit_pack">Credit Pack</option>
+                  <option value="recurring">{t('memberships.recurring')}</option>
+                  <option value="credit_pack">{t('memberships.creditPack')}</option>
                 </select>
               </div>
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('memberships.price')}</label>
                   <input
                     type="number"
                     value={formData.price}
@@ -206,7 +208,7 @@ export function MembershipsPage() {
                   />
                 </div>
                 <div className="w-24">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('memberships.currency')}</label>
                   <input
                     type="text"
                     value={formData.currency}
@@ -218,7 +220,7 @@ export function MembershipsPage() {
               </div>
               {formData.type === 'credit_pack' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Credits Included</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('memberships.creditsIncluded')}</label>
                   <input
                     type="number"
                     value={formData.credits_included}
@@ -236,7 +238,7 @@ export function MembershipsPage() {
                   onChange={(e) => setFormData({ ...formData, unlimited: e.target.checked })}
                   className="w-4 h-4"
                 />
-                <label htmlFor="unlimited" className="text-sm text-gray-700">Unlimited classes</label>
+                <label htmlFor="unlimited" className="text-sm text-gray-700">{t('memberships.unlimitedClasses')}</label>
               </div>
               {createError && (
                 <div className="rounded-md bg-red-50 p-3 text-sm text-red-700 border border-red-200">{createError}</div>
@@ -247,13 +249,13 @@ export function MembershipsPage() {
                   disabled={createTypeMutation.isPending}
                   className="flex-1 py-2 px-4 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
                 >
-                  {createTypeMutation.isPending ? 'Creating...' : 'Create'}
+                  {createTypeMutation.isPending ? t('memberships.creating') : t('memberships.create')}
                 </button>
                 <button
                   onClick={() => { setShowCreateModal(false); setCreateError(null) }}
                   className="flex-1 py-2 px-4 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
                 >
-                  Cancel
+                  {t('memberships.cancel')}
                 </button>
               </div>
             </div>
