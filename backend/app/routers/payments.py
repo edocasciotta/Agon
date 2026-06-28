@@ -48,6 +48,11 @@ def _get_payment_or_404(db: Session, payment_id: int) -> Payment:
 @router.post("/payments/stripe/webhook", status_code=200)
 async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
     import stripe
+    if settings.STRIPE_WEBHOOK_SECRET == "whsec_test":
+        raise HTTPException(
+            status_code=503,
+            detail={"error": {"code": "STRIPE_NOT_CONFIGURED", "message": "Stripe webhook secret not configured"}},
+        )
     raw_body = await request.body()
     sig_header = request.headers.get("Stripe-Signature", "")
 

@@ -2,7 +2,10 @@ import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 from app.database import create_tables
+from app.limiter import limiter
 from app.tasks.waitlist_expiry import run_waitlist_expiry_loop
 from app.tasks.membership_expiry import run_membership_expiry_loop
 from app.tasks.class_reminders import run_class_reminder_loop
@@ -29,6 +32,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Agon API", version="0.1.0", lifespan=lifespan)
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,

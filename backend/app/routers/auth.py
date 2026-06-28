@@ -1,7 +1,8 @@
 from app.utils import utcnow
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 from app.database import get_db
+from app.limiter import limiter
 from app.auth import (
     hash_password,
     verify_password,
@@ -30,7 +31,8 @@ router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
 
 @router.post("/register/client", response_model=TokenResponse, status_code=201)
-async def register_client(payload: ClientRegisterRequest, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+async def register_client(request: Request, payload: ClientRegisterRequest, db: Session = Depends(get_db)):
     """Register a new client account (mobile app). Auto-logs in and returns tokens."""
     if len(payload.password) < 8:
         raise HTTPException(
@@ -59,7 +61,8 @@ async def register_client(payload: ClientRegisterRequest, db: Session = Depends(
 
 
 @router.post("/login", response_model=TokenResponse, status_code=200)
-async def login(payload: LoginRequest, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+async def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)):
     """Login for managers, instructors, and clients. Tries users table first, then clients."""
     # Try users table (manager / instructor)
     user = db.query(User).filter(User.email == payload.email).first()
@@ -135,7 +138,8 @@ async def logout():
 
 
 @router.post("/forgot-password", status_code=200)
-async def forgot_password(payload: ForgotPasswordRequest):
+@limiter.limit("3/hour")
+async def forgot_password(request: Request, payload: ForgotPasswordRequest):
     """Request a password reset email. Stub — email not implemented in V1."""
     # Always return 200 regardless of whether the email exists (security best practice)
     return {"message": "If that email exists, a reset link has been sent"}

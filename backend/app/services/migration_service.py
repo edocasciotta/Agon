@@ -132,7 +132,6 @@ def execute_client_import(db: Session, rows: list[dict], column_mapping: dict, j
         db.add(c)
         imported += 1
 
-    db.commit()
     return imported, skipped, reasons
 
 
@@ -157,5 +156,4 @@ def generate_invitation_tokens(db: Session, client_ids: list[int], studio_settin
             "invite_url": f"{tunnel_url}/invite/{token}",
         })
 
-    db.commit()
     return results

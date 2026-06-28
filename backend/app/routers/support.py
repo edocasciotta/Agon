@@ -2,7 +2,7 @@ import logging
 import os
 import re
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from litellm import completion
 from app.config import settings
 from app.auth import get_current_user
@@ -154,9 +154,30 @@ class ChatMessage(BaseModel):
     role: str
     content: str
 
+    @field_validator("role")
+    @classmethod
+    def validate_role(cls, v: str) -> str:
+        if v not in ("user", "assistant"):
+            raise ValueError("role must be 'user' or 'assistant'")
+        return v
+
+    @field_validator("content")
+    @classmethod
+    def validate_content(cls, v: str) -> str:
+        if len(v) > 2000:
+            raise ValueError("message content exceeds 2000 characters")
+        return v
+
 
 class ChatRequest(BaseModel):
     messages: list[ChatMessage]
+
+    @field_validator("messages")
+    @classmethod
+    def validate_messages(cls, v: list) -> list:
+        if len(v) > 50:
+            raise ValueError("conversation exceeds 50 messages")
+        return v
 
 
 class ChatResponse(BaseModel):

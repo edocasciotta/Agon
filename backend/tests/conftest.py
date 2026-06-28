@@ -1,3 +1,6 @@
+import os
+os.environ["AGON_ENV"] = "test"
+
 import pytest
 import app.models  # noqa — registers all models with Base.metadata
 from fastapi.testclient import TestClient

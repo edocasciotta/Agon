@@ -1,8 +1,11 @@
 import secrets
 import os
+import logging
 from pydantic_settings import BaseSettings
 from pydantic import model_validator
 from dotenv import load_dotenv
+
+_config_logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -49,6 +52,12 @@ class Settings(BaseSettings):
             env_path = os.path.abspath(env_path)
             with open(env_path, "a", encoding="utf-8") as f:
                 f.write("\n" + "\n".join(lines) + "\n")
+        if self.STRIPE_WEBHOOK_SECRET == "whsec_test":
+            _config_logger.warning(
+                "STRIPE_WEBHOOK_SECRET is set to the insecure default 'whsec_test'. "
+                "Stripe webhooks will be rejected until a real secret is configured "
+                "from the Stripe dashboard (Settings > Webhooks)."
+            )
         return self
 
 
