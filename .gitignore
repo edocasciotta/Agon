@@ -38,3 +38,7 @@ backend/test_agon.db
 *.log
 .coverage
 htmlcov/
+
+# Runtime-generated directories
+backend/backups/
+backend/uploads/

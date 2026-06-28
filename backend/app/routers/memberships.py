@@ -1,4 +1,5 @@
-from datetime import datetime, timedelta
+from app.utils import utcnow
+from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
@@ -181,7 +182,7 @@ def pause_membership(
             detail={"error": {"code": "MEMBERSHIP_PAUSE_TOO_LONG", "message": f"Maximum pause is {mt.max_pause_days} days"}},
         )
 
-    now = datetime.utcnow()
+    now = utcnow()
     m.status = "paused"
     m.paused_at = now
     m.pause_ends_at = now + timedelta(days=payload.pause_days)

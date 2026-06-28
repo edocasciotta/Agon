@@ -1,4 +1,5 @@
-from datetime import datetime
+from app.utils import utcnow
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from typing import List
@@ -92,7 +93,7 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
                 status="completed",
                 provider="stripe",
                 provider_payment_id=session_obj.get("payment_intent"),
-                paid_at=datetime.utcnow(),
+                paid_at=utcnow(),
             )
             db.add(payment)
             db.commit()
@@ -216,7 +217,7 @@ def record_manual_payment(
         currency=payload.currency,
         status="completed",
         provider="manual",
-        paid_at=datetime.utcnow(),
+        paid_at=utcnow(),
         notes=payload.notes,
     )
     db.add(payment)

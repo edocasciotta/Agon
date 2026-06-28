@@ -1,4 +1,5 @@
 import os
+import tempfile
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -99,8 +100,12 @@ def _update_env_file(env_path: str, updates: dict) -> None:
         if key not in updated_keys:
             new_lines.append(f"{key}={value}\n")
 
-    with open(env_path, "w") as f:
-        f.writelines(new_lines)
+    # Atomic write: write to temp file then rename
+    dir_path = os.path.dirname(env_path) or "."
+    with tempfile.NamedTemporaryFile(mode="w", dir=dir_path, delete=False, suffix=".tmp") as tmp:
+        tmp.writelines(new_lines)
+        tmp_path = tmp.name
+    os.replace(tmp_path, env_path)
 
 
 class AISetupRequest(BaseModel):

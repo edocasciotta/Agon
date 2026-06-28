@@ -1,5 +1,6 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain } from 'electron'
 import { join } from 'path'
+import * as http from 'http'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { spawn, ChildProcess } from 'child_process'
 
@@ -13,6 +14,32 @@ function startBackend(): void {
   })
   backendProcess.stdout?.on('data', (data) => console.log('[Backend]', data.toString()))
   backendProcess.stderr?.on('data', (data) => console.error('[Backend]', data.toString()))
+}
+
+function waitForBackend(maxWaitMs = 30000): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const start = Date.now()
+    function attempt(): void {
+      http
+        .get('http://127.0.0.1:8000/health', (res) => {
+          if (res.statusCode === 200) {
+            resolve()
+          } else if (Date.now() - start < maxWaitMs) {
+            setTimeout(attempt, 500)
+          } else {
+            reject(new Error('Backend did not start within 30 seconds'))
+          }
+        })
+        .on('error', () => {
+          if (Date.now() - start < maxWaitMs) {
+            setTimeout(attempt, 500)
+          } else {
+            reject(new Error('Backend did not start within 30 seconds'))
+          }
+        })
+    }
+    attempt()
+  })
 }
 
 function registerIpcHandlers(): void {
@@ -29,7 +56,7 @@ function createWindow(): BrowserWindow {
     autoHideMenuBar: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: true
     }
   })
 
@@ -44,10 +71,22 @@ function createWindow(): BrowserWindow {
   return mainWindow
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   electronApp.setAppUserModelId('com.agon.studio')
   app.on('browser-window-created', (_, window) => optimizer.watchWindowShortcuts(window))
-  if (!is.dev) startBackend()
+  if (!is.dev) {
+    startBackend()
+    try {
+      await waitForBackend()
+    } catch (err) {
+      dialog.showErrorBox(
+        'Agon — Backend Error',
+        'The backend service did not start within 30 seconds. Please restart the application.'
+      )
+      app.quit()
+      return
+    }
+  }
   registerIpcHandlers()
   createWindow()
   app.on('activate', () => {

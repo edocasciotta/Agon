@@ -1,5 +1,6 @@
+from app.utils import utcnow
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -126,7 +127,7 @@ def join_waitlist(
             detail={"error": {"code": "BOOKING_CLASS_NOT_SCHEDULED", "message": "Class is not scheduled"}},
         )
 
-    now = datetime.utcnow()
+    now = utcnow()
     if sc.starts_at <= now:
         raise HTTPException(
             status_code=409,
@@ -200,7 +201,7 @@ def leave_waitlist(
         )
 
     entry.status = "declined"
-    entry.updated_at = datetime.utcnow()
+    entry.updated_at = utcnow()
     db.commit()
     db.refresh(entry)
     return entry
@@ -237,7 +238,7 @@ def confirm_waitlist(
             detail={"error": {"code": "WAITLIST_OFFER_NOT_ACTIVE", "message": "Waitlist offer is not active"}},
         )
 
-    now = datetime.utcnow()
+    now = utcnow()
     if entry.offer_expires_at and entry.offer_expires_at <= now:
         raise HTTPException(
             status_code=409,
@@ -322,7 +323,7 @@ def create_booking(
             detail={"error": {"code": "BOOKING_CLASS_NOT_SCHEDULED", "message": "Class is not scheduled"}},
         )
 
-    now = datetime.utcnow()
+    now = utcnow()
     if sc.starts_at <= now:
         raise HTTPException(
             status_code=409,
@@ -457,7 +458,7 @@ def cancel_booking(
     cancellation_deducts_credit = getattr(studio_settings, "cancellation_deducts_credit", False) if studio_settings else False
 
     sc = db.query(ScheduledClass).filter(ScheduledClass.id == booking.scheduled_class_id).first()
-    now = datetime.utcnow()
+    now = utcnow()
     hours_until = (sc.starts_at - now).total_seconds() / 3600
 
     is_late = (hours_until < cancellation_hours) and (role == "client")

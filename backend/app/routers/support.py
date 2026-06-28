@@ -193,7 +193,11 @@ async def support_chat(
         )
         reply = response.choices[0].message.content
     except Exception as e:
-        logger.warning(f"Support LLM call failed: {e}")
-        reply = FALLBACK_REPLY
+        if "content filtering" in str(e).lower() or "blocked" in str(e).lower():
+            logger.warning(f"LLM content filtering triggered: {e}")
+            reply = "I'm unable to process that request. Please rephrase your question about Agon."
+        else:
+            logger.warning(f"Support LLM call failed: {e}")
+            reply = FALLBACK_REPLY
 
     return ChatResponse(reply=reply)

@@ -1,8 +1,9 @@
+from app.utils import utcnow
 import csv
 import io
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query
@@ -119,7 +120,7 @@ async def analyse_file(
 
     # Save file
     ensure_uploads_dir()
-    filename = f"upload_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
+    filename = f"upload_{utcnow().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
     saved_path = os.path.join(UPLOADS_DIR, filename)
     with open(saved_path, "wb") as f:
         f.write(content)
@@ -165,7 +166,7 @@ async def confirm_import(
         )
 
     job.status = "importing"
-    job.started_at = datetime.utcnow()
+    job.started_at = utcnow()
     job.column_mapping = json.dumps(payload.column_mapping)
     db.commit()
 
@@ -185,7 +186,7 @@ async def confirm_import(
     job.records_imported = imported
     job.records_skipped = skipped
     job.skipped_details = json.dumps(reasons)
-    job.completed_at = datetime.utcnow()
+    job.completed_at = utcnow()
     db.commit()
     db.refresh(job)
 

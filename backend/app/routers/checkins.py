@@ -1,6 +1,7 @@
+from app.utils import utcnow
 import base64
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from io import BytesIO
 from typing import List
 
@@ -104,7 +105,7 @@ def _validate_and_checkin(
             detail={"error": {"code": "NOT_FOUND", "message": "Scheduled class not found"}},
         )
 
-    now = datetime.utcnow()
+    now = utcnow()
     window_open = sc.starts_at - timedelta(minutes=open_minutes)
     window_close = sc.starts_at + timedelta(minutes=close_minutes)
 

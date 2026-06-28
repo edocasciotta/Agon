@@ -195,10 +195,9 @@ Sub-agents in the Agon product (the AI support agent, the migration assistant) u
 This is configured in `backend/app/config.py` via environment variables:
 
 ```
-LLM_PROVIDER=ollama          # or: gemini, groq
-LLM_MODEL=llama3.2           # or: gemini-1.5-flash, llama-3.1-70b-versatile
-LLM_BASE_URL=http://localhost:11434  # only for ollama
-LLM_API_KEY=                 # empty for ollama, required for gemini/groq
+LLM_PROVIDER=gemini
+LLM_MODEL=gemini/gemini-1.5-flash
+LLM_API_KEY=                 # required for gemini
 ```
 
 ---
@@ -212,3 +211,81 @@ Every time a new Claude Code session starts:
 - [ ] Run `pytest` to verify current test status
 - [ ] Identify the next task from the build order
 - [ ] Delegate to the appropriate sub-agent
+
+---
+
+## Code Quality Standards
+
+These standards are enforced on ALL new code. Sub-agents must follow them without exception. The orchestrator must verify compliance before accepting any output.
+
+### Python / Backend
+
+**Datetime**
+- Always use `utcnow()` from `app.utils` for timestamps stored in or compared against the database
+- `datetime.now(timezone.utc)` is allowed ONLY in `app/auth.py` for JWT exp claims
+- Never use `datetime.utcnow()` — deprecated since Python 3.12
+
+**Database transactions**
+- `db.commit()` belongs in the router layer only — never inside service functions (`app/services/`)
+- Service functions receive a `db` session and perform operations but never commit
+- The router commits once after all operations succeed
+
+**Secrets**
+- No hardcoded secret defaults. If a secret must have a fallback, generate it randomly at startup via `secrets.token_hex(32)` and write it to `.env`
+- Never commit `.env` files
+
+**SQLite**
+- `PRAGMA foreign_keys=ON` must be active — enforced in `database.py` via `event.listens_for(engine, "connect")`
+- All new tables with FK columns need composite indexes on the columns used in `WHERE` clauses with `status` or other filter fields
+- Datetime columns store UTC-naive values — always compare with `utcnow()`, never with timezone-aware datetimes
+
+**LLM calls (litellm)**
+- All `completion()` calls must be wrapped in try/except
+- Catch content-filtering errors specifically: `if "content filtering" in str(e).lower() or "blocked" in str(e).lower()`
+- Provide a graceful fallback — never surface a raw litellm exception to the user
+- Never reference `settings.LLM_BASE_URL` — it was removed in the Gemini migration
+
+**File writes**
+- Any write to a config or state file (e.g. `.env`) must be atomic: write to a temp file, then `os.replace(tmp, target)`
+
+**Error handling**
+- Stripe webhook handlers must check idempotency: verify `provider_payment_id` does not already exist before creating a payment or membership
+- Auth endpoints must have rate limiting (add slowapi if not present)
+
+**Testing**
+- Every new endpoint: at minimum one happy-path test and one test per documented error code
+- Never remove tests — if behavior changes, update the test
+- Do not use `--passWithNoTests` in any test script
+
+### TypeScript / Electron / React
+
+**Electron**
+- `sandbox` must always be `true` in `webPreferences`
+- The preload script must only use `contextBridge` and `ipcRenderer` — no direct Node.js API calls
+- Always poll `http://127.0.0.1:8000/health` before showing the main window
+
+**Token storage**
+- `accessToken` must never be in `localStorage`
+- Use `sessionStorage` (via Zustand `createJSONStorage(() => sessionStorage)`) or in-memory store
+- `partialize` must exclude `accessToken` from any persisted slice
+
+**CORS**
+- The backend must never use `allow_origins=["*"]` with `allow_credentials=True`
+- Enumerate allowed origins explicitly: `http://localhost:5173`, `http://localhost:4173`, `app://.`, `file://`
+
+**i18n**
+- All new user-facing strings must use `t('namespace.key')` via `useTranslation()`
+- Add the key to both `en.json` and `it.json` (and all other locale files) in the same PR
+- Never hardcode UI strings in components
+
+**State**
+- Server state → React Query (`useQuery`, `useMutation`)
+- UI/auth state → Zustand
+- No `useEffect` for data fetching
+
+### Git and review
+
+- Every database schema change requires an Alembic migration in the same commit
+- Run `pytest tests/ -q` (backend) and `npm run test` + `npm run build` (frontend) before every commit
+- No commit may reduce the passing test count
+- `backups/`, `uploads/`, `*.db`, `.env` are in `.gitignore` — never commit them

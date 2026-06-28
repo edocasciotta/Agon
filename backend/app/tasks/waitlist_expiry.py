@@ -1,6 +1,7 @@
+from app.utils import utcnow
 import asyncio
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.models.waitlist import Waitlist
@@ -24,7 +25,7 @@ async def run_waitlist_expiry_loop():
 
 def _expire_stale_offers(db: Session):
     from app.services.booking_service import process_waitlist, get_studio_settings
-    now = datetime.utcnow()
+    now = utcnow()
     stale = db.query(Waitlist).filter(
         Waitlist.status == "offered",
         Waitlist.offer_expires_at <= now,

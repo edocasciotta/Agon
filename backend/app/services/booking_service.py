@@ -1,4 +1,5 @@
-from datetime import datetime, timedelta, date
+from app.utils import utcnow
+from datetime import datetime, timedelta, date, timezone
 from typing import Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -67,7 +68,6 @@ def deduct_credit(db: Session, membership: Optional[Membership]) -> bool:
     if membership.credits_remaining is not None:
         membership.credits_remaining -= 1
     membership.credits_used = (membership.credits_used or 0) + 1
-    db.commit()
     return True
 
 
@@ -81,7 +81,6 @@ def refund_credit(db: Session, membership: Optional[Membership], credit_deducted
     if membership.credits_remaining is not None:
         membership.credits_remaining += 1
     membership.credits_used = max(0, (membership.credits_used or 0) - 1)
-    db.commit()
 
 
 def process_waitlist(db: Session, scheduled_class_id: int, studio_settings) -> Optional[Waitlist]:
@@ -103,10 +102,9 @@ def process_waitlist(db: Session, scheduled_class_id: int, studio_settings) -> O
         return None
 
     confirm_minutes = getattr(studio_settings, "waitlist_confirm_minutes", 30) if studio_settings else 30
-    now = datetime.utcnow()
+    now = utcnow()
     entry.status = "offered"
     entry.offered_at = now
     entry.offer_expires_at = now + timedelta(minutes=confirm_minutes)
     entry.updated_at = now
-    db.commit()
     return entry

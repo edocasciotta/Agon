@@ -1,6 +1,7 @@
+from app.utils import utcnow
 import asyncio
 import logging
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, timezone
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
 
@@ -52,5 +53,5 @@ def _check_membership_expiry(db: Session):
     ).all()
     for m in expired:
         m.status = 'expired'
-        m.updated_at = datetime.utcnow()
+        m.updated_at = utcnow()
     db.commit()

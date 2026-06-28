@@ -1,3 +1,4 @@
+from app.utils import utcnow
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -149,7 +150,7 @@ async def reset_password(payload: ResetPasswordRequest):
 @router.get("/invite/{token}", status_code=200)
 async def validate_invite_token(token: str, db: Session = Depends(get_db)):
     """Validate an invitation token and return basic client info."""
-    from datetime import datetime
+    from datetime import datetime, timezone
     inv = db.query(InvitationToken).filter(InvitationToken.token == token).first()
     if not inv:
         raise HTTPException(
@@ -161,7 +162,7 @@ async def validate_invite_token(token: str, db: Session = Depends(get_db)):
             status_code=409,
             detail={"error": {"code": "INVITATION_ALREADY_USED", "message": "This invitation has already been used"}},
         )
-    if inv.expires_at < datetime.utcnow():
+    if inv.expires_at < utcnow():
         raise HTTPException(
             status_code=409,
             detail={"error": {"code": "INVITATION_EXPIRED", "message": "This invitation has expired"}},

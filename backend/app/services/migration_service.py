@@ -1,10 +1,11 @@
+from app.utils import utcnow
 import csv
 import io
 import json
 import logging
 import uuid
 import secrets
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from sqlalchemy.orm import Session
 
@@ -75,7 +76,6 @@ Example: {{"First Name": "full_name", "DOB": "date_of_birth", "Notes": null}}"""
         response = completion(
             model=settings.LLM_MODEL,
             messages=[{"role": "user", "content": prompt}],
-            api_base=settings.LLM_BASE_URL if settings.LLM_PROVIDER == "ollama" else None,
             api_key=settings.LLM_API_KEY if settings.LLM_API_KEY else None,
         )
         raw = response.choices[0].message.content.strip()
@@ -145,7 +145,7 @@ def generate_invitation_tokens(db: Session, client_ids: list[int], studio_settin
 
     results = []
     tunnel_url = studio_settings.tunnel_url if studio_settings and studio_settings.tunnel_url else "http://localhost:8000"
-    expires = datetime.utcnow() + timedelta(days=7)
+    expires = utcnow() + timedelta(days=7)
 
     for client_id in client_ids:
         token = str(uuid.uuid4())

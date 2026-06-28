@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -26,14 +26,14 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta or timedelta(hours=8))
+    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(hours=8))
     to_encode.update({"exp": expire, "type": "access"})
     return jwt.encode(to_encode, settings.AGON_JWT_SECRET, algorithm="HS256")
 
 
 def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta or timedelta(days=30))
+    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(days=30))
     to_encode.update({"exp": expire, "type": "refresh"})
     return jwt.encode(to_encode, settings.AGON_JWT_SECRET, algorithm="HS256")
 
@@ -102,7 +102,7 @@ def create_qr_token(booking_id: int) -> str:
     to_encode = {
         "booking_id": booking_id,
         "type": "qr_checkin",
-        "exp": datetime.utcnow() + timedelta(hours=24),
+        "exp": datetime.now(timezone.utc) + timedelta(hours=24),
     }
     return jwt.encode(to_encode, settings.AGON_JWT_SECRET, algorithm="HS256")
 

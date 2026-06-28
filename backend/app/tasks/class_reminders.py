@@ -1,6 +1,7 @@
+from app.utils import utcnow
 import asyncio
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
 
@@ -32,7 +33,7 @@ def _send_class_reminders(db: Session):
     settings = db.query(StudioSettings).filter(StudioSettings.id == 1).first()
     reminder_hours = settings.reminder_hours_before if settings else 24
 
-    now = datetime.utcnow()
+    now = utcnow()
     window_end = now + timedelta(hours=reminder_hours + 0.25)
     window_start = now + timedelta(hours=reminder_hours - 0.25)
 

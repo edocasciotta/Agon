@@ -1,7 +1,8 @@
+from app.utils import utcnow
 import asyncio
 import logging
 import shutil
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
@@ -35,7 +36,7 @@ def _perform_backup(db: Session):
     backup_dir = Path("backups")
     backup_dir.mkdir(exist_ok=True)
 
-    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    timestamp = utcnow().strftime("%Y%m%d_%H%M%S")
     backup_path = backup_dir / f"agon_backup_{timestamp}.db"
     shutil.copy2(db_path, backup_path)
     logger.info(f"Backup created: {backup_path}")
@@ -50,6 +51,6 @@ def _perform_backup(db: Session):
     # Update last_backup_at
     studio = db.query(StudioSettings).filter(StudioSettings.id == 1).first()
     if studio:
-        studio.last_backup_at = datetime.utcnow()
-        studio.updated_at = datetime.utcnow()
+        studio.last_backup_at = utcnow()
+        studio.updated_at = utcnow()
         db.commit()

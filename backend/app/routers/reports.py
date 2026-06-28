@@ -1,6 +1,7 @@
+from app.utils import utcnow
 import csv
 from io import StringIO
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, timezone
 from typing import Optional
 from collections import defaultdict
 
@@ -19,7 +20,7 @@ def _parse_dates(start_date: Optional[str], end_date: Optional[str]):
     if end_date:
         end_dt = datetime.fromisoformat(end_date).replace(hour=23, minute=59, second=59)
     else:
-        end_dt = datetime.utcnow()
+        end_dt = utcnow()
     if start_date:
         start_dt = datetime.fromisoformat(start_date)
     else:

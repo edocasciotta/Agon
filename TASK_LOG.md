@@ -346,6 +346,25 @@ Backend: 130 tests | Frontend: 15 tests, 0 TS errors
 
 ---
 
+## Post-V1 Improvements (2026-06-28)
+
+### AI Assistant quality fix + SupportChat sessions + i18n (commit 7550339, 7ecd257)
+
+**Backend (135 tests):**
+- Keyword pre-screening in support chat: off-topic questions rejected before calling LLM (no hallucination)
+- System prompt hardened with 4 few-shot refusal examples
+- Docs context raised from 32k → 60k chars, `studio-manager/` files prioritised
+- Prefix matching in `_is_in_scope` (handles plurals: booking→bookings)
+- 3 new tests for pre-screening logic
+
+**Frontend (21 tests, build clean):**
+- SupportChat redesigned: 2-column layout (session sidebar + chat), multiple sessions, localStorage persistence, auto-title from first message, delete session
+- Full i18n with react-i18next: EN + IT covering all pages and components (14 namespaces)
+- Global language selector (EN/IT) in sidebar Layout — switches entire app
+- Removed Ollama setup (OllamaSetup component, ollama.ts, IPC handlers) — replaced by Gemini onboarding step
+
+---
+
 ## Next Task
 
 **All phases complete. The Agon V1 platform is fully built.**

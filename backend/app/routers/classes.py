@@ -1,5 +1,6 @@
+from app.utils import utcnow
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -185,7 +186,7 @@ def cancel_class(
             detail={"error": {"code": "NOT_FOUND", "message": "Scheduled class not found"}},
         )
 
-    now = datetime.utcnow()
+    now = utcnow()
     sc.status = "cancelled"
 
     # Cancel all confirmed bookings and refund credits

@@ -1,6 +1,7 @@
+from app.utils import utcnow
 import logging
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from app.models.notification_log import NotificationLog
 
@@ -70,7 +71,7 @@ def send_push_notification(
         response.validate_response()
         log.status = "sent"
         log.expo_ticket_id = getattr(response, "id", None)
-        log.sent_at = datetime.utcnow()
+        log.sent_at = utcnow()
     except (PushServerError, DeviceNotRegisteredError, PushTicketError) as e:
         logger.warning(f"Push notification failed for client {client_id}: {e}")
         log.status = "failed"
