@@ -475,8 +475,9 @@ def cancel_booking(
     db.commit()
     db.refresh(booking)
 
-    # Trigger next waitlist offer
+    # Trigger next waitlist offer and commit the promoted entry
     if studio_settings:
         process_waitlist(db, booking.scheduled_class_id, studio_settings)
+        db.commit()
 
     return booking
