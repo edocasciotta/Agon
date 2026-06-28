@@ -26,9 +26,8 @@ def _make_llm_response(text: str):
 
 
 def _reset_docs_cache():
-    """Reset module-level docs cache so tests control the vocabulary."""
+    """Reset module-level docs cache between tests."""
     support_module._DOCS_CONTEXT = None
-    support_module._DOCS_VOCABULARY = None
 
 
 # ─── Tests ───────────────────────────────────────────────────────────────────
@@ -62,7 +61,7 @@ def test_support_chat_unauthenticated(client):
 
 def test_support_chat_llm_error(client, manager_auth_headers):
     """When the LLM raises an exception the endpoint still returns 200 with fallback message."""
-    from app.routers.support import FALLBACK_REPLY
+    from app.routers.support import _fallback_reply
 
     with patch("app.routers.support.completion", side_effect=Exception("LLM unavailable")):
         response = client.post(
@@ -74,34 +73,31 @@ def test_support_chat_llm_error(client, manager_auth_headers):
     assert response.status_code == 200
     data = response.json()
     assert "reply" in data
-    assert data["reply"] == FALLBACK_REPLY
+    assert data["reply"] == _fallback_reply("en")
 
 
 # ─── Pre-screening tests ──────────────────────────────────────────────────────
 
 def test_prescreening_rejects_out_of_scope_without_calling_llm(client, manager_auth_headers):
     """
-    A question with no Agon-related words must return OUT_OF_SCOPE_REPLY
-    without ever calling the LLM.
+    A message with no Agon keywords and no question/help words must return
+    OUT_OF_SCOPE_REPLY without calling the LLM.
     """
-    from app.routers.support import OUT_OF_SCOPE_REPLY
+    from app.routers.support import _out_of_scope_reply
 
     _reset_docs_cache()
-
-    # Inject a small controlled vocabulary so the test is deterministic
-    support_module._DOCS_CONTEXT = "booking membership client calendar studio"
-    support_module._DOCS_VOCABULARY = {"booking", "membership", "client", "calendar", "studio"}
+    support_module._DOCS_CONTEXT = ""
 
     with patch("app.routers.support.completion") as mock_llm:
         response = client.post(
             CHAT_URL,
-            json={"messages": [{"role": "user", "content": "come si fa la carbonara?"}]},
+            # No question words, no Agon keywords, more than 3 tokens
+            json={"messages": [{"role": "user", "content": "Tell me about Mindbody software please."}]},
             headers=manager_auth_headers,
         )
 
     assert response.status_code == 200
-    data = response.json()
-    assert data["reply"] == OUT_OF_SCOPE_REPLY
+    assert response.json()["reply"] == _out_of_scope_reply("en")
     mock_llm.assert_not_called()
 
     _reset_docs_cache()
@@ -109,14 +105,12 @@ def test_prescreening_rejects_out_of_scope_without_calling_llm(client, manager_a
 
 def test_prescreening_allows_agon_question(client, manager_auth_headers):
     """
-    A question containing Agon vocabulary (e.g. 'booking') must pass the
-    pre-screening and reach the LLM.
+    A question containing an Agon keyword must pass pre-screening and reach the LLM.
     """
     expected_reply = "Go to Calendar, then click the class to manage bookings."
 
     _reset_docs_cache()
-    support_module._DOCS_CONTEXT = "booking membership client calendar studio"
-    support_module._DOCS_VOCABULARY = {"booking", "membership", "client", "calendar", "studio"}
+    support_module._DOCS_CONTEXT = ""
 
     with patch("app.routers.support.completion", return_value=_make_llm_response(expected_reply)) as mock_llm:
         response = client.post(
@@ -136,19 +130,20 @@ def test_is_in_scope_function_directly():
     """Unit test the _is_in_scope helper directly."""
     from app.routers.support import _is_in_scope
 
-    vocab = {"booking", "membership", "client", "calendar", "studio", "class", "schedule"}
+    # Passes — "how" is a help word
+    assert _is_in_scope("How do I cancel a booking?") is True
 
-    # Should pass — contains "booking"
-    assert _is_in_scope("How do I cancel a booking?", vocab) is True
+    # Passes — "aiutami" is an Italian help word
+    assert _is_in_scope("aiutami a creare una nuova lezione") is True
 
-    # Should pass — contains "client"
-    assert _is_in_scope("How do I add a client to the system?", vocab) is True
+    # Passes — "abbonamento" is an Italian Agon keyword
+    assert _is_in_scope("come funziona l'abbonamento?") is True
 
-    # Should fail — no Agon words
-    assert _is_in_scope("come si fa la carbonara?", vocab) is False
+    # Passes — "booking" is an Agon keyword
+    assert _is_in_scope("I need help with booking cancellations.") is True
 
-    # Should fail — Mindbody is not in vocab
-    assert _is_in_scope("Tell me about Mindbody software.", vocab) is False
+    # Rejected — no question words, no Agon keywords, > 3 tokens
+    assert _is_in_scope("Tell me about Mindbody software please.") is False
 
-    # Empty vocab always passes (safe fallback)
-    assert _is_in_scope("anything at all", set()) is True
+    # Short messages (≤3 tokens) pass as ambiguous — let LLM decide
+    assert _is_in_scope("nice day today") is True
