@@ -39,10 +39,18 @@ class EmailSettingsUpdate(BaseModel):
 def _get_or_create_settings(db: Session) -> StudioSettings:
     settings = db.query(StudioSettings).filter(StudioSettings.id == 1).first()
     if not settings:
-        raise HTTPException(
-            status_code=404,
-            detail={"error": {"code": "SETTINGS_NOT_FOUND", "message": "Studio settings not found"}},
+        settings = StudioSettings(
+            id=1,
+            studio_name="Agon Studio",
+            timezone="Europe/Rome",
+            cancellation_hours=2,
+            checkin_open_minutes_before=30,
+            checkin_close_minutes_after=15,
+            waitlist_confirm_minutes=30,
         )
+        db.add(settings)
+        db.commit()
+        db.refresh(settings)
     return settings
 
 
