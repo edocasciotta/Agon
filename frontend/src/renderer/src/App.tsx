@@ -12,6 +12,9 @@ import { MembershipsPage } from './pages/Memberships'
 import { ReportsPage } from './pages/Reports'
 import { SettingsPage } from './pages/Settings'
 import { OnboardingPage } from './pages/Onboarding/index'
+import { EmailTemplatesPage } from './pages/EmailTemplates/index'
+import { EmailEventsPage } from './pages/EmailEvents/index'
+import { SmartListsPage } from './pages/SmartLists/index'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -47,6 +50,9 @@ function App(): JSX.Element {
             <Route path="memberships" element={<MembershipsPage />} />
             <Route path="reports" element={<ReportsPage />} />
             <Route path="settings" element={<SettingsPage />} />
+            <Route path="marketing/templates" element={<EmailTemplatesPage />} />
+            <Route path="marketing/events" element={<EmailEventsPage />} />
+            <Route path="marketing/smartlists" element={<SmartListsPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

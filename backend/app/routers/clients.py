@@ -117,8 +117,15 @@ async def create_client(
     # Try to send email
     email_sent = False
     try:
-        from app.services.email_service import send_invite_email
-        await send_invite_email(db, client.email, client.full_name, invite_url, studio_name)
+        from app.services.email_service import send_event_email
+        await send_event_email(
+            db,
+            "client_invite",
+            client.email,
+            client.full_name,
+            {"invite_url": invite_url, "studio_name": studio_name, "client_name": client.full_name},
+            studio_name,
+        )
         email_sent = True
     except Exception:
         pass  # Don't fail if email sending fails

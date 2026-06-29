@@ -161,8 +161,15 @@ async def forgot_password(request: Request, payload: ForgotPasswordRequest, db: 
         studio_name = (studio_settings.studio_name if studio_settings else "Agon Studio")
 
         try:
-            from app.services.email_service import send_password_reset_email
-            await send_password_reset_email(db, client.email, client.full_name, reset_url, studio_name)
+            from app.services.email_service import send_event_email
+            await send_event_email(
+                db,
+                "password_reset",
+                client.email,
+                client.full_name,
+                {"reset_url": reset_url, "studio_name": studio_name, "client_name": client.full_name},
+                studio_name,
+            )
         except Exception:
             pass  # Silently fail — don't reveal email existence
 

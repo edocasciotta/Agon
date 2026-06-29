@@ -12,9 +12,25 @@ from app.tasks.class_reminders import run_class_reminder_loop
 from app.tasks.nightly_backup import run_nightly_backup_loop
 
 
+def _seed_email_event_assignments():
+    """Insert any missing EmailEventAssignment rows at startup."""
+    from app.database import SessionLocal
+    from app.models.email_event_assignment import EmailEventAssignment, EVENT_TYPES
+    db = SessionLocal()
+    try:
+        existing = {r.event_type for r in db.query(EmailEventAssignment).all()}
+        for et in EVENT_TYPES:
+            if et not in existing:
+                db.add(EmailEventAssignment(event_type=et, template_id=None))
+        db.commit()
+    finally:
+        db.close()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     create_tables()
+    _seed_email_event_assignments()
     tasks = [
         asyncio.create_task(run_waitlist_expiry_loop()),
         asyncio.create_task(run_membership_expiry_loop()),
@@ -83,6 +99,11 @@ app.include_router(support.router)
 
 from app.routers import email_settings
 app.include_router(email_settings.router)
+
+from app.routers import email_templates, email_events, smart_lists
+app.include_router(email_templates.router)
+app.include_router(email_events.router)
+app.include_router(smart_lists.router)
 
 
 @app.get("/health")

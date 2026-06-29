@@ -1,0 +1,15 @@
+from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy.sql import func
+from app.database import Base
+
+
+class EmailTemplate(Base):
+    __tablename__ = "email_templates"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    location_id = Column(Integer, nullable=False, default=1)
+    name = Column(String, nullable=False)
+    subject = Column(String, nullable=False)
+    html_body = Column(String, nullable=False)
+    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)

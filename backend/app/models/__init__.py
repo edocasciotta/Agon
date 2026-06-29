@@ -14,10 +14,14 @@ from app.models.checkin import Checkin
 from app.models.notification_log import NotificationLog
 from app.models.migration_job import MigrationJob
 from app.models.invitation_token import InvitationToken
+from app.models.email_template import EmailTemplate
+from app.models.email_event_assignment import EmailEventAssignment
+from app.models.smart_list import SmartList
 
 __all__ = [
     "User", "StudioSettings", "Client", "ConsentLog", "Instructor",
     "ClassTemplate", "ScheduledClass", "Booking", "Waitlist",
     "MembershipType", "Membership", "Payment", "Checkin", "NotificationLog",
     "MigrationJob", "InvitationToken",
+    "EmailTemplate", "EmailEventAssignment", "SmartList",
 ]

@@ -2,11 +2,33 @@
 Email service — sends emails via SMTP using config from StudioSettings.
 All functions are async. db.commit() is never called here.
 """
+import re
 import aiosmtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from html.parser import HTMLParser
 from sqlalchemy.orm import Session
 from app.models.studio_settings import StudioSettings
+
+
+class _HTMLStripper(HTMLParser):
+    """Simple HTML to plain text stripper."""
+
+    def __init__(self):
+        super().__init__()
+        self._parts: list[str] = []
+
+    def handle_data(self, data: str) -> None:
+        self._parts.append(data)
+
+    def get_text(self) -> str:
+        return " ".join(self._parts)
+
+
+def _strip_html(html: str) -> str:
+    stripper = _HTMLStripper()
+    stripper.feed(html)
+    return stripper.get_text()
 
 
 def _get_smtp_config(db: Session) -> StudioSettings:
@@ -152,6 +174,54 @@ async def send_password_reset_email(
         f"This link expires in 2 hours. If you did not request this, ignore this email."
     )
     await send_email(db, to_email, to_name, f"Reset your password — {studio_name}", html_body, text_body)
+
+
+async def send_event_email(
+    db: Session,
+    event_type: str,
+    to_email: str,
+    to_name: str,
+    variables: dict,
+    studio_name: str,
+) -> None:
+    """
+    Send an email for a named event_type.
+    If a custom template is assigned, renders it with {{key}} substitution.
+    Otherwise, falls back to hardcoded functions.
+    """
+    from app.models.email_event_assignment import EmailEventAssignment
+    from app.models.email_template import EmailTemplate
+
+    assignment = (
+        db.query(EmailEventAssignment)
+        .filter(EmailEventAssignment.event_type == event_type)
+        .first()
+    )
+
+    if assignment and assignment.template_id:
+        tmpl = db.query(EmailTemplate).filter(EmailTemplate.id == assignment.template_id).first()
+        if tmpl:
+            # Render subject and html_body by replacing {{key}} placeholders
+            rendered_subject = tmpl.subject
+            rendered_html = tmpl.html_body
+            for key, value in variables.items():
+                placeholder = "{{" + key + "}}"
+                rendered_subject = rendered_subject.replace(placeholder, str(value))
+                rendered_html = rendered_html.replace(placeholder, str(value))
+            rendered_text = _strip_html(rendered_html)
+            await send_email(db, to_email, to_name, rendered_subject, rendered_html, rendered_text)
+            return
+
+    # No custom template — fall back to hardcoded functions
+    if event_type == "client_invite":
+        await send_invite_email(db, to_email, to_name, variables.get("invite_url", ""), studio_name)
+    elif event_type == "password_reset":
+        await send_password_reset_email(db, to_email, to_name, variables.get("reset_url", ""), studio_name)
+    else:
+        # For other event types without a custom template, build a minimal generic email
+        subject = event_type.replace("_", " ").capitalize()
+        body = "\n".join(f"{k}: {v}" for k, v in variables.items())
+        await send_email(db, to_email, to_name, subject, f"<pre>{body}</pre>", body)
 
 
 async def send_test_email(db: Session, to_email: str, to_name: str, studio_name: str) -> None:

@@ -87,6 +87,53 @@ export interface EmailSettings {
   email_smtp_tls: boolean
 }
 
+// Email Templates
+export interface EmailTemplateListItem {
+  id: number
+  name: string
+  subject: string
+  created_at: string
+}
+export interface EmailTemplateResponse extends EmailTemplateListItem {
+  html_body: string
+}
+export interface EmailTemplateCreate {
+  name: string
+  subject: string
+  html_body: string
+}
+
+// Email Events
+export interface EmailEventAssignment {
+  event_type: string
+  label: string
+  template: { id: number; name: string } | null
+}
+
+// Smart Lists
+export interface SmartListFilters {
+  membership_status?: 'active' | 'expired' | 'none'
+  last_booked_within_days?: number
+  not_booked_within_days?: number
+  joined_before?: string
+  joined_after?: string
+  membership_type_id?: number
+}
+export interface SmartListCreate {
+  name: string
+  description?: string
+  filters: SmartListFilters
+}
+export interface SmartListItem {
+  id: number
+  name: string
+  description: string | null
+  created_at: string
+}
+export interface SmartListResponse extends SmartListItem {
+  filters: SmartListFilters
+}
+
 export interface AttendanceReport {
   period: { start: string; end: string }
   total_classes: number
