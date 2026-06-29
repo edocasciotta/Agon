@@ -365,16 +365,44 @@ Backend: 130 tests | Frontend: 15 tests, 0 TS errors
 
 ---
 
+## Post-V1 Improvements (2026-06-29)
+
+### AI Support Agent — Groq migration + 9-language UX (commits 19a2169, ac7daa9)
+
+**Backend (135 tests passing):**
+- LLM provider switched from Gemini to **Groq** (`llama-3.3-70b-versatile`, 14,400 req/day free)
+- Pre-screener replaced vocabulary extraction with static multilingual keyword sets (`_AGON_KEYWORDS`, `_HELP_WORDS`) covering all 9 languages — fixes Italian/FR/DE/ES etc. being rejected
+- Greeting handler (`_GREETING_LANG` + `_GREETING_REPLIES`) returns greetings in the detected language
+- `OUT_OF_SCOPE_REPLY` and `FALLBACK_REPLY` constants replaced with `_out_of_scope_reply(lang)` / `_fallback_reply(lang)` helpers — localised in all 9 languages
+- `ChatRequest` accepts optional `language: str = "en"` field
+- System prompt enforces response language via `{language_name}` and bans all markdown (`**bold**`, `*italic*`, `# headers`)
+- Docs context cap reduced 60k → 32k chars to stay under Groq 12k token limit
+- Tests updated to use new helper functions
+
+**Frontend (build clean):**
+- `supportApi.chat()` passes `i18n.language` to backend
+- `authStore.logout()` clears `agon-chat-sessions` from localStorage
+- `SupportChat`: no auto-greeting on open; empty state shows `t('support.emptyHint')` hint; New Chat creates empty session without injecting a greeting message
+- All 9 locale files updated with `support.greeting`, `support.emptyHint`, `onboarding.step5*` keys
+
+**Docs:**
+- All 7 studio-manager pages: correct UI button/nav labels + multilingual term tables in all 9 languages
+- `intro.md`: multilingual navigation reference table and key terms table added
+
+---
+
 ## Next Task
 
 **All phases complete. The Agon V1 platform is fully built.**
 
-Summary of test counts at completion:
-- Backend: **130 tests**
-- Frontend (desktop): **12 tests**
-- Mobile: **9 tests**
-- Docs site: **build clean (EN + IT)**
+Current test counts:
+- Backend: **135 tests**
+- Frontend (desktop): build clean, 21 tests
+- Mobile: 9 tests
+- Docs site: build clean (9 languages)
+
+No pending tasks. Next work should be user-driven (new features, bug fixes, or additional language support).
 
 ---
 
-*Last updated: 2026-06-26 — Phase 11.2 complete. All V1 phases done.*
+*Last updated: 2026-06-29 — Post-V1 AI support agent multilingual overhaul complete.*
