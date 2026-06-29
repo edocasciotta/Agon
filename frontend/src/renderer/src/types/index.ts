@@ -77,6 +77,16 @@ export interface Booking {
   credit_deducted: boolean
 }
 
+export interface EmailSettings {
+  email_from_name: string | null
+  email_from_address: string | null
+  email_smtp_host: string | null
+  email_smtp_port: number
+  email_smtp_user: string | null
+  email_smtp_password: string
+  email_smtp_tls: boolean
+}
+
 export interface AttendanceReport {
   period: { start: string; end: string }
   total_classes: number

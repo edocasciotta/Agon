@@ -177,7 +177,13 @@
     "addClientTitle": "Klant toevoegen",
     "addClientInfo": "Klanten registreren zichzelf via de Agon mobiele app. Deel uw studio-QR-code met hen en ze kunnen direct een account aanmaken en lessen boeken.",
     "close": "Sluiten",
-    "clientCount": "{{count}} klanten"
+    "clientCount": "{{count}} klanten",
+    "modalTitle": "Nieuwe klant toevoegen",
+    "fullName": "Volledige naam",
+    "emailAddress": "E-mailadres",
+    "phoneOptional": "Telefoon (optioneel)",
+    "inviteSent": "Uitnodigings-e-mail verzonden naar {{email}}",
+    "inviteNotSent": "Klant aangemaakt maar e-mail kon niet worden verzonden — controleer e-mailinstellingen"
   },
   "clientDetail": {
     "editName": "Naam",
@@ -301,7 +307,21 @@
     "saveSettings": "Instellingen opslaan",
     "saving": "Opslaan...",
     "savedSuccess": "Instellingen succesvol opgeslagen.",
-    "failedSave": "Instellingen opslaan mislukt"
+    "failedSave": "Instellingen opslaan mislukt",
+    "tabStudio": "Studio",
+    "tabEmail": "E-mail",
+    "sectionEmail": "E-mail & SMTP",
+    "emailFromName": "Afzendernaam",
+    "emailFromAddress": "Afzenderadres",
+    "smtpHost": "SMTP-host",
+    "smtpPort": "SMTP-poort",
+    "smtpUser": "SMTP-gebruikersnaam",
+    "smtpPassword": "SMTP-wachtwoord",
+    "smtpPasswordPlaceholder": "Leeg laten om huidig te behouden",
+    "smtpTls": "TLS/STARTTLS gebruiken",
+    "sendTestEmail": "Test-e-mail verzenden",
+    "testEmailSent": "Test-e-mail verzonden!",
+    "testEmailFailed": "Test-e-mail verzenden mislukt"
   },
   "scheduleModal": {
     "title": "Les plannen",

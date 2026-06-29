@@ -177,7 +177,13 @@
     "addClientTitle": "Add Client",
     "addClientInfo": "Clients register themselves via the Agon mobile app. Share your studio QR code with them and they can create an account and start booking classes immediately.",
     "close": "Close",
-    "clientCount": "{{count}} clients"
+    "clientCount": "{{count}} clients",
+    "modalTitle": "Add New Client",
+    "fullName": "Full Name",
+    "emailAddress": "Email Address",
+    "phoneOptional": "Phone (optional)",
+    "inviteSent": "Invitation email sent to {{email}}",
+    "inviteNotSent": "Client created but email could not be sent — check email settings"
   },
   "clientDetail": {
     "editName": "Name",
@@ -301,7 +307,21 @@
     "saveSettings": "Save Settings",
     "saving": "Saving...",
     "savedSuccess": "Settings saved successfully.",
-    "failedSave": "Failed to save settings"
+    "failedSave": "Failed to save settings",
+    "tabStudio": "Studio",
+    "tabEmail": "Email",
+    "sectionEmail": "Email & SMTP",
+    "emailFromName": "From Name",
+    "emailFromAddress": "From Address",
+    "smtpHost": "SMTP Host",
+    "smtpPort": "SMTP Port",
+    "smtpUser": "SMTP Username",
+    "smtpPassword": "SMTP Password",
+    "smtpPasswordPlaceholder": "Leave blank to keep current",
+    "smtpTls": "Use TLS/STARTTLS",
+    "sendTestEmail": "Send Test Email",
+    "testEmailSent": "Test email sent!",
+    "testEmailFailed": "Failed to send test email"
   },
   "scheduleModal": {
     "title": "Schedule Class",

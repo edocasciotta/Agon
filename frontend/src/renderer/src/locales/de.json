@@ -177,7 +177,13 @@
     "addClientTitle": "Kunde hinzufügen",
     "addClientInfo": "Kunden registrieren sich selbst über die Agon-App. Teilen Sie Ihren Studio-QR-Code mit ihnen, und sie können sofort ein Konto erstellen und Kurse buchen.",
     "close": "Schließen",
-    "clientCount": "{{count}} Kunden"
+    "clientCount": "{{count}} Kunden",
+    "modalTitle": "Neuen Kunden hinzufügen",
+    "fullName": "Vollständiger Name",
+    "emailAddress": "E-Mail-Adresse",
+    "phoneOptional": "Telefon (optional)",
+    "inviteSent": "Einladungs-E-Mail gesendet an {{email}}",
+    "inviteNotSent": "Kunde erstellt, aber E-Mail konnte nicht gesendet werden — E-Mail-Einstellungen prüfen"
   },
   "clientDetail": {
     "editName": "Name",
@@ -301,7 +307,21 @@
     "saveSettings": "Einstellungen speichern",
     "saving": "Speichern...",
     "savedSuccess": "Einstellungen erfolgreich gespeichert.",
-    "failedSave": "Speichern der Einstellungen fehlgeschlagen"
+    "failedSave": "Speichern der Einstellungen fehlgeschlagen",
+    "tabStudio": "Studio",
+    "tabEmail": "E-Mail",
+    "sectionEmail": "E-Mail & SMTP",
+    "emailFromName": "Absendername",
+    "emailFromAddress": "Absenderadresse",
+    "smtpHost": "SMTP-Server",
+    "smtpPort": "SMTP-Port",
+    "smtpUser": "SMTP-Benutzername",
+    "smtpPassword": "SMTP-Passwort",
+    "smtpPasswordPlaceholder": "Leer lassen, um aktuelles zu behalten",
+    "smtpTls": "TLS/STARTTLS verwenden",
+    "sendTestEmail": "Test-E-Mail senden",
+    "testEmailSent": "Test-E-Mail gesendet!",
+    "testEmailFailed": "Test-E-Mail konnte nicht gesendet werden"
   },
   "scheduleModal": {
     "title": "Kurs planen",

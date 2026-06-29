@@ -3,6 +3,24 @@ from typing import Optional
 from datetime import datetime, date
 
 
+class ClientCreate(BaseModel):
+    full_name: str
+    email: EmailStr
+    phone: Optional[str] = None
+
+
+class ClientCreateResponse(BaseModel):
+    id: int
+    email: str
+    full_name: str
+    phone: Optional[str] = None
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+    email_sent: bool
+    model_config = {"from_attributes": True}
+
+
 class ClientResponse(BaseModel):
     id: int
     email: str

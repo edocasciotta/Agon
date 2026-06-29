@@ -177,10 +177,10 @@ def test_forgot_password(client):
     assert response.status_code == 200
 
 
-def test_reset_password(client):
-    """POST /api/v1/auth/reset-password — always returns 200 (stub)."""
+def test_reset_password_invalid_token(client):
+    """POST /api/v1/auth/reset-password — returns 404 for unknown token."""
     response = client.post("/api/v1/auth/reset-password", json={
         "token": "sometoken",
         "new_password": "newpassword123",
     })
-    assert response.status_code == 200
+    assert response.status_code == 404

@@ -177,7 +177,13 @@
     "addClientTitle": "Müşteri ekle",
     "addClientInfo": "Müşteriler Agon mobil uygulaması üzerinden kendileri kayıt olur. Stüdyo QR kodunuzu onlarla paylaşın ve anında hesap oluşturup ders rezervasyonu yapabilirler.",
     "close": "Kapat",
-    "clientCount": "{{count}} müşteri"
+    "clientCount": "{{count}} müşteri",
+    "modalTitle": "Yeni müşteri ekle",
+    "fullName": "Tam ad",
+    "emailAddress": "E-posta adresi",
+    "phoneOptional": "Telefon (isteğe bağlı)",
+    "inviteSent": "Davet e-postası {{email}} adresine gönderildi",
+    "inviteNotSent": "Müşteri oluşturuldu ancak e-posta gönderilemedi — e-posta ayarlarını kontrol edin"
   },
   "clientDetail": {
     "editName": "Ad",
@@ -301,7 +307,21 @@
     "saveSettings": "Ayarları kaydet",
     "saving": "Kaydediliyor...",
     "savedSuccess": "Ayarlar başarıyla kaydedildi.",
-    "failedSave": "Ayarlar kaydedilemedi"
+    "failedSave": "Ayarlar kaydedilemedi",
+    "tabStudio": "Stüdyo",
+    "tabEmail": "E-posta",
+    "sectionEmail": "E-posta ve SMTP",
+    "emailFromName": "Gönderen adı",
+    "emailFromAddress": "Gönderen adresi",
+    "smtpHost": "SMTP sunucusu",
+    "smtpPort": "SMTP portu",
+    "smtpUser": "SMTP kullanıcısı",
+    "smtpPassword": "SMTP şifresi",
+    "smtpPasswordPlaceholder": "Mevcut şifreyi korumak için boş bırakın",
+    "smtpTls": "TLS/STARTTLS kullan",
+    "sendTestEmail": "Test e-postası gönder",
+    "testEmailSent": "Test e-postası gönderildi!",
+    "testEmailFailed": "Test e-postası gönderilemedi"
   },
   "scheduleModal": {
     "title": "Ders planla",

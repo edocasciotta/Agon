@@ -1,3 +1,5 @@
+import uuid
+from datetime import timedelta
 from app.utils import utcnow
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
@@ -26,6 +28,7 @@ from app.schemas.auth import (
 from app.models.user import User
 from app.models.client import Client
 from app.models.invitation_token import InvitationToken
+from app.models.studio_settings import StudioSettings
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
@@ -79,7 +82,7 @@ async def login(request: Request, payload: LoginRequest, db: Session = Depends(g
 
     # Try clients table
     client = db.query(Client).filter(Client.email == payload.email).first()
-    if client and verify_password(payload.password, client.password_hash):
+    if client and client.password_hash and verify_password(payload.password, client.password_hash):
         if not client.is_active:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -139,22 +142,74 @@ async def logout():
 
 @router.post("/forgot-password", status_code=200)
 @limiter.limit("3/hour")
-async def forgot_password(request: Request, payload: ForgotPasswordRequest):
-    """Request a password reset email. Stub — email not implemented in V1."""
+async def forgot_password(request: Request, payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    """Request a password reset email."""
     # Always return 200 regardless of whether the email exists (security best practice)
+    client = db.query(Client).filter(Client.email == payload.email).first()
+    if client:
+        token_str = str(uuid.uuid4())
+        invitation = InvitationToken(
+            client_id=client.id,
+            token=token_str,
+            expires_at=utcnow() + timedelta(hours=2),
+        )
+        db.add(invitation)
+
+        studio_settings = db.query(StudioSettings).filter(StudioSettings.id == 1).first()
+        base_url = (studio_settings.tunnel_url if studio_settings and studio_settings.tunnel_url else "http://localhost:5173")
+        reset_url = f"{base_url}/reset-password?token={token_str}"
+        studio_name = (studio_settings.studio_name if studio_settings else "Agon Studio")
+
+        try:
+            from app.services.email_service import send_password_reset_email
+            await send_password_reset_email(db, client.email, client.full_name, reset_url, studio_name)
+        except Exception:
+            pass  # Silently fail — don't reveal email existence
+
+        db.commit()
+
     return {"message": "If that email exists, a reset link has been sent"}
 
 
 @router.post("/reset-password", status_code=200)
-async def reset_password(payload: ResetPasswordRequest):
-    """Reset password using a token. Stub — email not implemented in V1."""
-    return {"message": "Password reset functionality not yet implemented"}
+async def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db)):
+    """Reset password using a token."""
+    inv = db.query(InvitationToken).filter(InvitationToken.token == payload.token).first()
+    if not inv:
+        raise HTTPException(
+            status_code=404,
+            detail={"error": {"code": "RESET_TOKEN_NOT_FOUND", "message": "Reset token not found"}},
+        )
+    if inv.used:
+        raise HTTPException(
+            status_code=400,
+            detail={"error": {"code": "RESET_TOKEN_ALREADY_USED", "message": "This reset token has already been used"}},
+        )
+    if inv.expires_at < utcnow():
+        raise HTTPException(
+            status_code=400,
+            detail={"error": {"code": "RESET_TOKEN_EXPIRED", "message": "This reset token has expired"}},
+        )
+    if len(payload.new_password) < 8:
+        raise HTTPException(
+            status_code=422,
+            detail={"error": {"code": "AUTH_PASSWORD_TOO_SHORT", "message": "Password must be at least 8 characters"}},
+        )
+    client = db.query(Client).filter(Client.id == inv.client_id).first()
+    if not client:
+        raise HTTPException(
+            status_code=404,
+            detail={"error": {"code": "CLIENT_NOT_FOUND", "message": "Client not found"}},
+        )
+    client.password_hash = hash_password(payload.new_password)
+    inv.used = True
+    db.commit()
+    return {"message": "Password updated"}
 
 
 @router.get("/invite/{token}", status_code=200)
 async def validate_invite_token(token: str, db: Session = Depends(get_db)):
     """Validate an invitation token and return basic client info."""
-    from datetime import datetime, timezone
     inv = db.query(InvitationToken).filter(InvitationToken.token == token).first()
     if not inv:
         raise HTTPException(

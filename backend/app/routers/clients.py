@@ -1,3 +1,5 @@
+import uuid
+from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -6,7 +8,10 @@ from app.auth import get_current_user, get_current_client, require_manager
 from app.models.client import Client
 from app.models.booking import Booking
 from app.models.membership import Membership
-from app.schemas.client import ClientResponse, ClientUpdate, ClientListResponse
+from app.models.invitation_token import InvitationToken
+from app.models.studio_settings import StudioSettings
+from app.schemas.client import ClientResponse, ClientUpdate, ClientListResponse, ClientCreate, ClientCreateResponse
+from app.utils import utcnow
 
 router = APIRouter(prefix="/api/v1/clients", tags=["clients"])
 
@@ -69,6 +74,69 @@ def list_clients(
             (Client.full_name.ilike(pattern)) | (Client.email.ilike(pattern))
         )
     return query.all()
+
+
+@router.post("", response_model=ClientCreateResponse, status_code=201)
+async def create_client(
+    payload: ClientCreate,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_manager),
+):
+    """Create a client from the backoffice (no password yet). Sends invitation email."""
+    existing = db.query(Client).filter(Client.email == payload.email).first()
+    if existing:
+        raise HTTPException(
+            status_code=409,
+            detail={"error": {"code": "CLIENT_EMAIL_ALREADY_EXISTS", "message": "A client with this email already exists"}},
+        )
+
+    client = Client(
+        email=payload.email,
+        full_name=payload.full_name,
+        phone=payload.phone,
+        password_hash=None,
+    )
+    db.add(client)
+    db.flush()  # get client.id without committing
+
+    # Generate invitation token
+    token_str = str(uuid.uuid4())
+    invitation = InvitationToken(
+        client_id=client.id,
+        token=token_str,
+        expires_at=utcnow() + timedelta(days=7),
+    )
+    db.add(invitation)
+
+    # Build invite URL
+    studio_settings = db.query(StudioSettings).filter(StudioSettings.id == 1).first()
+    base_url = (studio_settings.tunnel_url if studio_settings and studio_settings.tunnel_url else "http://localhost:5173")
+    invite_url = f"{base_url}/set-password?token={token_str}"
+    studio_name = (studio_settings.studio_name if studio_settings else "Agon Studio")
+
+    # Try to send email
+    email_sent = False
+    try:
+        from app.services.email_service import send_invite_email
+        await send_invite_email(db, client.email, client.full_name, invite_url, studio_name)
+        email_sent = True
+    except Exception:
+        pass  # Don't fail if email sending fails
+
+    db.commit()
+    db.refresh(client)
+
+    result = ClientCreateResponse(
+        id=client.id,
+        email=client.email,
+        full_name=client.full_name,
+        phone=client.phone,
+        is_active=client.is_active,
+        created_at=client.created_at,
+        updated_at=client.updated_at,
+        email_sent=email_sent,
+    )
+    return result
 
 
 @router.get("/{client_id}", response_model=ClientResponse)

@@ -9,7 +9,7 @@ class Client(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     location_id = Column(Integer, nullable=False, default=1)
     email = Column(String, nullable=False, unique=True, index=True)
-    password_hash = Column(String, nullable=False)
+    password_hash = Column(String, nullable=True)
     full_name = Column(String, nullable=False)
     phone = Column(String)
     date_of_birth = Column(Date)

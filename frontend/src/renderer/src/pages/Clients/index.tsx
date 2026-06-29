@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
 import { clientsApi } from '../../api/clients'
+import type { ClientCreateData } from '../../api/clients'
 import { LoadingSpinner } from '../../components/LoadingSpinner'
 import { ErrorMessage } from '../../components/ErrorMessage'
 import { PageHeader } from '../../components/PageHeader'
@@ -12,9 +13,14 @@ import type { ApiError } from '../../api/client'
 export function ClientsPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
+  const [form, setForm] = useState<ClientCreateData>({ full_name: '', email: '', phone: '' })
+  const [formError, setFormError] = useState<string | null>(null)
+  const [successMsg, setSuccessMsg] = useState<string | null>(null)
+  const [warnMsg, setWarnMsg] = useState<string | null>(null)
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 300)
@@ -27,6 +33,43 @@ export function ClientsPage() {
   })
 
   const apiError = error as ApiError | null
+
+  const createMutation = useMutation({
+    mutationFn: (data: ClientCreateData) => clientsApi.create(data),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['clients'] })
+      if (result.email_sent) {
+        setSuccessMsg(t('clients.inviteSent', { email: result.email }))
+        setWarnMsg(null)
+      } else {
+        setWarnMsg(t('clients.inviteNotSent'))
+        setSuccessMsg(null)
+      }
+      setForm({ full_name: '', email: '', phone: '' })
+      setTimeout(() => {
+        setShowAddModal(false)
+        setSuccessMsg(null)
+        setWarnMsg(null)
+      }, 3000)
+    },
+    onError: (err: ApiError) => {
+      setFormError(err.message ?? t('common.error'))
+    },
+  })
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setFormError(null)
+    createMutation.mutate({ ...form, phone: form.phone || undefined })
+  }
+
+  const handleCloseModal = () => {
+    setShowAddModal(false)
+    setFormError(null)
+    setSuccessMsg(null)
+    setWarnMsg(null)
+    setForm({ full_name: '', email: '', phone: '' })
+  }
 
   return (
     <div>
@@ -106,16 +149,72 @@ export function ClientsPage() {
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">{t('clients.addClientTitle')}</h2>
-            <div className="rounded-md bg-blue-50 border border-blue-200 p-4 mb-4">
-              <p className="text-blue-700 text-sm">{t('clients.addClientInfo')}</p>
-            </div>
-            <button
-              onClick={() => setShowAddModal(false)}
-              className="w-full py-2 px-4 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
-            >
-              {t('clients.close')}
-            </button>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('clients.modalTitle')}</h2>
+
+            {successMsg && (
+              <div className="rounded-md bg-green-50 border border-green-200 p-3 mb-4 text-sm text-green-700">
+                {successMsg}
+              </div>
+            )}
+            {warnMsg && (
+              <div className="rounded-md bg-yellow-50 border border-yellow-200 p-3 mb-4 text-sm text-yellow-700">
+                {warnMsg}
+              </div>
+            )}
+            {formError && (
+              <div className="rounded-md bg-red-50 border border-red-200 p-3 mb-4 text-sm text-red-700">
+                {formError}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('clients.fullName')}</label>
+                <input
+                  type="text"
+                  required
+                  value={form.full_name}
+                  onChange={(e) => setForm((f) => ({ ...f, full_name: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('clients.emailAddress')}</label>
+                <input
+                  type="email"
+                  required
+                  value={form.email}
+                  onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('clients.phoneOptional')}</label>
+                <input
+                  type="text"
+                  value={form.phone ?? ''}
+                  onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="submit"
+                  disabled={createMutation.isPending}
+                  className="flex-1 py-2 px-4 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                >
+                  {createMutation.isPending ? t('common.creating') : t('clients.addClient')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="flex-1 py-2 px-4 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
+                >
+                  {t('common.cancel')}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

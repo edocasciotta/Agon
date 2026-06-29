@@ -81,6 +81,9 @@ app.include_router(migration.router)
 from app.routers import support
 app.include_router(support.router)
 
+from app.routers import email_settings
+app.include_router(email_settings.router)
+
 
 @app.get("/health")
 async def health():

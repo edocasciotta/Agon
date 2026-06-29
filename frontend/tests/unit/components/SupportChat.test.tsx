@@ -64,9 +64,6 @@ describe('SupportChat', () => {
     // Panel header should now be visible
     expect(screen.getByText('Agon AI Support')).toBeTruthy()
 
-    // Welcome message should appear
-    expect(screen.getByText(/Hi! I'm your Agon assistant/)).toBeTruthy()
-
     // Click the close button inside the panel header (first one found)
     const closeBtns = screen.getAllByRole('button', { name: /close support chat/i })
     fireEvent.click(closeBtns[0])

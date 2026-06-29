@@ -177,7 +177,13 @@
     "addClientTitle": "Dodaj klienta",
     "addClientInfo": "Klienci rejestrują się sami za pomocą aplikacji mobilnej Agon. Udostępnij im kod QR studia, a mogą natychmiast założyć konto i rezerwować zajęcia.",
     "close": "Zamknij",
-    "clientCount": "{{count}} klientów"
+    "clientCount": "{{count}} klientów",
+    "modalTitle": "Dodaj nowego klienta",
+    "fullName": "Imię i nazwisko",
+    "emailAddress": "Adres e-mail",
+    "phoneOptional": "Telefon (opcjonalnie)",
+    "inviteSent": "E-mail z zaproszeniem wysłany na {{email}}",
+    "inviteNotSent": "Klient utworzony, ale nie udało się wysłać e-maila — sprawdź ustawienia poczty"
   },
   "clientDetail": {
     "editName": "Nazwa",
@@ -301,7 +307,21 @@
     "saveSettings": "Zapisz ustawienia",
     "saving": "Zapisywanie...",
     "savedSuccess": "Ustawienia zapisane pomyślnie.",
-    "failedSave": "Nie udało się zapisać ustawień"
+    "failedSave": "Nie udało się zapisać ustawień",
+    "tabStudio": "Studio",
+    "tabEmail": "E-mail",
+    "sectionEmail": "E-mail i SMTP",
+    "emailFromName": "Nazwa nadawcy",
+    "emailFromAddress": "Adres nadawcy",
+    "smtpHost": "Host SMTP",
+    "smtpPort": "Port SMTP",
+    "smtpUser": "Użytkownik SMTP",
+    "smtpPassword": "Hasło SMTP",
+    "smtpPasswordPlaceholder": "Pozostaw puste, aby zachować obecne",
+    "smtpTls": "Użyj TLS/STARTTLS",
+    "sendTestEmail": "Wyślij testowy e-mail",
+    "testEmailSent": "Testowy e-mail wysłany!",
+    "testEmailFailed": "Nie udało się wysłać testowego e-maila"
   },
   "scheduleModal": {
     "title": "Zaplanuj zajęcia",
