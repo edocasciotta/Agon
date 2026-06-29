@@ -20,7 +20,8 @@
     "reports": "Informes",
     "settings": "Configuración",
     "logout": "Cerrar sesión",
-    "establishments": "Sedes"
+    "establishments": "Sedes",
+    "instructors": "Instructores"
   },
   "common": {
     "save": "Guardar",
@@ -431,7 +432,7 @@
   "establishments": {
     "title": "Sedes",
     "subtitle": "Gestiona las sedes de tu estudio",
-    "add": "Añadir Sede",
+    "add": "+ Añadir sede",
     "addTitle": "Nueva Sede",
     "editTitle": "Editar Sede",
     "name": "Nombre",
@@ -442,6 +443,39 @@
     "saveError": "Error al guardar. Inténtalo de nuevo.",
     "nameRequired": "El nombre es obligatorio.",
     "empty": "Sin sedes",
-    "emptyDesc": "Añade tu primera sede de estudio."
+    "emptyDesc": "Añade tu primera sede de estudio.",
+    "deactivateConfirm": "¿Desactivar este establecimiento?",
+    "remove": "Eliminar",
+    "removeConfirm": "¿Eliminar permanentemente este establecimiento?",
+    "removeDesc": "Esta acción no se puede deshacer.",
+    "hasClasses": "No se puede eliminar: este establecimiento tiene clases programadas."
+  },
+  "instructors": {
+    "title": "Instructores",
+    "subtitle": "Gestiona tu personal docente",
+    "add": "+ Añadir instructor",
+    "addTitle": "Nuevo Instructor",
+    "editTitle": "Editar Instructor",
+    "name": "Nombre completo",
+    "email": "Correo electrónico",
+    "password": "Contraseña temporal",
+    "passwordHint": "El instructor la usará para su primer inicio de sesión.",
+    "bio": "Bio",
+    "bioPlaceholder": "Descripción breve mostrada a los clientes.",
+    "inactive": "Inactivo",
+    "deactivate": "Desactivar",
+    "deactivateConfirm": "¿Desactivar este instructor?",
+    "saveError": "Error al guardar. Inténtalo de nuevo.",
+    "emailError": "Este correo ya está en uso.",
+    "nameRequired": "El nombre completo es obligatorio.",
+    "emailRequired": "El correo electrónico es obligatorio.",
+    "passwordRequired": "La contraseña es obligatoria (mín. 8 caracteres).",
+    "empty": "Sin instructores",
+    "emptyDesc": "Añade tu primer instructor para empezar a programar clases.",
+    "classesCount": "{{n}} clases esta semana",
+    "remove": "Eliminar",
+    "removeConfirm": "¿Eliminar permanentemente este instructor?",
+    "removeDesc": "También se eliminará su cuenta de acceso. Esta acción no se puede deshacer.",
+    "hasClasses": "No se puede eliminar: este instructor tiene clases programadas."
   }
 }

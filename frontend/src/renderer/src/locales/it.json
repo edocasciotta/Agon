@@ -20,7 +20,8 @@
     "reports": "Report",
     "settings": "Impostazioni",
     "logout": "Esci",
-    "establishments": "Sedi"
+    "establishments": "Sedi",
+    "instructors": "Istruttori"
   },
   "common": {
     "save": "Salva",
@@ -431,7 +432,7 @@
   "establishments": {
     "title": "Sedi",
     "subtitle": "Gestisci le sedi del tuo studio",
-    "add": "Aggiungi Sede",
+    "add": "+ Aggiungi Sede",
     "addTitle": "Nuova Sede",
     "editTitle": "Modifica Sede",
     "name": "Nome",
@@ -442,6 +443,39 @@
     "saveError": "Errore nel salvataggio. Riprova.",
     "nameRequired": "Il nome è obbligatorio.",
     "empty": "Nessuna sede",
-    "emptyDesc": "Aggiungi la prima sede del tuo studio."
+    "emptyDesc": "Aggiungi la prima sede del tuo studio.",
+    "deactivateConfirm": "Disattivare questo stabilimento?",
+    "remove": "Rimuovi",
+    "removeConfirm": "Rimuovere definitivamente questo stabilimento?",
+    "removeDesc": "Questa azione non può essere annullata.",
+    "hasClasses": "Impossibile rimuovere: questo stabilimento ha classi programmate."
+  },
+  "instructors": {
+    "title": "Istruttori",
+    "subtitle": "Gestisci il personale docente",
+    "add": "+ Aggiungi Istruttore",
+    "addTitle": "Nuovo Istruttore",
+    "editTitle": "Modifica Istruttore",
+    "name": "Nome completo",
+    "email": "Email",
+    "password": "Password temporanea",
+    "passwordHint": "L'istruttore la userà per il primo accesso.",
+    "bio": "Bio",
+    "bioPlaceholder": "Breve descrizione mostrata ai clienti.",
+    "inactive": "Inattivo",
+    "deactivate": "Disattiva",
+    "deactivateConfirm": "Disattivare questo istruttore?",
+    "saveError": "Errore nel salvataggio. Riprova.",
+    "emailError": "Questa email è già in uso.",
+    "nameRequired": "Il nome completo è obbligatorio.",
+    "emailRequired": "L'email è obbligatoria.",
+    "passwordRequired": "La password è obbligatoria (min 8 caratteri).",
+    "empty": "Nessun istruttore",
+    "emptyDesc": "Aggiungi il primo istruttore per iniziare a schedulare le classi.",
+    "classesCount": "{{n}} classi questa settimana",
+    "remove": "Rimuovi",
+    "removeConfirm": "Rimuovere definitivamente questo istruttore?",
+    "removeDesc": "Verrà eliminato anche il suo account di accesso. Questa azione non può essere annullata.",
+    "hasClasses": "Impossibile rimuovere: questo istruttore ha classi programmate."
   }
 }

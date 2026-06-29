@@ -20,7 +20,8 @@
     "reports": "Berichte",
     "settings": "Einstellungen",
     "logout": "Abmelden",
-    "establishments": "Standorte"
+    "establishments": "Standorte",
+    "instructors": "Kursleiter"
   },
   "common": {
     "save": "Speichern",
@@ -431,7 +432,7 @@
   "establishments": {
     "title": "Standorte",
     "subtitle": "Verwalte deine Studiostandorte",
-    "add": "Standort hinzufügen",
+    "add": "+ Standort hinzufügen",
     "addTitle": "Neuer Standort",
     "editTitle": "Standort bearbeiten",
     "name": "Name",
@@ -442,6 +443,39 @@
     "saveError": "Speichern fehlgeschlagen. Bitte versuche es erneut.",
     "nameRequired": "Name ist erforderlich.",
     "empty": "Noch keine Standorte",
-    "emptyDesc": "Füge deinen ersten Studiostandort hinzu."
+    "emptyDesc": "Füge deinen ersten Studiostandort hinzu.",
+    "deactivateConfirm": "Diesen Standort deaktivieren?",
+    "remove": "Entfernen",
+    "removeConfirm": "Diesen Standort dauerhaft entfernen?",
+    "removeDesc": "Diese Aktion kann nicht rückgängig gemacht werden.",
+    "hasClasses": "Kann nicht entfernt werden: Dieser Standort hat geplante Kurse."
+  },
+  "instructors": {
+    "title": "Kursleiter",
+    "subtitle": "Lehrpersonal verwalten",
+    "add": "+ Trainer hinzufügen",
+    "addTitle": "Neuer Kursleiter",
+    "editTitle": "Kursleiter bearbeiten",
+    "name": "Vollständiger Name",
+    "email": "E-Mail",
+    "password": "Temporäres Passwort",
+    "passwordHint": "Der Kursleiter nutzt es für die erste Anmeldung.",
+    "bio": "Bio",
+    "bioPlaceholder": "Kurze Beschreibung für Kunden.",
+    "inactive": "Inaktiv",
+    "deactivate": "Deaktivieren",
+    "deactivateConfirm": "Diesen Kursleiter deaktivieren?",
+    "saveError": "Speichern fehlgeschlagen. Bitte erneut versuchen.",
+    "emailError": "Diese E-Mail-Adresse wird bereits verwendet.",
+    "nameRequired": "Name ist erforderlich.",
+    "emailRequired": "E-Mail ist erforderlich.",
+    "passwordRequired": "Passwort ist erforderlich (min. 8 Zeichen).",
+    "empty": "Noch keine Kursleiter",
+    "emptyDesc": "Füge deinen ersten Kursleiter hinzu.",
+    "classesCount": "{{n}} Kurse diese Woche",
+    "remove": "Entfernen",
+    "removeConfirm": "Diesen Trainer dauerhaft entfernen?",
+    "removeDesc": "Dies löscht auch das zugehörige Konto. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "hasClasses": "Kann nicht entfernt werden: Dieser Trainer hat geplante Kurse."
   }
 }

@@ -20,7 +20,8 @@
     "reports": "Raporlar",
     "settings": "Ayarlar",
     "logout": "Çıkış",
-    "establishments": "Şubeler"
+    "establishments": "Şubeler",
+    "instructors": "Eğitmenler"
   },
   "common": {
     "save": "Kaydet",
@@ -431,7 +432,7 @@
   "establishments": {
     "title": "Şubeler",
     "subtitle": "Stüdyo konumlarınızı yönetin",
-    "add": "Şube Ekle",
+    "add": "+ Şube ekle",
     "addTitle": "Yeni Şube",
     "editTitle": "Şubeyi Düzenle",
     "name": "Ad",
@@ -442,6 +443,39 @@
     "saveError": "Kaydetme başarısız. Lütfen tekrar deneyin.",
     "nameRequired": "Ad zorunludur.",
     "empty": "Henüz şube yok",
-    "emptyDesc": "İlk stüdyo şubenizi ekleyin."
+    "emptyDesc": "İlk stüdyo şubenizi ekleyin.",
+    "deactivateConfirm": "Bu şubeyi devre dışı bırak?",
+    "remove": "Kaldır",
+    "removeConfirm": "Bu şubeyi kalıcı olarak kaldır?",
+    "removeDesc": "Bu işlem geri alınamaz.",
+    "hasClasses": "Kaldırılamıyor: bu şubenin planlanmış dersleri var."
+  },
+  "instructors": {
+    "title": "Eğitmenler",
+    "subtitle": "Öğretim personelinizi yönetin",
+    "add": "+ Eğitmen ekle",
+    "addTitle": "Yeni Eğitmen",
+    "editTitle": "Eğitmeni Düzenle",
+    "name": "Ad Soyad",
+    "email": "E-posta",
+    "password": "Geçici şifre",
+    "passwordHint": "Eğitmen bunu ilk girişte kullanacak.",
+    "bio": "Bio",
+    "bioPlaceholder": "Müşterilere gösterilen kısa açıklama.",
+    "inactive": "Pasif",
+    "deactivate": "Pasif Yap",
+    "deactivateConfirm": "Bu eğitmeni pasif yapmak istiyor musunuz?",
+    "saveError": "Kaydetme başarısız. Lütfen tekrar deneyin.",
+    "emailError": "Bu e-posta adresi zaten kullanımda.",
+    "nameRequired": "Ad Soyad zorunludur.",
+    "emailRequired": "E-posta zorunludur.",
+    "passwordRequired": "Şifre zorunludur (en az 8 karakter).",
+    "empty": "Henüz eğitmen yok",
+    "emptyDesc": "Ders planlamaya başlamak için ilk eğmeni ekleyin.",
+    "classesCount": "Bu hafta {{n}} ders",
+    "remove": "Kaldır",
+    "removeConfirm": "Bu eğitmeni kalıcı olarak kaldır?",
+    "removeDesc": "Giriş hesabı da silinecek. Bu işlem geri alınamaz.",
+    "hasClasses": "Kaldırılamıyor: bu eğitmenin planlanmış dersleri var."
   }
 }

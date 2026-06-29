@@ -20,7 +20,8 @@
     "reports": "Relatórios",
     "settings": "Configurações",
     "logout": "Sair",
-    "establishments": "Estabelecimentos"
+    "establishments": "Estabelecimentos",
+    "instructors": "Instrutores"
   },
   "common": {
     "save": "Salvar",
@@ -431,7 +432,7 @@
   "establishments": {
     "title": "Estabelecimentos",
     "subtitle": "Gerencie as sedes do seu estúdio",
-    "add": "Adicionar Estabelecimento",
+    "add": "+ Adicionar sede",
     "addTitle": "Novo Estabelecimento",
     "editTitle": "Editar Estabelecimento",
     "name": "Nome",
@@ -442,6 +443,39 @@
     "saveError": "Erro ao salvar. Tente novamente.",
     "nameRequired": "Nome é obrigatório.",
     "empty": "Nenhum estabelecimento",
-    "emptyDesc": "Adicione seu primeiro estabelecimento."
+    "emptyDesc": "Adicione seu primeiro estabelecimento.",
+    "deactivateConfirm": "Desativar este estabelecimento?",
+    "remove": "Remover",
+    "removeConfirm": "Remover permanentemente este estabelecimento?",
+    "removeDesc": "Esta ação não pode ser desfeita.",
+    "hasClasses": "Não é possível remover: este estabelecimento tem aulas agendadas."
+  },
+  "instructors": {
+    "title": "Instrutores",
+    "subtitle": "Gerencie seu corpo docente",
+    "add": "+ Adicionar instrutor",
+    "addTitle": "Novo Instrutor",
+    "editTitle": "Editar Instrutor",
+    "name": "Nome completo",
+    "email": "E-mail",
+    "password": "Senha temporária",
+    "passwordHint": "O instrutor a usará no primeiro acesso.",
+    "bio": "Bio",
+    "bioPlaceholder": "Breve descrição exibida aos clientes.",
+    "inactive": "Inativo",
+    "deactivate": "Desativar",
+    "deactivateConfirm": "Desativar este instrutor?",
+    "saveError": "Erro ao salvar. Tente novamente.",
+    "emailError": "Este e-mail já está em uso.",
+    "nameRequired": "Nome completo é obrigatório.",
+    "emailRequired": "E-mail é obrigatório.",
+    "passwordRequired": "Senha é obrigatória (mín. 8 caracteres).",
+    "empty": "Nenhum instrutor",
+    "emptyDesc": "Adicione seu primeiro instrutor para começar a agendar aulas.",
+    "classesCount": "{{n}} aulas esta semana",
+    "remove": "Remover",
+    "removeConfirm": "Remover permanentemente este instrutor?",
+    "removeDesc": "A conta de acesso também será excluída. Esta ação não pode ser desfeita.",
+    "hasClasses": "Não é possível remover: este instrutor tem aulas agendadas."
   }
 }

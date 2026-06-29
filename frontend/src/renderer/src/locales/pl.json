@@ -20,7 +20,8 @@
     "reports": "Raporty",
     "settings": "Ustawienia",
     "logout": "Wyloguj",
-    "establishments": "Oddziały"
+    "establishments": "Oddziały",
+    "instructors": "Instruktorzy"
   },
   "common": {
     "save": "Zapisz",
@@ -431,7 +432,7 @@
   "establishments": {
     "title": "Oddziały",
     "subtitle": "Zarządzaj lokalizacjami studia",
-    "add": "Dodaj oddział",
+    "add": "+ Dodaj lokal",
     "addTitle": "Nowy oddział",
     "editTitle": "Edytuj oddział",
     "name": "Nazwa",
@@ -442,6 +443,39 @@
     "saveError": "Błąd zapisu. Spróbuj ponownie.",
     "nameRequired": "Nazwa jest wymagana.",
     "empty": "Brak oddziałów",
-    "emptyDesc": "Dodaj swój pierwszy oddział studia."
+    "emptyDesc": "Dodaj swój pierwszy oddział studia.",
+    "deactivateConfirm": "Dezaktywować ten lokal?",
+    "remove": "Usuń",
+    "removeConfirm": "Trwale usunąć ten lokal?",
+    "removeDesc": "Tej akcji nie można cofnąć.",
+    "hasClasses": "Nie można usunąć: ten lokal ma zaplanowane zajęcia."
+  },
+  "instructors": {
+    "title": "Instruktorzy",
+    "subtitle": "Zarządzaj personelem dydaktycznym",
+    "add": "+ Dodaj instruktora",
+    "addTitle": "Nowy instruktor",
+    "editTitle": "Edytuj instruktora",
+    "name": "Imię i nazwisko",
+    "email": "E-mail",
+    "password": "Tymczasowe hasło",
+    "passwordHint": "Instruktor użyje go przy pierwszym logowaniu.",
+    "bio": "Bio",
+    "bioPlaceholder": "Krótki opis widoczny dla klientów.",
+    "inactive": "Nieaktywny",
+    "deactivate": "Dezaktywuj",
+    "deactivateConfirm": "Dezaktywować tego instruktora?",
+    "saveError": "Błąd zapisu. Spróbuj ponownie.",
+    "emailError": "Ten adres e-mail jest już używany.",
+    "nameRequired": "Imię i nazwisko jest wymagane.",
+    "emailRequired": "E-mail jest wymagany.",
+    "passwordRequired": "Hasło jest wymagane (min. 8 znaków).",
+    "empty": "Brak instruktorów",
+    "emptyDesc": "Dodaj pierwszego instruktora, aby zacząć planować zajęcia.",
+    "classesCount": "{{n}} zajęć w tym tygodniu",
+    "remove": "Usuń",
+    "removeConfirm": "Trwale usunąć tego instruktora?",
+    "removeDesc": "Konto zostanie również usunięte. Tej akcji nie można cofnąć.",
+    "hasClasses": "Nie można usunąć: ten instruktor ma zaplanowane zajęcia."
   }
 }

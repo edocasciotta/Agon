@@ -85,7 +85,7 @@ def update_location(
 
 
 @router.delete("/{location_id}", status_code=204)
-def delete_location(
+def deactivate_location(
     location_id: int,
     db: Session = Depends(get_db),
     current_user=Depends(require_manager),
@@ -97,4 +97,35 @@ def delete_location(
             detail={"error": {"code": "NOT_FOUND", "message": "Location not found"}},
         )
     loc.is_active = False
+    db.commit()
+
+
+@router.delete("/{location_id}/remove", status_code=204)
+def remove_location(
+    location_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_manager),
+):
+    from app.models.scheduled_class import ScheduledClass
+
+    loc = db.query(Location).filter(Location.id == location_id).first()
+    if not loc:
+        raise HTTPException(
+            status_code=404,
+            detail={"error": {"code": "NOT_FOUND", "message": "Location not found"}},
+        )
+    has_classes = (
+        db.query(ScheduledClass)
+        .filter(
+            ScheduledClass.location_id == location_id,
+            ScheduledClass.status == "scheduled",
+        )
+        .first()
+    )
+    if has_classes:
+        raise HTTPException(
+            status_code=409,
+            detail={"error": {"code": "LOCATION_HAS_CLASSES", "message": "Cannot remove a location that has scheduled classes"}},
+        )
+    db.delete(loc)
     db.commit()

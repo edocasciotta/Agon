@@ -40,6 +40,7 @@ export function Layout() {
     { to: '/calendar', label: t('nav.calendar'), icon: '📅' },
     { to: '/class-types', label: t('nav.classTypes'), icon: '🏷️' },
     { to: '/establishments', label: t('nav.establishments'), icon: '🏢' },
+    { to: '/instructors', label: t('nav.instructors'), icon: '👤' },
     { to: '/clients', label: t('nav.clients'), icon: '👥' },
     { to: '/memberships', label: t('nav.memberships'), icon: '🎫' },
     { to: '/reports', label: t('nav.reports'), icon: '📈' },

@@ -20,7 +20,8 @@
     "reports": "Rapports",
     "settings": "Paramètres",
     "logout": "Déconnexion",
-    "establishments": "Établissements"
+    "establishments": "Établissements",
+    "instructors": "Instructeurs"
   },
   "common": {
     "save": "Enregistrer",
@@ -431,7 +432,7 @@
   "establishments": {
     "title": "Établissements",
     "subtitle": "Gérez vos lieux de studio",
-    "add": "Ajouter un établissement",
+    "add": "+ Ajouter un lieu",
     "addTitle": "Nouvel établissement",
     "editTitle": "Modifier l'établissement",
     "name": "Nom",
@@ -442,6 +443,39 @@
     "saveError": "Échec de l'enregistrement. Veuillez réessayer.",
     "nameRequired": "Le nom est obligatoire.",
     "empty": "Aucun établissement",
-    "emptyDesc": "Ajoutez votre premier établissement."
+    "emptyDesc": "Ajoutez votre premier établissement.",
+    "deactivateConfirm": "Désactiver cet établissement ?",
+    "remove": "Supprimer",
+    "removeConfirm": "Supprimer définitivement cet établissement ?",
+    "removeDesc": "Cette action est irréversible.",
+    "hasClasses": "Impossible de supprimer : cet établissement a des cours planifiés."
+  },
+  "instructors": {
+    "title": "Instructeurs",
+    "subtitle": "Gérez votre personnel enseignant",
+    "add": "+ Ajouter un instructeur",
+    "addTitle": "Nouvel instructeur",
+    "editTitle": "Modifier l'instructeur",
+    "name": "Nom complet",
+    "email": "E-mail",
+    "password": "Mot de passe temporaire",
+    "passwordHint": "L'instructeur l'utilisera pour sa première connexion.",
+    "bio": "Bio",
+    "bioPlaceholder": "Courte description affichée aux clients.",
+    "inactive": "Inactif",
+    "deactivate": "Désactiver",
+    "deactivateConfirm": "Désactiver cet instructeur ?",
+    "saveError": "Échec de l'enregistrement. Veuillez réessayer.",
+    "emailError": "Cet e-mail est déjà utilisé.",
+    "nameRequired": "Le nom complet est obligatoire.",
+    "emailRequired": "L'e-mail est obligatoire.",
+    "passwordRequired": "Le mot de passe est obligatoire (min. 8 caractères).",
+    "empty": "Aucun instructeur",
+    "emptyDesc": "Ajoutez votre premier instructeur pour commencer à planifier des cours.",
+    "classesCount": "{{n}} cours cette semaine",
+    "remove": "Supprimer",
+    "removeConfirm": "Supprimer définitivement cet instructeur ?",
+    "removeDesc": "Son compte sera également supprimé. Cette action est irréversible.",
+    "hasClasses": "Impossible de supprimer : cet instructeur a des cours planifiés."
   }
 }

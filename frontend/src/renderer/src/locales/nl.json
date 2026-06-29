@@ -20,7 +20,8 @@
     "reports": "Rapporten",
     "settings": "Instellingen",
     "logout": "Uitloggen",
-    "establishments": "Vestigingen"
+    "establishments": "Vestigingen",
+    "instructors": "Instructeurs"
   },
   "common": {
     "save": "Opslaan",
@@ -431,7 +432,7 @@
   "establishments": {
     "title": "Vestigingen",
     "subtitle": "Beheer je studiolocaties",
-    "add": "Vestiging toevoegen",
+    "add": "+ Vestiging toevoegen",
     "addTitle": "Nieuwe vestiging",
     "editTitle": "Vestiging bewerken",
     "name": "Naam",
@@ -442,6 +443,39 @@
     "saveError": "Opslaan mislukt. Probeer het opnieuw.",
     "nameRequired": "Naam is verplicht.",
     "empty": "Nog geen vestigingen",
-    "emptyDesc": "Voeg je eerste studiolocatie toe."
+    "emptyDesc": "Voeg je eerste studiolocatie toe.",
+    "deactivateConfirm": "Deze vestiging deactiveren?",
+    "remove": "Verwijderen",
+    "removeConfirm": "Deze vestiging permanent verwijderen?",
+    "removeDesc": "Deze actie kan niet ongedaan worden gemaakt.",
+    "hasClasses": "Kan niet verwijderen: deze vestiging heeft geplande lessen."
+  },
+  "instructors": {
+    "title": "Instructeurs",
+    "subtitle": "Beheer je onderwijspersoneel",
+    "add": "+ Instructeur toevoegen",
+    "addTitle": "Nieuwe instructeur",
+    "editTitle": "Instructeur bewerken",
+    "name": "Volledige naam",
+    "email": "E-mail",
+    "password": "Tijdelijk wachtwoord",
+    "passwordHint": "De instructeur gebruikt dit voor de eerste aanmelding.",
+    "bio": "Bio",
+    "bioPlaceholder": "Korte beschrijving zichtbaar voor klanten.",
+    "inactive": "Inactief",
+    "deactivate": "Deactiveren",
+    "deactivateConfirm": "Deze instructeur deactiveren?",
+    "saveError": "Opslaan mislukt. Probeer het opnieuw.",
+    "emailError": "Dit e-mailadres is al in gebruik.",
+    "nameRequired": "Volledige naam is verplicht.",
+    "emailRequired": "E-mail is verplicht.",
+    "passwordRequired": "Wachtwoord is verplicht (min. 8 tekens).",
+    "empty": "Nog geen instructeurs",
+    "emptyDesc": "Voeg je eerste instructeur toe.",
+    "classesCount": "{{n}} lessen deze week",
+    "remove": "Verwijderen",
+    "removeConfirm": "Deze instructeur permanent verwijderen?",
+    "removeDesc": "Het bijbehorende account wordt ook verwijderd. Deze actie kan niet ongedaan worden gemaakt.",
+    "hasClasses": "Kan niet verwijderen: deze instructeur heeft geplande lessen."
   }
 }

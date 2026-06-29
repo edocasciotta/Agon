@@ -182,6 +182,37 @@ export const errorMessages: Record<string, string> = {
 }
 ```
 
+### Empty-state CTA rule
+
+On list pages that use `PageHeader` + `EmptyState`:
+
+- **When the list is empty**: the `PageHeader` `action` prop must be `null` (or `undefined`). The `EmptyState` component owns the primary Add CTA and renders it centered on the page.
+- **When the list has items**: the `PageHeader` `action` renders the Add button in the top-right corner as usual.
+
+Never show the Add button in both positions at the same time. The pattern is:
+
+```tsx
+<PageHeader
+  title={t('foo.title')}
+  action={
+    !showForm && items.length > 0 ? (
+      <button onClick={openForm}>{t('foo.add')}</button>
+    ) : null
+  }
+/>
+{items.length === 0 && !showForm ? (
+  <EmptyState
+    title={t('foo.empty')}
+    description={t('foo.emptyDesc')}
+    action={<button onClick={openForm}>{t('foo.add')}</button>}
+  />
+) : (
+  // list of items
+)}
+```
+
+---
+
 ### Component Structure
 
 ```typescript

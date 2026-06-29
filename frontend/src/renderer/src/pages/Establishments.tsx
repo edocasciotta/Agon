@@ -1,11 +1,100 @@
-import { useState } from 'react'
+import { useState, useRef, forwardRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import PhoneInput from 'react-phone-number-input'
+import 'react-phone-number-input/style.css'
 import { locationsApi, type Location, type LocationCreate } from '../api/locations'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { PageHeader } from '../components/PageHeader'
 import { EmptyState } from '../components/EmptyState'
 
+// ── Styled input forwarded ref for PhoneInput ────────────────────────────────
+const BareInput = forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
+  (props, ref) => (
+    <input
+      ref={ref}
+      {...props}
+      className="flex-1 min-w-0 px-2 text-sm border-0 outline-none bg-transparent placeholder-gray-400"
+    />
+  )
+)
+
+// ── Nominatim address autocomplete ───────────────────────────────────────────
+interface NominatimResult {
+  place_id: number
+  display_name: string
+}
+
+function AddressAutocomplete({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string
+  onChange: (v: string) => void
+  placeholder?: string
+}) {
+  const [suggestions, setSuggestions] = useState<NominatimResult[]>([])
+  const [open, setOpen] = useState(false)
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = e.target.value
+    onChange(v)
+    setOpen(false)
+    if (timer.current) clearTimeout(timer.current)
+    if (v.trim().length < 3) { setSuggestions([]); return }
+    timer.current = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(v)}&format=json&limit=6&addressdetails=0`,
+          { headers: { 'Accept-Language': navigator.language, 'User-Agent': 'AgonStudio/0.1' } }
+        )
+        const data: NominatimResult[] = await res.json()
+        setSuggestions(data)
+        setOpen(data.length > 0)
+      } catch {
+        setSuggestions([])
+      }
+    }, 600)
+  }
+
+  const select = (name: string) => {
+    onChange(name)
+    setSuggestions([])
+    setOpen(false)
+  }
+
+  return (
+    <div className="relative">
+      <input
+        type="text"
+        value={value}
+        onChange={handleChange}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        autoComplete="off"
+        placeholder={placeholder}
+        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      />
+      {open && (
+        <ul className="absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-52 overflow-y-auto text-sm">
+          {suggestions.map((s) => (
+            <li
+              key={s.place_id}
+              onMouseDown={() => select(s.display_name)}
+              className="px-3 py-2 hover:bg-indigo-50 cursor-pointer text-gray-700 truncate"
+              title={s.display_name}
+            >
+              {s.display_name}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+// ── Page ─────────────────────────────────────────────────────────────────────
 interface FormData {
   name: string
   address: string
@@ -21,6 +110,9 @@ export function EstablishmentsPage() {
   const [editing, setEditing] = useState<Location | null>(null)
   const [formData, setFormData] = useState<FormData>(DEFAULT_FORM)
   const [formError, setFormError] = useState<string | null>(null)
+  const [confirmDeactivate, setConfirmDeactivate] = useState<Location | null>(null)
+  const [confirmRemove, setConfirmRemove] = useState<Location | null>(null)
+  const [removeError, setRemoveError] = useState<string | null>(null)
 
   const { data: locations = [], isLoading } = useQuery({
     queryKey: ['locations'],
@@ -52,7 +144,27 @@ export function EstablishmentsPage() {
 
   const deactivateMutation = useMutation({
     mutationFn: (id: number) => locationsApi.deactivate(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['locations'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['locations'] })
+      setConfirmDeactivate(null)
+    },
+  })
+
+  const removeMutation = useMutation({
+    mutationFn: (id: number) => locationsApi.remove(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['locations'] })
+      setConfirmRemove(null)
+      setRemoveError(null)
+    },
+    onError: (err: any) => {
+      const code = err?.response?.data?.detail?.error?.code
+      setRemoveError(
+        code === 'LOCATION_HAS_CLASSES'
+          ? t('establishments.hasClasses')
+          : t('establishments.saveError')
+      )
+    },
   })
 
   const openEdit = (loc: Location) => {
@@ -95,7 +207,7 @@ export function EstablishmentsPage() {
         title={t('establishments.title')}
         subtitle={t('establishments.subtitle')}
         action={
-          !showForm ? (
+          !showForm && locations.length > 0 ? (
             <button
               onClick={() => { setShowForm(true); setEditing(null); setFormData(DEFAULT_FORM) }}
               className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors"
@@ -113,6 +225,7 @@ export function EstablishmentsPage() {
             {editing ? t('establishments.editTitle') : t('establishments.addTitle')}
           </h3>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Name */}
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 {t('establishments.name')} *
@@ -125,29 +238,34 @@ export function EstablishmentsPage() {
                 placeholder="Studio Centro"
               />
             </div>
+
+            {/* Address with Nominatim autocomplete */}
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 {t('establishments.address')}
               </label>
-              <input
-                type="text"
+              <AddressAutocomplete
                 value={formData.address}
-                onChange={(e) => setFormData((f) => ({ ...f, address: e.target.value }))}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                onChange={(v) => setFormData((f) => ({ ...f, address: v }))}
                 placeholder="Via Roma 1, Milano"
               />
             </div>
+
+            {/* Phone with country prefix */}
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 {t('establishments.phone')}
               </label>
-              <input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData((f) => ({ ...f, phone: e.target.value }))}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="+39 02 1234567"
-              />
+              <div className="flex items-center border border-gray-300 rounded-md px-2 py-1.5 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-shadow">
+                <PhoneInput
+                  value={formData.phone || undefined}
+                  onChange={(v) => setFormData((f) => ({ ...f, phone: v ?? '' }))}
+                  defaultCountry="IT"
+                  international
+                  inputComponent={BareInput}
+                  className="w-full flex items-center gap-1"
+                />
+              </div>
             </div>
 
             {formError && (
@@ -181,18 +299,17 @@ export function EstablishmentsPage() {
         <div className="flex items-center justify-center h-48">
           <LoadingSpinner size="lg" />
         </div>
-      ) : locations.length === 0 ? (
+      ) : locations.length === 0 && !showForm ? (
         <EmptyState
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+          }
           title={t('establishments.empty')}
           description={t('establishments.emptyDesc')}
-          action={
-            <button
-              onClick={() => setShowForm(true)}
-              className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors"
-            >
-              {t('establishments.add')}
-            </button>
-          }
+          actionLabel={t('establishments.add')}
+          onAction={() => setShowForm(true)}
         />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -228,16 +345,81 @@ export function EstablishmentsPage() {
                 </button>
                 {loc.is_active && (
                   <button
-                    onClick={() => deactivateMutation.mutate(loc.id)}
-                    disabled={deactivateMutation.isPending}
-                    className="text-xs text-red-500 hover:text-red-700 font-medium disabled:opacity-50"
+                    onClick={() => setConfirmDeactivate(loc)}
+                    className="text-xs text-amber-600 hover:text-amber-800 font-medium"
                   >
                     {t('establishments.deactivate')}
                   </button>
                 )}
+                <button
+                  onClick={() => { setConfirmRemove(loc); setRemoveError(null) }}
+                  className="text-xs text-red-500 hover:text-red-700 font-medium"
+                >
+                  {t('establishments.remove')}
+                </button>
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Deactivate confirmation */}
+      {confirmDeactivate && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-lg">
+            <h3 className="text-sm font-semibold text-gray-900 mb-2">
+              {t('establishments.deactivateConfirm')}
+            </h3>
+            <p className="text-sm text-gray-500 mb-5">{confirmDeactivate.name}</p>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setConfirmDeactivate(null)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={() => deactivateMutation.mutate(confirmDeactivate.id)}
+                disabled={deactivateMutation.isPending}
+                className="px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-md hover:bg-amber-700 disabled:opacity-50 transition-colors"
+              >
+                {deactivateMutation.isPending ? t('common.saving') : t('establishments.deactivate')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Remove confirmation */}
+      {confirmRemove && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-lg">
+            <h3 className="text-sm font-semibold text-gray-900 mb-2">
+              {t('establishments.removeConfirm')}
+            </h3>
+            <p className="text-sm text-gray-500 mb-1">{confirmRemove.name}</p>
+            <p className="text-xs text-gray-400 mb-4">{t('establishments.removeDesc')}</p>
+            {removeError && (
+              <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2 border border-red-100 mb-4">
+                {removeError}
+              </p>
+            )}
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setConfirmRemove(null)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={() => removeMutation.mutate(confirmRemove.id)}
+                disabled={removeMutation.isPending}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50 transition-colors"
+              >
+                {removeMutation.isPending ? t('common.saving') : t('establishments.remove')}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

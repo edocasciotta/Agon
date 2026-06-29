@@ -16,6 +16,7 @@ import { EmailTemplatesPage } from './pages/EmailTemplates/index'
 import { EmailEventsPage } from './pages/EmailEvents/index'
 import { SmartListsPage } from './pages/SmartLists/index'
 import { EstablishmentsPage } from './pages/Establishments'
+import { InstructorsPage } from './pages/Instructors'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -55,6 +56,7 @@ function App(): JSX.Element {
             <Route path="marketing/events" element={<EmailEventsPage />} />
             <Route path="marketing/smartlists" element={<SmartListsPage />} />
             <Route path="establishments" element={<EstablishmentsPage />} />
+            <Route path="instructors" element={<InstructorsPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

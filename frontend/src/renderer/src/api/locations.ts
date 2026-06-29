@@ -32,4 +32,7 @@ export const locationsApi = {
   deactivate: async (id: number): Promise<void> => {
     await apiClient.delete(`/api/v1/locations/${id}`)
   },
+  remove: async (id: number): Promise<void> => {
+    await apiClient.delete(`/api/v1/locations/${id}/remove`)
+  },
 }

@@ -116,3 +116,54 @@ def update_instructor(
     db.refresh(instructor)
     db.refresh(user)
     return _build_instructor_response(instructor, user)
+
+
+@router.delete("/{instructor_id}", status_code=204)
+def deactivate_instructor(
+    instructor_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_manager),
+):
+    instructor = db.query(Instructor).filter(Instructor.id == instructor_id).first()
+    if not instructor:
+        raise HTTPException(
+            status_code=404,
+            detail={"error": {"code": "NOT_FOUND", "message": "Instructor not found"}},
+        )
+    user = db.query(User).filter(User.id == instructor.user_id).first()
+    user.is_active = False
+    db.commit()
+
+
+@router.delete("/{instructor_id}/remove", status_code=204)
+def remove_instructor(
+    instructor_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_manager),
+):
+    from app.models.scheduled_class import ScheduledClass
+
+    instructor = db.query(Instructor).filter(Instructor.id == instructor_id).first()
+    if not instructor:
+        raise HTTPException(
+            status_code=404,
+            detail={"error": {"code": "NOT_FOUND", "message": "Instructor not found"}},
+        )
+    has_classes = (
+        db.query(ScheduledClass)
+        .filter(
+            ScheduledClass.instructor_id == instructor_id,
+            ScheduledClass.status == "scheduled",
+        )
+        .first()
+    )
+    if has_classes:
+        raise HTTPException(
+            status_code=409,
+            detail={"error": {"code": "INSTRUCTOR_HAS_CLASSES", "message": "Cannot remove an instructor that has scheduled classes"}},
+        )
+    user = db.query(User).filter(User.id == instructor.user_id).first()
+    db.delete(instructor)
+    if user:
+        db.delete(user)
+    db.commit()

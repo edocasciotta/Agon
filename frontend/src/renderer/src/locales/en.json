@@ -20,7 +20,8 @@
     "reports": "Reports",
     "settings": "Settings",
     "logout": "Logout",
-    "establishments": "Establishments"
+    "establishments": "Establishments",
+    "instructors": "Instructors"
   },
   "common": {
     "save": "Save",
@@ -431,7 +432,7 @@
   "establishments": {
     "title": "Establishments",
     "subtitle": "Manage your studio locations",
-    "add": "Add Establishment",
+    "add": "+ Add Establishment",
     "addTitle": "New Establishment",
     "editTitle": "Edit Establishment",
     "name": "Name",
@@ -439,9 +440,42 @@
     "phone": "Phone",
     "inactive": "Inactive",
     "deactivate": "Deactivate",
+    "deactivateConfirm": "Deactivate this establishment?",
+    "remove": "Remove",
+    "removeConfirm": "Permanently remove this establishment?",
+    "removeDesc": "This action cannot be undone.",
+    "hasClasses": "Cannot remove: this establishment has scheduled classes.",
     "saveError": "Failed to save. Please try again.",
     "nameRequired": "Name is required.",
     "empty": "No establishments yet",
     "emptyDesc": "Add your first studio location to get started."
+  },
+  "instructors": {
+    "title": "Instructors",
+    "subtitle": "Manage your teaching staff",
+    "add": "+ Add Instructor",
+    "addTitle": "New Instructor",
+    "editTitle": "Edit Instructor",
+    "name": "Full name",
+    "email": "Email",
+    "password": "Temporary password",
+    "passwordHint": "The instructor will use this to log in for the first time.",
+    "bio": "Bio",
+    "bioPlaceholder": "Short description shown to clients.",
+    "inactive": "Inactive",
+    "deactivate": "Deactivate",
+    "deactivateConfirm": "Deactivate this instructor?",
+    "remove": "Remove",
+    "removeConfirm": "Permanently remove this instructor?",
+    "removeDesc": "This will also delete their login account. This action cannot be undone.",
+    "hasClasses": "Cannot remove: this instructor has scheduled classes.",
+    "saveError": "Failed to save. Please try again.",
+    "emailError": "This email is already in use.",
+    "nameRequired": "Full name is required.",
+    "emailRequired": "Email is required.",
+    "passwordRequired": "Password is required (min 8 characters).",
+    "empty": "No instructors yet",
+    "emptyDesc": "Add your first instructor to start scheduling classes.",
+    "classesCount": "{{n}} classes this week"
   }
 }
