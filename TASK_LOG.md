@@ -413,13 +413,34 @@ Backend: 130 tests | Frontend: 15 tests, 0 TS errors
 
 ---
 
+## Post-V1 Improvements (2026-06-29)
+
+### Email Templates + Event Assignments + Smart Lists (commit 32a979f)
+
+**Backend (170 tests):**
+- `EmailTemplate` model + CRUD: GET/POST/PUT/DELETE `/api/v1/email/templates`
+- `EmailEventAssignment` model: 7 event types (`client_invite`, `password_reset`, `booking_confirmed`, `booking_cancelled`, `class_reminder`, `membership_expiring`, `waitlist_promoted`) seeded at startup
+- `GET/PUT /api/v1/email/events` — assign custom template per event type
+- `email_service.send_event_email()`: looks up custom template, renders `{{var}}` placeholders, falls back to built-in default
+- `SmartList` model + CRUD + `GET /{id}/preview`: filter engine supports membership_status, last_booked_within_days, not_booked_within_days, joined_before/after, membership_type_id
+- Alembic migration `b2c3d4e5f6a7`
+
+**Frontend (35 tests, build clean):**
+- Email Templates page: table + create/edit modal with variable chip hints
+- Event Assignments page: table with auto-saving template dropdowns per event
+- Smart Lists page: filter builder (membership, booking recency, join date, type) + inline preview panel
+- "Marketing" section in sidebar with 3 nav items
+- i18n `marketing` namespace (34 keys) in all 9 locale files
+
+---
+
 ## Next Task
 
 **All phases complete. The Agon V1 platform is fully built.**
 
 Current test counts:
-- Backend: **148 tests**
-- Frontend (desktop): build clean, 29 tests
+- Backend: **170 tests**
+- Frontend (desktop): build clean, 35 tests
 - Mobile: 9 tests
 - Docs site: build clean (9 languages)
 
@@ -427,4 +448,4 @@ No pending tasks. Next work should be user-driven (new features, bug fixes, or a
 
 ---
 
-*Last updated: 2026-06-29 — SMTP email service + backoffice client creation.*
+*Last updated: 2026-06-29 — Email templates, event assignments, Smart Lists.*
