@@ -391,13 +391,35 @@ Backend: 130 tests | Frontend: 15 tests, 0 TS errors
 
 ---
 
+## Post-V1 Improvements (2026-06-29)
+
+### SMTP Email Service + Create Client from Backoffice (commit e4faa26)
+
+**Backend (148 tests):**
+- `app/services/email_service.py` — async SMTP sender (`aiosmtplib`), HTML templates for invite + reset + test email
+- 7 new SMTP columns on `studio_settings` (`email_smtp_host/port/user/password/tls`, `email_from_name/address`) + Alembic migration `a1b2c3d4e5f6`
+- `POST /api/v1/clients` — create client from backoffice (no password), generates 7-day `InvitationToken`, sends "set your password" email; returns `email_sent: bool`
+- `GET /api/v1/studio/email` — returns SMTP settings (password masked as `***`)
+- `PUT /api/v1/studio/email` — save SMTP settings
+- `POST /api/v1/studio/email/test` — sends test email to authenticated manager
+- `POST /auth/forgot-password` — now real: generates 2-hour token, sends reset email silently
+- `POST /auth/reset-password` — now real: validates token, sets new password, marks token used
+- `Client.password_hash` made nullable (backoffice-created clients have no password yet)
+
+**Frontend (29 tests, build clean):**
+- Clients page: New Client modal (full_name, email, phone) wired to `POST /api/v1/clients`; shows invite-sent / email-failed feedback
+- Settings page: restructured with two tabs "Studio" | "Email"; Email tab has 7 SMTP fields, Save, and Send Test Email button
+- 18 new i18n keys in all 9 locale files (EN/IT/DE/ES/FR/NL/PL/PT/TR)
+
+---
+
 ## Next Task
 
 **All phases complete. The Agon V1 platform is fully built.**
 
 Current test counts:
-- Backend: **135 tests**
-- Frontend (desktop): build clean, 21 tests
+- Backend: **148 tests**
+- Frontend (desktop): build clean, 29 tests
 - Mobile: 9 tests
 - Docs site: build clean (9 languages)
 
@@ -405,4 +427,4 @@ No pending tasks. Next work should be user-driven (new features, bug fixes, or a
 
 ---
 
-*Last updated: 2026-06-29 — Post-V1 AI support agent multilingual overhaul complete.*
+*Last updated: 2026-06-29 — SMTP email service + backoffice client creation.*
