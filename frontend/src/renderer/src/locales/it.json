@@ -160,7 +160,8 @@
     "saveClassType": "Salva tipo di lezione",
     "updateClassType": "Aggiorna tipo di lezione",
     "minLabel": "min",
-    "maxLabel": "Max"
+    "maxLabel": "Max",
+    "emptyDesc": "Crea il tuo primo tipo di lezione per iniziare a programmare."
   },
   "clients": {
     "title": "Clienti",
@@ -183,7 +184,8 @@
     "emailAddress": "Indirizzo email",
     "phoneOptional": "Telefono (opzionale)",
     "inviteSent": "Email di invito inviata a {{email}}",
-    "inviteNotSent": "Cliente creato ma l’email non è stata inviata — controlla le impostazioni email"
+    "inviteNotSent": "Cliente creato ma l’email non è stata inviata — controlla le impostazioni email",
+    "emptyDesc": "Aggiungi il tuo primo cliente per gestire prenotazioni e abbonamenti."
   },
   "clientDetail": {
     "editName": "Nome",
@@ -256,7 +258,8 @@
     "failedCreate": "Impossibile creare il tipo di abbonamento",
     "creating": "Creazione...",
     "create": "Crea",
-    "cancel": "Annulla"
+    "cancel": "Annulla",
+    "emptyDescTypes": "Crea un piano di abbonamento da offrire ai tuoi clienti."
   },
   "reports": {
     "title": "Report",
@@ -391,6 +394,10 @@
     "preview": "Anteprima",
     "previewResults": "{{count}} clienti corrispondono",
     "noResults": "Nessun cliente corrisponde a questi filtri",
-    "saveList": "Salva Lista"
+    "saveList": "Salva Lista",
+    "emptyDescTemplates": "Crea un template email per comunicare con i tuoi clienti.",
+    "emptyDescSmartLists": "Crea una smart list per segmentare i tuoi clienti.",
+    "noTemplates": "Nessun template email",
+    "noSmartLists": "Nessuna smart list"
   }
 }

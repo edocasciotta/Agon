@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { smartListsApi } from '../../api/smartLists'
 import { membershipTypesApi } from '../../api/memberships'
 import type { SmartListItem, SmartListResponse, SmartListCreate, SmartListFilters } from '../../types'
+import { EmptyState } from '../../components/EmptyState'
 
 const emptyFilters: SmartListFilters = {}
 
@@ -336,18 +337,31 @@ export function SmartListsPage() {
     <div className="max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-800">{t('marketing.smartLists')}</h1>
-        <button
-          onClick={() => setCreateOpen(true)}
-          className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700"
-        >
-          {t('marketing.newSmartList')}
-        </button>
+        {lists.length > 0 && (
+          <button
+            onClick={() => setCreateOpen(true)}
+            className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700"
+          >
+            {t('marketing.newSmartList')}
+          </button>
+        )}
       </div>
 
+      {lists.length === 0 && (
+        <EmptyState
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" />
+            </svg>
+          }
+          title={t('marketing.noSmartLists')}
+          description={t('marketing.emptyDescSmartLists')}
+          actionLabel={t('marketing.newSmartList')}
+          onAction={() => setCreateOpen(true)}
+        />
+      )}
+
       <div className="flex flex-col gap-2">
-        {lists.length === 0 && (
-          <p className="text-gray-500 text-sm">{t('marketing.newSmartList')}</p>
-        )}
         {lists.map((lst) => (
           <div key={lst.id} className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex items-center justify-between">

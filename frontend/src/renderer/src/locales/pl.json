@@ -160,7 +160,8 @@
     "saveClassType": "Zapisz typ zajęć",
     "updateClassType": "Zaktualizuj typ zajęć",
     "minLabel": "min",
-    "maxLabel": "Maks"
+    "maxLabel": "Maks",
+    "emptyDesc": "Utwórz pierwszy typ zajęć, aby zacząć planować sesje."
   },
   "clients": {
     "title": "Klienci",
@@ -183,7 +184,8 @@
     "emailAddress": "Adres e-mail",
     "phoneOptional": "Telefon (opcjonalnie)",
     "inviteSent": "E-mail z zaproszeniem wysłany na {{email}}",
-    "inviteNotSent": "Klient utworzony, ale nie udało się wysłać e-maila — sprawdź ustawienia poczty"
+    "inviteNotSent": "Klient utworzony, ale nie udało się wysłać e-maila — sprawdź ustawienia poczty",
+    "emptyDesc": "Dodaj pierwszego klienta, aby zarządzać rezerwacjami i członkostwami."
   },
   "clientDetail": {
     "editName": "Nazwa",
@@ -256,7 +258,8 @@
     "failedCreate": "Nie udało się utworzyć typu karnetu",
     "creating": "Tworzenie...",
     "create": "Utwórz",
-    "cancel": "Anuluj"
+    "cancel": "Anuluj",
+    "emptyDescTypes": "Utwórz plan członkostwa dla swoich klientów."
   },
   "reports": {
     "title": "Raporty",
@@ -391,6 +394,10 @@
     "preview": "Podgląd",
     "previewResults": "{{count}} klientów pasuje",
     "noResults": "Żaden klient nie pasuje do tych filtrów",
-    "saveList": "Zapisz Listę"
+    "saveList": "Zapisz Listę",
+    "emptyDescTemplates": "Utwórz szablon e-mail, aby komunikować się z klientami.",
+    "emptyDescSmartLists": "Utwórz inteligentną listę, aby segmentować swoich klientów.",
+    "noTemplates": "Brak szablonów e-mail",
+    "noSmartLists": "Brak list inteligentnych"
   }
 }

@@ -160,7 +160,8 @@
     "saveClassType": "Lestype opslaan",
     "updateClassType": "Lestype bijwerken",
     "minLabel": "min",
-    "maxLabel": "Max"
+    "maxLabel": "Max",
+    "emptyDesc": "Maak je eerste lestype aan om lessen te kunnen plannen."
   },
   "clients": {
     "title": "Klanten",
@@ -183,7 +184,8 @@
     "emailAddress": "E-mailadres",
     "phoneOptional": "Telefoon (optioneel)",
     "inviteSent": "Uitnodigings-e-mail verzonden naar {{email}}",
-    "inviteNotSent": "Klant aangemaakt maar e-mail kon niet worden verzonden — controleer e-mailinstellingen"
+    "inviteNotSent": "Klant aangemaakt maar e-mail kon niet worden verzonden — controleer e-mailinstellingen",
+    "emptyDesc": "Voeg je eerste klant toe om boekingen en lidmaatschappen te beheren."
   },
   "clientDetail": {
     "editName": "Naam",
@@ -256,7 +258,8 @@
     "failedCreate": "Aanmaken van lidmaatschapstype mislukt",
     "creating": "Aanmaken...",
     "create": "Aanmaken",
-    "cancel": "Annuleren"
+    "cancel": "Annuleren",
+    "emptyDescTypes": "Maak een lidmaatschapsplan aan voor je klanten."
   },
   "reports": {
     "title": "Rapporten",
@@ -391,6 +394,10 @@
     "preview": "Voorbeeld",
     "previewResults": "{{count}} klanten komen overeen",
     "noResults": "Geen klanten komen overeen met deze filters",
-    "saveList": "Lijst opslaan"
+    "saveList": "Lijst opslaan",
+    "emptyDescTemplates": "Maak een e-mailsjabloon om te communiceren met je klanten.",
+    "emptyDescSmartLists": "Maak een slimme lijst om je klanten te segmenteren.",
+    "noTemplates": "Geen e-mailsjablonen",
+    "noSmartLists": "Geen slimme lijsten"
   }
 }

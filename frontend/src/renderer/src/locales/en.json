@@ -160,7 +160,8 @@
     "saveClassType": "Save Class Type",
     "updateClassType": "Update Class Type",
     "minLabel": "min",
-    "maxLabel": "Max"
+    "maxLabel": "Max",
+    "emptyDesc": "Create your first class type to start scheduling sessions."
   },
   "clients": {
     "title": "Clients",
@@ -183,7 +184,8 @@
     "emailAddress": "Email Address",
     "phoneOptional": "Phone (optional)",
     "inviteSent": "Invitation email sent to {{email}}",
-    "inviteNotSent": "Client created but email could not be sent — check email settings"
+    "inviteNotSent": "Client created but email could not be sent — check email settings",
+    "emptyDesc": "Add your first client to manage bookings and memberships."
   },
   "clientDetail": {
     "editName": "Name",
@@ -256,7 +258,8 @@
     "failedCreate": "Failed to create membership type",
     "creating": "Creating...",
     "create": "Create",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "emptyDescTypes": "Create a membership plan to offer to your clients."
   },
   "reports": {
     "title": "Reports",
@@ -391,6 +394,10 @@
     "preview": "Preview",
     "previewResults": "{{count}} clients match",
     "noResults": "No clients match these filters",
-    "saveList": "Save List"
+    "saveList": "Save List",
+    "emptyDescTemplates": "Create an email template to communicate with your clients.",
+    "emptyDescSmartLists": "Create a smart list to segment and target your clients.",
+    "noTemplates": "No email templates yet",
+    "noSmartLists": "No smart lists yet"
   }
 }

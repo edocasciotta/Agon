@@ -160,7 +160,8 @@
     "saveClassType": "Salvar tipo de aula",
     "updateClassType": "Atualizar tipo de aula",
     "minLabel": "min",
-    "maxLabel": "Máx"
+    "maxLabel": "Máx",
+    "emptyDesc": "Crie o seu primeiro tipo de aula para começar a agendar."
   },
   "clients": {
     "title": "Clientes",
@@ -183,7 +184,8 @@
     "emailAddress": "Endereço de e-mail",
     "phoneOptional": "Telefone (opcional)",
     "inviteSent": "E-mail de convite enviado para {{email}}",
-    "inviteNotSent": "Cliente criado mas o e-mail não pôde ser enviado — verifique as configurações de e-mail"
+    "inviteNotSent": "Cliente criado mas o e-mail não pôde ser enviado — verifique as configurações de e-mail",
+    "emptyDesc": "Adicione o seu primeiro cliente para gerir reservas e associações."
   },
   "clientDetail": {
     "editName": "Nome",
@@ -256,7 +258,8 @@
     "failedCreate": "Falha ao criar tipo de assinatura",
     "creating": "Criando...",
     "create": "Criar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "emptyDescTypes": "Crie um plano de associação para oferecer aos seus clientes."
   },
   "reports": {
     "title": "Relatórios",
@@ -391,6 +394,10 @@
     "preview": "Visualizar",
     "previewResults": "{{count}} clientes correspondem",
     "noResults": "Nenhum cliente corresponde a esses filtros",
-    "saveList": "Salvar Lista"
+    "saveList": "Salvar Lista",
+    "emptyDescTemplates": "Crie um modelo de e-mail para comunicar com os seus clientes.",
+    "emptyDescSmartLists": "Crie uma lista inteligente para segmentar os seus clientes.",
+    "noTemplates": "Sem modelos de e-mail",
+    "noSmartLists": "Sem listas inteligentes"
   }
 }

@@ -160,7 +160,8 @@
     "saveClassType": "Enregistrer le type de cours",
     "updateClassType": "Mettre à jour le type de cours",
     "minLabel": "min",
-    "maxLabel": "Max"
+    "maxLabel": "Max",
+    "emptyDesc": "Créez votre premier type de cours pour commencer à planifier."
   },
   "clients": {
     "title": "Clients",
@@ -183,7 +184,8 @@
     "emailAddress": "Adresse e-mail",
     "phoneOptional": "Téléphone (optionnel)",
     "inviteSent": "E-mail d’invitation envoyé à {{email}}",
-    "inviteNotSent": "Client créé mais l’e-mail n’a pas pu être envoyé — vérifiez les paramètres e-mail"
+    "inviteNotSent": "Client créé mais l’e-mail n’a pas pu être envoyé — vérifiez les paramètres e-mail",
+    "emptyDesc": "Ajoutez votre premier client pour gérer les réservations et abonnements."
   },
   "clientDetail": {
     "editName": "Nom",
@@ -256,7 +258,8 @@
     "failedCreate": "Échec de la création du type d'abonnement",
     "creating": "Création...",
     "create": "Créer",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "emptyDescTypes": "Créez un plan d'abonnement à proposer à vos clients."
   },
   "reports": {
     "title": "Rapports",
@@ -391,6 +394,10 @@
     "preview": "Aperçu",
     "previewResults": "{{count}} clients correspondent",
     "noResults": "Aucun client ne correspond à ces filtres",
-    "saveList": "Enregistrer la Liste"
+    "saveList": "Enregistrer la Liste",
+    "emptyDescTemplates": "Créez un modèle d'e-mail pour communiquer avec vos clients.",
+    "emptyDescSmartLists": "Créez une liste intelligente pour segmenter vos clients.",
+    "noTemplates": "Aucun modèle d'e-mail",
+    "noSmartLists": "Aucune liste intelligente"
   }
 }

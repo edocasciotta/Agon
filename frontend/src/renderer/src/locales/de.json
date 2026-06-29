@@ -160,7 +160,8 @@
     "saveClassType": "Kurstyp speichern",
     "updateClassType": "Kurstyp aktualisieren",
     "minLabel": "Min.",
-    "maxLabel": "Max"
+    "maxLabel": "Max",
+    "emptyDesc": "Erstelle deinen ersten Kurstyp, um mit der Planung zu beginnen."
   },
   "clients": {
     "title": "Kunden",
@@ -183,7 +184,8 @@
     "emailAddress": "E-Mail-Adresse",
     "phoneOptional": "Telefon (optional)",
     "inviteSent": "Einladungs-E-Mail gesendet an {{email}}",
-    "inviteNotSent": "Kunde erstellt, aber E-Mail konnte nicht gesendet werden — E-Mail-Einstellungen prüfen"
+    "inviteNotSent": "Kunde erstellt, aber E-Mail konnte nicht gesendet werden — E-Mail-Einstellungen prüfen",
+    "emptyDesc": "Füge deinen ersten Kunden hinzu, um Buchungen und Mitgliedschaften zu verwalten."
   },
   "clientDetail": {
     "editName": "Name",
@@ -256,7 +258,8 @@
     "failedCreate": "Erstellen des Mitgliedschaftstyps fehlgeschlagen",
     "creating": "Erstellen...",
     "create": "Erstellen",
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "emptyDescTypes": "Erstelle einen Mitgliedschaftsplan für deine Kunden."
   },
   "reports": {
     "title": "Berichte",
@@ -391,6 +394,10 @@
     "preview": "Vorschau",
     "previewResults": "{{count}} Kunden passen",
     "noResults": "Keine Kunden passen diesen Filtern",
-    "saveList": "Liste speichern"
+    "saveList": "Liste speichern",
+    "emptyDescTemplates": "Erstelle eine E-Mail-Vorlage, um mit deinen Kunden zu kommunizieren.",
+    "emptyDescSmartLists": "Erstelle eine Smart-Liste, um deine Kunden zu segmentieren.",
+    "noTemplates": "Keine E-Mail-Vorlagen",
+    "noSmartLists": "Keine Smart-Listen"
   }
 }

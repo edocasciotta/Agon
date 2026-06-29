@@ -8,6 +8,7 @@ import type { ClientCreateData } from '../../api/clients'
 import { LoadingSpinner } from '../../components/LoadingSpinner'
 import { ErrorMessage } from '../../components/ErrorMessage'
 import { PageHeader } from '../../components/PageHeader'
+import { EmptyState } from '../../components/EmptyState'
 import type { ApiError } from '../../api/client'
 
 export function ClientsPage() {
@@ -75,31 +76,49 @@ export function ClientsPage() {
     <div>
       <PageHeader
         title={t('clients.title')}
-        subtitle={clients ? `${clients.length} ${t('clients.title').toLowerCase()}` : undefined}
+        subtitle={clients && clients.length > 0 ? `${clients.length} ${t('clients.title').toLowerCase()}` : undefined}
         action={
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors"
-          >
-            {t('clients.addClient')}
-          </button>
+          clients && clients.length > 0 ? (
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors"
+            >
+              {t('clients.addClient')}
+            </button>
+          ) : undefined
         }
       />
 
-      <div className="mb-4">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t('clients.searchPlaceholder')}
-          className="w-full max-w-md px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
-      </div>
+      {(clients === undefined || clients.length > 0 || debouncedSearch) && (
+        <div className="mb-4">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t('clients.searchPlaceholder')}
+            className="w-full max-w-md px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
+      )}
 
       {isLoading && <LoadingSpinner />}
       {apiError && <ErrorMessage code={apiError.code} message={apiError.message} />}
 
-      {clients && (
+      {clients && clients.length === 0 && !debouncedSearch && (
+        <EmptyState
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+            </svg>
+          }
+          title={t('clients.noClients')}
+          description={t('clients.emptyDesc')}
+          actionLabel={t('clients.addClient')}
+          onAction={() => setShowAddModal(true)}
+        />
+      )}
+
+      {clients && (clients.length > 0 || debouncedSearch) && (
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">

@@ -160,7 +160,8 @@
     "saveClassType": "Ders türünü kaydet",
     "updateClassType": "Ders türünü güncelle",
     "minLabel": "dk",
-    "maxLabel": "Maks"
+    "maxLabel": "Maks",
+    "emptyDesc": "Ders planlamaya başlamak için ilk ders türünü oluştur."
   },
   "clients": {
     "title": "Müşteriler",
@@ -183,7 +184,8 @@
     "emailAddress": "E-posta adresi",
     "phoneOptional": "Telefon (isteğe bağlı)",
     "inviteSent": "Davet e-postası {{email}} adresine gönderildi",
-    "inviteNotSent": "Müşteri oluşturuldu ancak e-posta gönderilemedi — e-posta ayarlarını kontrol edin"
+    "inviteNotSent": "Müşteri oluşturuldu ancak e-posta gönderilemedi — e-posta ayarlarını kontrol edin",
+    "emptyDesc": "Rezervasyonları ve üyelikleri yönetmek için ilk müşterini ekle."
   },
   "clientDetail": {
     "editName": "Ad",
@@ -256,7 +258,8 @@
     "failedCreate": "Üyelik türü oluşturulamadı",
     "creating": "Oluşturuluyor...",
     "create": "Oluştur",
-    "cancel": "İptal"
+    "cancel": "İptal",
+    "emptyDescTypes": "Müşterilerine sunmak için bir üyelik planı oluştur."
   },
   "reports": {
     "title": "Raporlar",
@@ -391,6 +394,10 @@
     "preview": "Önizleme",
     "previewResults": "{{count}} müşteri eşleşiyor",
     "noResults": "Bu filtrelere uyan müşteri yok",
-    "saveList": "Listeyi Kaydet"
+    "saveList": "Listeyi Kaydet",
+    "emptyDescTemplates": "Müşterilerinle iletişim kurmak için bir e-posta şablonu oluştur.",
+    "emptyDescSmartLists": "Müşterilerini segmentlemek için akıllı liste oluştur.",
+    "noTemplates": "E-posta şablonu yok",
+    "noSmartLists": "Akıllı liste yok"
   }
 }

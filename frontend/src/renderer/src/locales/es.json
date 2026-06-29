@@ -160,7 +160,8 @@
     "saveClassType": "Guardar tipo de clase",
     "updateClassType": "Actualizar tipo de clase",
     "minLabel": "min",
-    "maxLabel": "Máx"
+    "maxLabel": "Máx",
+    "emptyDesc": "Crea tu primer tipo de clase para empezar a programar sesiones."
   },
   "clients": {
     "title": "Clientes",
@@ -183,7 +184,8 @@
     "emailAddress": "Dirección de email",
     "phoneOptional": "Teléfono (opcional)",
     "inviteSent": "Email de invitación enviado a {{email}}",
-    "inviteNotSent": "Cliente creado pero no se pudo enviar el email — comprueba la configuración de email"
+    "inviteNotSent": "Cliente creado pero no se pudo enviar el email — comprueba la configuración de email",
+    "emptyDesc": "Añade tu primer cliente para gestionar reservas y membresías."
   },
   "clientDetail": {
     "editName": "Nombre",
@@ -256,7 +258,8 @@
     "failedCreate": "Error al crear el tipo de membresía",
     "creating": "Creando...",
     "create": "Crear",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "emptyDescTypes": "Crea un plan de membresía para ofrecer a tus clientes."
   },
   "reports": {
     "title": "Informes",
@@ -391,6 +394,10 @@
     "preview": "Vista previa",
     "previewResults": "{{count}} clientes coinciden",
     "noResults": "Ningún cliente coincide con estos filtros",
-    "saveList": "Guardar Lista"
+    "saveList": "Guardar Lista",
+    "emptyDescTemplates": "Crea una plantilla de correo para comunicarte con tus clientes.",
+    "emptyDescSmartLists": "Crea una lista inteligente para segmentar a tus clientes.",
+    "noTemplates": "Sin plantillas de correo",
+    "noSmartLists": "Sin listas inteligentes"
   }
 }

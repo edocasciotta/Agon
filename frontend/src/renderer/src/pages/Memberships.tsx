@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { membershipTypesApi, membershipsApi } from '../api/memberships'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { PageHeader } from '../components/PageHeader'
+import { EmptyState } from '../components/EmptyState'
 import type { ApiError } from '../api/client'
 import type { MembershipType } from '../types'
 
@@ -71,15 +72,29 @@ export function MembershipsPage() {
       <section className="mb-8">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold text-gray-900">{t('memberships.membershipTypes')}</h2>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors"
-          >
-            {t('memberships.createType')}
-          </button>
+          {membershipTypes && membershipTypes.length > 0 && (
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors"
+            >
+              {t('memberships.createType')}
+            </button>
+          )}
         </div>
         {typesLoading ? (
           <LoadingSpinner />
+        ) : !membershipTypes || membershipTypes.length === 0 ? (
+          <EmptyState
+            icon={
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
+              </svg>
+            }
+            title={t('memberships.noMembershipTypes')}
+            description={t('memberships.emptyDescTypes')}
+            actionLabel={t('memberships.createType')}
+            onAction={() => setShowCreateModal(true)}
+          />
         ) : (
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
             <table className="min-w-full divide-y divide-gray-200">
@@ -93,7 +108,7 @@ export function MembershipsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {(membershipTypes ?? []).map((mt) => (
+                {membershipTypes.map((mt) => (
                   <tr key={mt.id}>
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">{mt.name}</td>
                     <td className="px-6 py-4 text-sm text-gray-500">{mt.type}</td>
@@ -110,11 +125,6 @@ export function MembershipsPage() {
                     </td>
                   </tr>
                 ))}
-                {(!membershipTypes || membershipTypes.length === 0) && (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-sm text-gray-500">{t('memberships.noMembershipTypes')}</td>
-                  </tr>
-                )}
               </tbody>
             </table>
           </div>

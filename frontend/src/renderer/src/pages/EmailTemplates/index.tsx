@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { emailTemplatesApi } from '../../api/emailTemplates'
 import type { EmailTemplateListItem, EmailTemplateResponse, EmailTemplateCreate } from '../../types'
+import { EmptyState } from '../../components/EmptyState'
 
 const AVAILABLE_VARS = [
   '{{client_name}}',
@@ -169,16 +170,28 @@ export function EmailTemplatesPage() {
     <div className="max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-800">{t('marketing.templates')}</h1>
-        <button
-          onClick={() => setCreateOpen(true)}
-          className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700"
-        >
-          {t('marketing.newTemplate')}
-        </button>
+        {templates.length > 0 && (
+          <button
+            onClick={() => setCreateOpen(true)}
+            className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700"
+          >
+            {t('marketing.newTemplate')}
+          </button>
+        )}
       </div>
 
       {templates.length === 0 ? (
-        <p className="text-gray-500 text-sm">{t('marketing.newTemplate')}</p>
+        <EmptyState
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+            </svg>
+          }
+          title={t('marketing.noTemplates')}
+          description={t('marketing.emptyDescTemplates')}
+          actionLabel={t('marketing.newTemplate')}
+          onAction={() => setCreateOpen(true)}
+        />
       ) : (
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <table className="w-full text-sm">
