@@ -17,23 +17,23 @@ router = APIRouter(prefix="/api/v1/studio/email", tags=["email-settings"])
 
 
 class EmailSettingsResponse(BaseModel):
-    smtp_host: Optional[str] = None
-    smtp_port: int = 587
-    smtp_user: Optional[str] = None
-    smtp_password: str = ""  # masked: "***" if set, "" if not
-    from_name: Optional[str] = None
-    from_address: Optional[str] = None
-    smtp_tls: bool = True
+    email_smtp_host: Optional[str] = None
+    email_smtp_port: int = 587
+    email_smtp_user: Optional[str] = None
+    email_smtp_password: str = ""  # masked: "***" if set, "" if not
+    email_from_name: Optional[str] = None
+    email_from_address: Optional[str] = None
+    email_smtp_tls: bool = True
 
 
 class EmailSettingsUpdate(BaseModel):
-    smtp_host: Optional[str] = None
-    smtp_port: Optional[int] = None
-    smtp_user: Optional[str] = None
-    smtp_password: Optional[str] = None  # None means "don't change"
-    from_name: Optional[str] = None
-    from_address: Optional[str] = None
-    smtp_tls: Optional[bool] = None
+    email_smtp_host: Optional[str] = None
+    email_smtp_port: Optional[int] = None
+    email_smtp_user: Optional[str] = None
+    email_smtp_password: Optional[str] = None  # None = don't change; "" = clear
+    email_from_name: Optional[str] = None
+    email_from_address: Optional[str] = None
+    email_smtp_tls: Optional[bool] = None
 
 
 def _get_or_create_settings(db: Session) -> StudioSettings:
@@ -46,21 +46,25 @@ def _get_or_create_settings(db: Session) -> StudioSettings:
     return settings
 
 
+def _to_response(s: StudioSettings) -> EmailSettingsResponse:
+    return EmailSettingsResponse(
+        email_smtp_host=s.email_smtp_host,
+        email_smtp_port=s.email_smtp_port or 587,
+        email_smtp_user=s.email_smtp_user,
+        email_smtp_password="***" if s.email_smtp_password else "",
+        email_from_name=s.email_from_name,
+        email_from_address=s.email_from_address,
+        email_smtp_tls=s.email_smtp_tls if s.email_smtp_tls is not None else True,
+    )
+
+
 @router.get("", response_model=EmailSettingsResponse)
 def get_email_settings(
     db: Session = Depends(get_db),
     current_user=Depends(require_manager),
 ):
     s = _get_or_create_settings(db)
-    return EmailSettingsResponse(
-        smtp_host=s.email_smtp_host,
-        smtp_port=s.email_smtp_port or 587,
-        smtp_user=s.email_smtp_user,
-        smtp_password="***" if s.email_smtp_password else "",
-        from_name=s.email_from_name,
-        from_address=s.email_from_address,
-        smtp_tls=s.email_smtp_tls if s.email_smtp_tls is not None else True,
-    )
+    return _to_response(s)
 
 
 @router.put("", response_model=EmailSettingsResponse)
@@ -70,31 +74,24 @@ def update_email_settings(
     current_user=Depends(require_manager),
 ):
     s = _get_or_create_settings(db)
-    if payload.smtp_host is not None:
-        s.email_smtp_host = payload.smtp_host
-    if payload.smtp_port is not None:
-        s.email_smtp_port = payload.smtp_port
-    if payload.smtp_user is not None:
-        s.email_smtp_user = payload.smtp_user
-    if payload.smtp_password is not None:
-        s.email_smtp_password = payload.smtp_password
-    if payload.from_name is not None:
-        s.email_from_name = payload.from_name
-    if payload.from_address is not None:
-        s.email_from_address = payload.from_address
-    if payload.smtp_tls is not None:
-        s.email_smtp_tls = payload.smtp_tls
+    if payload.email_smtp_host is not None:
+        s.email_smtp_host = payload.email_smtp_host
+    if payload.email_smtp_port is not None:
+        s.email_smtp_port = payload.email_smtp_port
+    if payload.email_smtp_user is not None:
+        s.email_smtp_user = payload.email_smtp_user
+    if payload.email_smtp_password is not None:
+        # Empty string means "clear the password"; otherwise save as-is
+        s.email_smtp_password = payload.email_smtp_password if payload.email_smtp_password else None
+    if payload.email_from_name is not None:
+        s.email_from_name = payload.email_from_name
+    if payload.email_from_address is not None:
+        s.email_from_address = payload.email_from_address
+    if payload.email_smtp_tls is not None:
+        s.email_smtp_tls = payload.email_smtp_tls
     db.commit()
     db.refresh(s)
-    return EmailSettingsResponse(
-        smtp_host=s.email_smtp_host,
-        smtp_port=s.email_smtp_port or 587,
-        smtp_user=s.email_smtp_user,
-        smtp_password="***" if s.email_smtp_password else "",
-        from_name=s.email_from_name,
-        from_address=s.email_from_address,
-        smtp_tls=s.email_smtp_tls if s.email_smtp_tls is not None else True,
-    )
+    return _to_response(s)
 
 
 @router.post("/test", status_code=200)

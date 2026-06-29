@@ -36,39 +36,39 @@ def test_get_email_settings_returns_defaults(client, manager_auth_headers, studi
     resp = client.get("/api/v1/studio/email", headers=manager_auth_headers)
     assert resp.status_code == 200
     data = resp.json()
-    assert "smtp_host" in data
-    assert data["smtp_port"] == 587
-    assert data["smtp_tls"] is True
+    assert "email_smtp_host" in data
+    assert data["email_smtp_port"] == 587
+    assert data["email_smtp_tls"] is True
     # Password not set → empty string
-    assert data["smtp_password"] == ""
+    assert data["email_smtp_password"] == ""
 
 
 def test_save_email_settings(client, manager_auth_headers, studio_settings):
     payload = {
-        "smtp_host": "smtp.gmail.com",
-        "smtp_port": 465,
-        "smtp_user": "info@studio.it",
-        "smtp_password": "supersecret",
-        "from_name": "Test Studio",
-        "from_address": "info@studio.it",
-        "smtp_tls": False,
+        "email_smtp_host": "smtp.gmail.com",
+        "email_smtp_port": 465,
+        "email_smtp_user": "info@studio.it",
+        "email_smtp_password": "supersecret",
+        "email_from_name": "Test Studio",
+        "email_from_address": "info@studio.it",
+        "email_smtp_tls": False,
     }
     resp = client.put("/api/v1/studio/email", json=payload, headers=manager_auth_headers)
     assert resp.status_code == 200
     data = resp.json()
-    assert data["smtp_host"] == "smtp.gmail.com"
-    assert data["smtp_port"] == 465
-    assert data["smtp_user"] == "info@studio.it"
-    assert data["smtp_password"] == "***"  # masked
-    assert data["from_name"] == "Test Studio"
-    assert data["from_address"] == "info@studio.it"
-    assert data["smtp_tls"] is False
+    assert data["email_smtp_host"] == "smtp.gmail.com"
+    assert data["email_smtp_port"] == 465
+    assert data["email_smtp_user"] == "info@studio.it"
+    assert data["email_smtp_password"] == "***"  # masked
+    assert data["email_from_name"] == "Test Studio"
+    assert data["email_from_address"] == "info@studio.it"
+    assert data["email_smtp_tls"] is False
 
     # Verify GET also returns updated values
     resp2 = client.get("/api/v1/studio/email", headers=manager_auth_headers)
     assert resp2.status_code == 200
-    assert resp2.json()["smtp_host"] == "smtp.gmail.com"
-    assert resp2.json()["smtp_password"] == "***"
+    assert resp2.json()["email_smtp_host"] == "smtp.gmail.com"
+    assert resp2.json()["email_smtp_password"] == "***"
 
 
 def test_send_test_email_smtp_not_configured(client, manager_auth_headers, studio_settings):
