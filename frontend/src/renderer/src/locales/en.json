@@ -321,7 +321,8 @@
     "smtpTls": "Use TLS/STARTTLS",
     "sendTestEmail": "Send Test Email",
     "testEmailSent": "Test email sent!",
-    "testEmailFailed": "Failed to send test email"
+    "testEmailFailed": "Failed to send test email",
+    "saveBeforeTest": "Save settings before sending a test email"
   },
   "scheduleModal": {
     "title": "Schedule Class",

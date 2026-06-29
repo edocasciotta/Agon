@@ -321,7 +321,8 @@
     "smtpTls": "TLS/STARTTLS kullan",
     "sendTestEmail": "Test e-postası gönder",
     "testEmailSent": "Test e-postası gönderildi!",
-    "testEmailFailed": "Test e-postası gönderilemedi"
+    "testEmailFailed": "Test e-postası gönderilemedi",
+    "saveBeforeTest": "Test e-postası göndermeden önce ayarları kaydet"
   },
   "scheduleModal": {
     "title": "Ders planla",

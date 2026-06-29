@@ -321,7 +321,8 @@
     "smtpTls": "TLS/STARTTLS gebruiken",
     "sendTestEmail": "Test-e-mail verzenden",
     "testEmailSent": "Test-e-mail verzonden!",
-    "testEmailFailed": "Test-e-mail verzenden mislukt"
+    "testEmailFailed": "Test-e-mail verzenden mislukt",
+    "saveBeforeTest": "Sla instellingen op vóór het verzenden van een test-e-mail"
   },
   "scheduleModal": {
     "title": "Les plannen",

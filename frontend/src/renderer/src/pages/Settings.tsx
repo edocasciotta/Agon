@@ -24,6 +24,7 @@ export function SettingsPage() {
   const [emailSaveSuccess, setEmailSaveSuccess] = useState(false)
   const [emailSaveError, setEmailSaveError] = useState<string | null>(null)
   const [testEmailMsg, setTestEmailMsg] = useState<{ text: string; ok: boolean } | null>(null)
+  const [emailSettingsSaved, setEmailSettingsSaved] = useState(false)
 
   const { data: settings, isLoading } = useQuery({
     queryKey: ['studio'],
@@ -63,11 +64,13 @@ export function SettingsPage() {
       queryClient.invalidateQueries({ queryKey: ['emailSettings'] })
       setEmailSaveSuccess(true)
       setEmailSaveError(null)
+      setEmailSettingsSaved(true)
       setTimeout(() => setEmailSaveSuccess(false), 3000)
     },
     onError: (err: ApiError) => {
       setEmailSaveError(err.message ?? t('settings.failedSave'))
       setEmailSaveSuccess(false)
+      setEmailSettingsSaved(false)
     },
   })
 
@@ -89,6 +92,7 @@ export function SettingsPage() {
 
   const handleEmailChange = (field: keyof EmailSettings, value: string | number | boolean) => {
     setEmailForm((prev) => ({ ...prev, [field]: value }))
+    setEmailSettingsSaved(false)
   }
 
   const handleSave = () => updateMutation.mutate(form)
@@ -359,8 +363,9 @@ export function SettingsPage() {
                 </button>
                 <button
                   onClick={() => testEmailMutation.mutate()}
-                  disabled={testEmailMutation.isPending}
-                  className="px-6 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 disabled:opacity-50 transition-colors"
+                  disabled={testEmailMutation.isPending || !emailSettingsSaved}
+                  title={!emailSettingsSaved ? t('settings.saveBeforeTest') : undefined}
+                  className="px-6 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {t('settings.sendTestEmail')}
                 </button>

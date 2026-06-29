@@ -321,7 +321,8 @@
     "smtpTls": "Usa TLS/STARTTLS",
     "sendTestEmail": "Invia email di test",
     "testEmailSent": "Email di test inviata!",
-    "testEmailFailed": "Impossibile inviare l’email di test"
+    "testEmailFailed": "Impossibile inviare l’email di test",
+    "saveBeforeTest": "Salva le impostazioni prima di inviare un'email di test"
   },
   "scheduleModal": {
     "title": "Pianifica lezione",
