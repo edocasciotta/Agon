@@ -19,7 +19,8 @@
     "memberships": "Memberships",
     "reports": "Reports",
     "settings": "Settings",
-    "logout": "Logout"
+    "logout": "Logout",
+    "establishments": "Establishments"
   },
   "common": {
     "save": "Save",
@@ -117,12 +118,27 @@
   "dashboard": {
     "title": "Dashboard",
     "subtitle": "Overview of your studio",
-    "totalClients": "Total Clients",
-    "registeredClients": "registered clients",
-    "classesThisWeek": "Classes This Week",
-    "activeMemberships": "Active Memberships",
-    "currentlyActive": "currently active",
-    "revenueThisMonth": "Revenue This Month"
+    "greetingMorning": "Good morning",
+    "greetingAfternoon": "Good afternoon",
+    "greetingEvening": "Good evening",
+    "todaySummary": "Here's what's happening today",
+    "totalClients": "Active clients",
+    "newThisMonth": "+{{n}} this month",
+    "classesThisWeek": "Classes this week",
+    "cancelledCount": "{{n}} cancelled",
+    "activeMemberships": "Active memberships",
+    "expiringSoon": "{{n}} expiring in 7 days",
+    "revenueThisMonth": "Revenue this month",
+    "paymentsCount": "{{n}} payments",
+    "todayClasses": "Today's classes",
+    "noClassesToday": "No classes scheduled today",
+    "quickActions": "Quick actions",
+    "scheduleClass": "Schedule a class",
+    "addClient": "Add client",
+    "assignMembership": "Assign membership",
+    "viewReports": "View reports",
+    "spotsFull": "Full",
+    "spotsAvailable": "{{booked}}/{{cap}}"
   },
   "calendar": {
     "title": "Calendar",
@@ -136,7 +152,18 @@
     "cancelClass": "Cancel Class",
     "cancelling": "Cancelling...",
     "cancelError": "Failed to cancel class. Please try again.",
-    "closePanel": "Close"
+    "closePanel": "Close",
+    "removeClass": "Remove from Schedule",
+    "removing": "Removing...",
+    "removeError": "Failed to remove class. Please try again.",
+    "removeHasBookings": "Cannot remove: class has confirmed bookings. Use 'Cancel' instead.",
+    "instructor": "Instructor",
+    "spots": "spots",
+    "booked": "Booked",
+    "allLocations": "All Locations",
+    "allInstructors": "All Instructors",
+    "allClassTypes": "All Class Types",
+    "clearFilters": "Clear filters"
   },
   "classTypes": {
     "title": "Class Types",
@@ -358,7 +385,8 @@
     "durationPositive": "Duration must be positive.",
     "capacityPositive": "Capacity must be positive.",
     "selectOneDay": "Select at least one day.",
-    "endDateRequired": "End date is required."
+    "endDateRequired": "End date is required.",
+    "location": "Location"
   },
   "marketing": {
     "sectionTitle": "Marketing",
@@ -399,5 +427,21 @@
     "emptyDescSmartLists": "Create a smart list to segment and target your clients.",
     "noTemplates": "No email templates yet",
     "noSmartLists": "No smart lists yet"
+  },
+  "establishments": {
+    "title": "Establishments",
+    "subtitle": "Manage your studio locations",
+    "add": "Add Establishment",
+    "addTitle": "New Establishment",
+    "editTitle": "Edit Establishment",
+    "name": "Name",
+    "address": "Address",
+    "phone": "Phone",
+    "inactive": "Inactive",
+    "deactivate": "Deactivate",
+    "saveError": "Failed to save. Please try again.",
+    "nameRequired": "Name is required.",
+    "empty": "No establishments yet",
+    "emptyDesc": "Add your first studio location to get started."
   }
 }

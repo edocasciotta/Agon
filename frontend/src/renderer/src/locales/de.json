@@ -19,7 +19,8 @@
     "memberships": "Mitgliedschaften",
     "reports": "Berichte",
     "settings": "Einstellungen",
-    "logout": "Abmelden"
+    "logout": "Abmelden",
+    "establishments": "Standorte"
   },
   "common": {
     "save": "Speichern",
@@ -116,13 +117,28 @@
   },
   "dashboard": {
     "title": "Dashboard",
-    "subtitle": "Überblick über Ihr Studio",
-    "totalClients": "Kunden gesamt",
-    "registeredClients": "registrierte Kunden",
+    "subtitle": "Übersicht deines Studios",
+    "greetingMorning": "Guten Morgen",
+    "greetingAfternoon": "Guten Tag",
+    "greetingEvening": "Guten Abend",
+    "todaySummary": "Hier ist deine heutige Übersicht",
+    "totalClients": "Aktive Kunden",
+    "newThisMonth": "+{{n}} diesen Monat",
     "classesThisWeek": "Kurse diese Woche",
+    "cancelledCount": "{{n}} abgesagt",
     "activeMemberships": "Aktive Mitgliedschaften",
-    "currentlyActive": "derzeit aktiv",
-    "revenueThisMonth": "Einnahmen diesen Monat"
+    "expiringSoon": "{{n}} läuft in 7 Tagen ab",
+    "revenueThisMonth": "Einnahmen diesen Monat",
+    "paymentsCount": "{{n}} Zahlungen",
+    "todayClasses": "Heutige Kurse",
+    "noClassesToday": "Heute keine Kurse geplant",
+    "quickActions": "Schnellaktionen",
+    "scheduleClass": "Kurs planen",
+    "addClient": "Kunden hinzufügen",
+    "assignMembership": "Mitgliedschaft zuweisen",
+    "viewReports": "Berichte anzeigen",
+    "spotsFull": "Voll",
+    "spotsAvailable": "{{booked}}/{{cap}}"
   },
   "calendar": {
     "title": "Kalender",
@@ -136,7 +152,18 @@
     "cancelClass": "Kurs absagen",
     "cancelling": "Absagen...",
     "cancelError": "Kurs konnte nicht abgesagt werden. Bitte versuchen Sie es erneut.",
-    "closePanel": "Schließen"
+    "closePanel": "Schließen",
+    "removeClass": "Aus dem Stundenplan entfernen",
+    "removing": "Wird entfernt...",
+    "removeError": "Klasse konnte nicht entfernt werden. Bitte versuche es erneut.",
+    "removeHasBookings": "Kann nicht entfernt werden: Klasse hat bestätigte Buchungen. Verwende 'Absagen'.",
+    "instructor": "Kursleiter",
+    "spots": "Plätze",
+    "booked": "Gebucht",
+    "allLocations": "Alle Standorte",
+    "allInstructors": "Alle Kursleiter",
+    "allClassTypes": "Alle Kurstypen",
+    "clearFilters": "Filter zurücksetzen"
   },
   "classTypes": {
     "title": "Kurstypen",
@@ -358,7 +385,8 @@
     "durationPositive": "Dauer muss positiv sein.",
     "capacityPositive": "Kapazität muss positiv sein.",
     "selectOneDay": "Wählen Sie mindestens einen Tag.",
-    "endDateRequired": "Enddatum ist erforderlich."
+    "endDateRequired": "Enddatum ist erforderlich.",
+    "location": "Standort"
   },
   "marketing": {
     "sectionTitle": "Marketing",
@@ -399,5 +427,21 @@
     "emptyDescSmartLists": "Erstelle eine Smart-Liste, um deine Kunden zu segmentieren.",
     "noTemplates": "Keine E-Mail-Vorlagen",
     "noSmartLists": "Keine Smart-Listen"
+  },
+  "establishments": {
+    "title": "Standorte",
+    "subtitle": "Verwalte deine Studiostandorte",
+    "add": "Standort hinzufügen",
+    "addTitle": "Neuer Standort",
+    "editTitle": "Standort bearbeiten",
+    "name": "Name",
+    "address": "Adresse",
+    "phone": "Telefon",
+    "inactive": "Inaktiv",
+    "deactivate": "Deaktivieren",
+    "saveError": "Speichern fehlgeschlagen. Bitte versuche es erneut.",
+    "nameRequired": "Name ist erforderlich.",
+    "empty": "Noch keine Standorte",
+    "emptyDesc": "Füge deinen ersten Studiostandort hinzu."
   }
 }

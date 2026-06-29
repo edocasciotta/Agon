@@ -234,12 +234,20 @@ def get_memberships_report(
         for name, data in type_stats.items()
     ]
 
+    from datetime import date, timedelta
+    in_7_days = date.today() + timedelta(days=7)
+    expiring_soon = sum(
+        1 for m in all_memberships
+        if m.status == "active" and m.expires_at is not None and m.expires_at <= in_7_days
+    )
+
     return {
         "period": {"start": start_dt.date().isoformat(), "end": end_dt.date().isoformat()},
         "total_active": total_active,
         "total_expired": total_expired,
         "total_cancelled": total_cancelled,
         "new_this_period": new_this_period,
+        "expiring_soon": expiring_soon,
         "by_type": by_type,
     }
 

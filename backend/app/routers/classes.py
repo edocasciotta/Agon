@@ -71,6 +71,7 @@ def schedule_recurring_classes(
             sc = ScheduledClass(
                 template_id=payload.template_id,
                 instructor_id=payload.instructor_id,
+                location_id=payload.location_id or 1,
                 starts_at=occurrence_start,
                 ends_at=occurrence_end,
                 capacity=payload.capacity,
@@ -100,6 +101,7 @@ def list_classes(
     end_date: Optional[str] = Query(None),
     instructor_id: Optional[int] = Query(None),
     template_id: Optional[int] = Query(None),
+    location_id: Optional[int] = Query(None),
     status: Optional[str] = Query(None),
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
@@ -113,6 +115,8 @@ def list_classes(
         query = query.filter(ScheduledClass.instructor_id == instructor_id)
     if template_id is not None:
         query = query.filter(ScheduledClass.template_id == template_id)
+    if location_id is not None:
+        query = query.filter(ScheduledClass.location_id == location_id)
     if status is not None:
         query = query.filter(ScheduledClass.status == status)
     return query.order_by(ScheduledClass.starts_at).all()
@@ -294,3 +298,40 @@ def complete_class(
     db.commit()
     db.refresh(sc)
     return sc
+
+
+@router.delete("/{class_id}/remove", status_code=204)
+def remove_class(
+    class_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_manager),
+):
+    """Permanently delete a scheduled class. Only allowed when there are no confirmed bookings."""
+    sc = db.query(ScheduledClass).filter(ScheduledClass.id == class_id).first()
+    if not sc:
+        raise HTTPException(
+            status_code=404,
+            detail={"error": {"code": "NOT_FOUND", "message": "Scheduled class not found"}},
+        )
+
+    confirmed_count = (
+        db.query(Booking)
+        .filter(Booking.scheduled_class_id == class_id, Booking.status == "confirmed")
+        .count()
+    )
+    if confirmed_count > 0:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": {
+                    "code": "CLASS_HAS_BOOKINGS",
+                    "message": f"Cannot remove: {confirmed_count} confirmed booking(s). Use 'Cancel' instead.",
+                    "details": {"confirmed_count": confirmed_count},
+                }
+            },
+        )
+
+    # Decline any waitlist entries then hard-delete
+    db.query(Waitlist).filter(Waitlist.scheduled_class_id == class_id).delete()
+    db.delete(sc)
+    db.commit()

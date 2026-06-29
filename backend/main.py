@@ -105,6 +105,9 @@ app.include_router(email_templates.router)
 app.include_router(email_events.router)
 app.include_router(smart_lists.router)
 
+from app.routers import locations
+app.include_router(locations.router)
+
 
 @app.get("/health")
 async def health():

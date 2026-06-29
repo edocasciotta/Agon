@@ -5,6 +5,7 @@ import { format } from 'date-fns'
 import { classesApi } from '../api/classes'
 import { classTemplatesApi } from '../api/classTemplates'
 import { instructorsApi } from '../api/instructors'
+import { locationsApi } from '../api/locations'
 import type { ClassTemplate } from '../types'
 
 interface ScheduleClassModalProps {
@@ -29,6 +30,7 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
     start_time: '09:00',
     duration_minutes: 60,
     instructor_id: '',
+    location_id: '1',
     capacity: 10,
     notes: '',
   })
@@ -40,6 +42,7 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
     start_time: '09:00',
     duration_minutes: 60,
     instructor_id: '',
+    location_id: '1',
     capacity: 10,
     recurrence_days: [] as number[],
     end_date: '',
@@ -68,6 +71,12 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
   const { data: instructors = [] } = useQuery({
     queryKey: ['instructors'],
     queryFn: instructorsApi.list,
+    enabled: isOpen,
+  })
+
+  const { data: locations = [] } = useQuery({
+    queryKey: ['locations'],
+    queryFn: () => locationsApi.list(false),
     enabled: isOpen,
   })
 
@@ -166,6 +175,7 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
     singleMutation.mutate({
       template_id: Number(singleForm.template_id),
       instructor_id: singleForm.instructor_id ? Number(singleForm.instructor_id) : undefined,
+      location_id: singleForm.location_id ? Number(singleForm.location_id) : 1,
       starts_at,
       ends_at,
       capacity: singleForm.capacity,
@@ -183,6 +193,7 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
     recurringMutation.mutate({
       template_id: Number(recurringForm.template_id),
       instructor_id: recurringForm.instructor_id ? Number(recurringForm.instructor_id) : undefined,
+      location_id: recurringForm.location_id ? Number(recurringForm.location_id) : 1,
       first_starts_at,
       duration_minutes: recurringForm.duration_minutes,
       capacity: recurringForm.capacity,
@@ -335,6 +346,22 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
                   ))}
                 </select>
               </div>
+
+              {/* Location */}
+              {locations.length > 1 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('scheduleModal.location')}</label>
+                  <select
+                    value={singleForm.location_id}
+                    onChange={(e) => setSingleForm((f) => ({ ...f, location_id: e.target.value }))}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    {locations.map((loc) => (
+                      <option key={loc.id} value={loc.id}>{loc.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* Capacity */}
               <div>
@@ -495,6 +522,22 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
                   ))}
                 </select>
               </div>
+
+              {/* Location */}
+              {locations.length > 1 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('scheduleModal.location')}</label>
+                  <select
+                    value={recurringForm.location_id}
+                    onChange={(e) => setRecurringForm((f) => ({ ...f, location_id: e.target.value }))}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    {locations.map((loc) => (
+                      <option key={loc.id} value={loc.id}>{loc.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* Capacity */}
               <div>

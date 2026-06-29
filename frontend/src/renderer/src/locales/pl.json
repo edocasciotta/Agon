@@ -19,7 +19,8 @@
     "memberships": "Karnety",
     "reports": "Raporty",
     "settings": "Ustawienia",
-    "logout": "Wyloguj"
+    "logout": "Wyloguj",
+    "establishments": "Oddziały"
   },
   "common": {
     "save": "Zapisz",
@@ -115,14 +116,29 @@
     "goToDashboard": "Przejdź do pulpitu"
   },
   "dashboard": {
-    "title": "Pulpit",
-    "subtitle": "Przegląd Twojego studia",
-    "totalClients": "Łączna liczba klientów",
-    "registeredClients": "zarejestrowanych klientów",
+    "title": "Dashboard",
+    "subtitle": "Przegląd twojego studia",
+    "greetingMorning": "Dzień dobry",
+    "greetingAfternoon": "Dzień dobry",
+    "greetingEvening": "Dobry wieczór",
+    "todaySummary": "Oto podsumowanie dzisiejszego dnia",
+    "totalClients": "Aktywni klienci",
+    "newThisMonth": "+{{n}} w tym miesiącu",
     "classesThisWeek": "Zajęcia w tym tygodniu",
+    "cancelledCount": "{{n}} odwołanych",
     "activeMemberships": "Aktywne karnety",
-    "currentlyActive": "obecnie aktywnych",
-    "revenueThisMonth": "Przychody w tym miesiącu"
+    "expiringSoon": "{{n}} wygasa za 7 dni",
+    "revenueThisMonth": "Przychód w tym miesiącu",
+    "paymentsCount": "{{n}} płatności",
+    "todayClasses": "Zajęcia dziś",
+    "noClassesToday": "Brak zaplanowanych zajęć na dziś",
+    "quickActions": "Szybkie akcje",
+    "scheduleClass": "Zaplanuj zajęcia",
+    "addClient": "Dodaj klienta",
+    "assignMembership": "Przypisz karnet",
+    "viewReports": "Zobacz raporty",
+    "spotsFull": "Pełne",
+    "spotsAvailable": "{{booked}}/{{cap}}"
   },
   "calendar": {
     "title": "Kalendarz",
@@ -136,7 +152,18 @@
     "cancelClass": "Anuluj zajęcia",
     "cancelling": "Anulowanie...",
     "cancelError": "Nie udało się anulować zajęć. Proszę spróbować ponownie.",
-    "closePanel": "Zamknij"
+    "closePanel": "Zamknij",
+    "removeClass": "Usuń z harmonogramu",
+    "removing": "Usuwanie...",
+    "removeError": "Nie udało się usunąć klasy. Spróbuj ponownie.",
+    "removeHasBookings": "Nie można usunąć: klasa ma potwierdzone rezerwacje. Użyj opcji 'Anuluj'.",
+    "instructor": "Instruktor",
+    "spots": "miejsc",
+    "booked": "Zarezerwowane",
+    "allLocations": "Wszystkie lokalizacje",
+    "allInstructors": "Wszyscy instruktorzy",
+    "allClassTypes": "Wszystkie typy",
+    "clearFilters": "Wyczyść filtry"
   },
   "classTypes": {
     "title": "Typy zajęć",
@@ -358,7 +385,8 @@
     "durationPositive": "Czas trwania musi być dodatni.",
     "capacityPositive": "Pojemność musi być dodatnia.",
     "selectOneDay": "Wybierz co najmniej jeden dzień.",
-    "endDateRequired": "Data zakończenia jest wymagana."
+    "endDateRequired": "Data zakończenia jest wymagana.",
+    "location": "Lokalizacja"
   },
   "marketing": {
     "sectionTitle": "Marketing",
@@ -399,5 +427,21 @@
     "emptyDescSmartLists": "Utwórz inteligentną listę, aby segmentować swoich klientów.",
     "noTemplates": "Brak szablonów e-mail",
     "noSmartLists": "Brak list inteligentnych"
+  },
+  "establishments": {
+    "title": "Oddziały",
+    "subtitle": "Zarządzaj lokalizacjami studia",
+    "add": "Dodaj oddział",
+    "addTitle": "Nowy oddział",
+    "editTitle": "Edytuj oddział",
+    "name": "Nazwa",
+    "address": "Adres",
+    "phone": "Telefon",
+    "inactive": "Nieaktywny",
+    "deactivate": "Dezaktywuj",
+    "saveError": "Błąd zapisu. Spróbuj ponownie.",
+    "nameRequired": "Nazwa jest wymagana.",
+    "empty": "Brak oddziałów",
+    "emptyDesc": "Dodaj swój pierwszy oddział studia."
   }
 }

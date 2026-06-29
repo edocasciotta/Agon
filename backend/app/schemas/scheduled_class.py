@@ -6,6 +6,7 @@ from datetime import datetime
 class ScheduledClassCreate(BaseModel):
     template_id: int
     instructor_id: Optional[int] = None
+    location_id: Optional[int] = 1
     starts_at: datetime
     ends_at: datetime
     capacity: int
@@ -15,6 +16,7 @@ class ScheduledClassCreate(BaseModel):
 class RecurringClassCreate(BaseModel):
     template_id: int
     instructor_id: Optional[int] = None
+    location_id: Optional[int] = 1
     starts_at: datetime   # first occurrence datetime
     ends_at: datetime     # first occurrence end datetime
     capacity: int
@@ -26,6 +28,7 @@ class RecurringClassCreate(BaseModel):
 
 class ScheduledClassUpdate(BaseModel):
     instructor_id: Optional[int] = None
+    location_id: Optional[int] = None
     starts_at: Optional[datetime] = None
     ends_at: Optional[datetime] = None
     capacity: Optional[int] = None
@@ -36,6 +39,7 @@ class ScheduledClassResponse(BaseModel):
     id: int
     template_id: int
     instructor_id: Optional[int] = None
+    location_id: int = 1
     starts_at: datetime
     ends_at: datetime
     capacity: int

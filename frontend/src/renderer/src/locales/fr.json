@@ -19,7 +19,8 @@
     "memberships": "Abonnements",
     "reports": "Rapports",
     "settings": "Paramètres",
-    "logout": "Déconnexion"
+    "logout": "Déconnexion",
+    "establishments": "Établissements"
   },
   "common": {
     "save": "Enregistrer",
@@ -116,13 +117,28 @@
   },
   "dashboard": {
     "title": "Tableau de bord",
-    "subtitle": "Aperçu de votre studio",
-    "totalClients": "Total clients",
-    "registeredClients": "clients enregistrés",
+    "subtitle": "Vue d'ensemble de votre studio",
+    "greetingMorning": "Bonjour",
+    "greetingAfternoon": "Bon après-midi",
+    "greetingEvening": "Bonsoir",
+    "todaySummary": "Voici le résumé d'aujourd'hui",
+    "totalClients": "Clients actifs",
+    "newThisMonth": "+{{n}} ce mois",
     "classesThisWeek": "Cours cette semaine",
+    "cancelledCount": "{{n}} annulés",
     "activeMemberships": "Abonnements actifs",
-    "currentlyActive": "actuellement actifs",
-    "revenueThisMonth": "Revenus ce mois"
+    "expiringSoon": "{{n}} expirent dans 7 jours",
+    "revenueThisMonth": "Revenus ce mois",
+    "paymentsCount": "{{n}} paiements",
+    "todayClasses": "Cours d'aujourd'hui",
+    "noClassesToday": "Aucun cours prévu aujourd'hui",
+    "quickActions": "Actions rapides",
+    "scheduleClass": "Planifier un cours",
+    "addClient": "Ajouter un client",
+    "assignMembership": "Assigner un abonnement",
+    "viewReports": "Voir les rapports",
+    "spotsFull": "Complet",
+    "spotsAvailable": "{{booked}}/{{cap}}"
   },
   "calendar": {
     "title": "Calendrier",
@@ -136,7 +152,18 @@
     "cancelClass": "Annuler le cours",
     "cancelling": "Annulation...",
     "cancelError": "Échec de l'annulation du cours. Veuillez réessayer.",
-    "closePanel": "Fermer"
+    "closePanel": "Fermer",
+    "removeClass": "Retirer du planning",
+    "removing": "Suppression...",
+    "removeError": "Impossible de supprimer le cours. Veuillez réessayer.",
+    "removeHasBookings": "Impossible de supprimer : le cours a des réservations confirmées. Utilisez 'Annuler'.",
+    "instructor": "Instructeur",
+    "spots": "places",
+    "booked": "Réservées",
+    "allLocations": "Tous les lieux",
+    "allInstructors": "Tous les instructeurs",
+    "allClassTypes": "Tous les types",
+    "clearFilters": "Effacer les filtres"
   },
   "classTypes": {
     "title": "Types de cours",
@@ -358,7 +385,8 @@
     "durationPositive": "La durée doit être positive.",
     "capacityPositive": "La capacité doit être positive.",
     "selectOneDay": "Sélectionnez au moins un jour.",
-    "endDateRequired": "La date de fin est requise."
+    "endDateRequired": "La date de fin est requise.",
+    "location": "Lieu"
   },
   "marketing": {
     "sectionTitle": "Marketing",
@@ -399,5 +427,21 @@
     "emptyDescSmartLists": "Créez une liste intelligente pour segmenter vos clients.",
     "noTemplates": "Aucun modèle d'e-mail",
     "noSmartLists": "Aucune liste intelligente"
+  },
+  "establishments": {
+    "title": "Établissements",
+    "subtitle": "Gérez vos lieux de studio",
+    "add": "Ajouter un établissement",
+    "addTitle": "Nouvel établissement",
+    "editTitle": "Modifier l'établissement",
+    "name": "Nom",
+    "address": "Adresse",
+    "phone": "Téléphone",
+    "inactive": "Inactif",
+    "deactivate": "Désactiver",
+    "saveError": "Échec de l'enregistrement. Veuillez réessayer.",
+    "nameRequired": "Le nom est obligatoire.",
+    "empty": "Aucun établissement",
+    "emptyDesc": "Ajoutez votre premier établissement."
   }
 }

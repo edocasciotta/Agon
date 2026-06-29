@@ -19,7 +19,8 @@
     "memberships": "Lidmaatschappen",
     "reports": "Rapporten",
     "settings": "Instellingen",
-    "logout": "Uitloggen"
+    "logout": "Uitloggen",
+    "establishments": "Vestigingen"
   },
   "common": {
     "save": "Opslaan",
@@ -116,13 +117,28 @@
   },
   "dashboard": {
     "title": "Dashboard",
-    "subtitle": "Overzicht van uw studio",
-    "totalClients": "Totaal klanten",
-    "registeredClients": "geregistreerde klanten",
+    "subtitle": "Overzicht van je studio",
+    "greetingMorning": "Goedemorgen",
+    "greetingAfternoon": "Goedemiddag",
+    "greetingEvening": "Goedenavond",
+    "todaySummary": "Hier is je overzicht van vandaag",
+    "totalClients": "Actieve klanten",
+    "newThisMonth": "+{{n}} deze maand",
     "classesThisWeek": "Lessen deze week",
+    "cancelledCount": "{{n}} geannuleerd",
     "activeMemberships": "Actieve lidmaatschappen",
-    "currentlyActive": "momenteel actief",
-    "revenueThisMonth": "Omzet deze maand"
+    "expiringSoon": "{{n}} verlopen binnen 7 dagen",
+    "revenueThisMonth": "Omzet deze maand",
+    "paymentsCount": "{{n}} betalingen",
+    "todayClasses": "Lessen vandaag",
+    "noClassesToday": "Vandaag geen lessen gepland",
+    "quickActions": "Snelle acties",
+    "scheduleClass": "Les inplannen",
+    "addClient": "Klant toevoegen",
+    "assignMembership": "Lidmaatschap toewijzen",
+    "viewReports": "Rapporten bekijken",
+    "spotsFull": "Vol",
+    "spotsAvailable": "{{booked}}/{{cap}}"
   },
   "calendar": {
     "title": "Agenda",
@@ -136,7 +152,18 @@
     "cancelClass": "Les annuleren",
     "cancelling": "Annuleren...",
     "cancelError": "Les annuleren mislukt. Probeer het opnieuw.",
-    "closePanel": "Sluiten"
+    "closePanel": "Sluiten",
+    "removeClass": "Verwijder uit rooster",
+    "removing": "Verwijderen...",
+    "removeError": "Klasse kon niet worden verwijderd. Probeer het opnieuw.",
+    "removeHasBookings": "Kan niet verwijderen: klasse heeft bevestigde boekingen. Gebruik 'Annuleren'.",
+    "instructor": "Instructeur",
+    "spots": "plaatsen",
+    "booked": "Geboekt",
+    "allLocations": "Alle locaties",
+    "allInstructors": "Alle instructeurs",
+    "allClassTypes": "Alle lestypen",
+    "clearFilters": "Filters wissen"
   },
   "classTypes": {
     "title": "Lestypen",
@@ -358,7 +385,8 @@
     "durationPositive": "Duur moet positief zijn.",
     "capacityPositive": "Capaciteit moet positief zijn.",
     "selectOneDay": "Selecteer minimaal één dag.",
-    "endDateRequired": "Einddatum is verplicht."
+    "endDateRequired": "Einddatum is verplicht.",
+    "location": "Locatie"
   },
   "marketing": {
     "sectionTitle": "Marketing",
@@ -399,5 +427,21 @@
     "emptyDescSmartLists": "Maak een slimme lijst om je klanten te segmenteren.",
     "noTemplates": "Geen e-mailsjablonen",
     "noSmartLists": "Geen slimme lijsten"
+  },
+  "establishments": {
+    "title": "Vestigingen",
+    "subtitle": "Beheer je studiolocaties",
+    "add": "Vestiging toevoegen",
+    "addTitle": "Nieuwe vestiging",
+    "editTitle": "Vestiging bewerken",
+    "name": "Naam",
+    "address": "Adres",
+    "phone": "Telefoon",
+    "inactive": "Inactief",
+    "deactivate": "Deactiveren",
+    "saveError": "Opslaan mislukt. Probeer het opnieuw.",
+    "nameRequired": "Naam is verplicht.",
+    "empty": "Nog geen vestigingen",
+    "emptyDesc": "Voeg je eerste studiolocatie toe."
   }
 }

@@ -29,6 +29,7 @@ export interface ScheduledClass {
   id: number
   template_id: number
   instructor_id?: number
+  location_id: number
   starts_at: string
   ends_at: string
   capacity: number

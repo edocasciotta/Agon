@@ -19,7 +19,8 @@
     "memberships": "Membresías",
     "reports": "Informes",
     "settings": "Configuración",
-    "logout": "Cerrar sesión"
+    "logout": "Cerrar sesión",
+    "establishments": "Sedes"
   },
   "common": {
     "save": "Guardar",
@@ -115,14 +116,29 @@
     "goToDashboard": "Ir al panel"
   },
   "dashboard": {
-    "title": "Panel",
+    "title": "Dashboard",
     "subtitle": "Resumen de tu estudio",
-    "totalClients": "Total de clientes",
-    "registeredClients": "clientes registrados",
+    "greetingMorning": "Buenos días",
+    "greetingAfternoon": "Buenas tardes",
+    "greetingEvening": "Buenas noches",
+    "todaySummary": "Aquí tienes el resumen de hoy",
+    "totalClients": "Clientes activos",
+    "newThisMonth": "+{{n}} este mes",
     "classesThisWeek": "Clases esta semana",
+    "cancelledCount": "{{n}} canceladas",
     "activeMemberships": "Membresías activas",
-    "currentlyActive": "actualmente activos",
-    "revenueThisMonth": "Ingresos este mes"
+    "expiringSoon": "{{n}} vencen en 7 días",
+    "revenueThisMonth": "Ingresos este mes",
+    "paymentsCount": "{{n}} pagos",
+    "todayClasses": "Clases de hoy",
+    "noClassesToday": "No hay clases programadas hoy",
+    "quickActions": "Acciones rápidas",
+    "scheduleClass": "Programar clase",
+    "addClient": "Añadir cliente",
+    "assignMembership": "Asignar membresía",
+    "viewReports": "Ver informes",
+    "spotsFull": "Llena",
+    "spotsAvailable": "{{booked}}/{{cap}}"
   },
   "calendar": {
     "title": "Calendario",
@@ -136,7 +152,18 @@
     "cancelClass": "Cancelar clase",
     "cancelling": "Cancelando...",
     "cancelError": "Error al cancelar la clase. Por favor, inténtalo de nuevo.",
-    "closePanel": "Cerrar"
+    "closePanel": "Cerrar",
+    "removeClass": "Eliminar del horario",
+    "removing": "Eliminando...",
+    "removeError": "No se pudo eliminar la clase. Inténtalo de nuevo.",
+    "removeHasBookings": "No se puede eliminar: la clase tiene reservas confirmadas. Usa 'Cancelar'.",
+    "instructor": "Instructor",
+    "spots": "plazas",
+    "booked": "Reservadas",
+    "allLocations": "Todas las sedes",
+    "allInstructors": "Todos los instructores",
+    "allClassTypes": "Todos los tipos",
+    "clearFilters": "Borrar filtros"
   },
   "classTypes": {
     "title": "Tipos de clase",
@@ -358,7 +385,8 @@
     "durationPositive": "La duración debe ser positiva.",
     "capacityPositive": "La capacidad debe ser positiva.",
     "selectOneDay": "Selecciona al menos un día.",
-    "endDateRequired": "La fecha de fin es obligatoria."
+    "endDateRequired": "La fecha de fin es obligatoria.",
+    "location": "Sede"
   },
   "marketing": {
     "sectionTitle": "Marketing",
@@ -399,5 +427,21 @@
     "emptyDescSmartLists": "Crea una lista inteligente para segmentar a tus clientes.",
     "noTemplates": "Sin plantillas de correo",
     "noSmartLists": "Sin listas inteligentes"
+  },
+  "establishments": {
+    "title": "Sedes",
+    "subtitle": "Gestiona las sedes de tu estudio",
+    "add": "Añadir Sede",
+    "addTitle": "Nueva Sede",
+    "editTitle": "Editar Sede",
+    "name": "Nombre",
+    "address": "Dirección",
+    "phone": "Teléfono",
+    "inactive": "Inactiva",
+    "deactivate": "Desactivar",
+    "saveError": "Error al guardar. Inténtalo de nuevo.",
+    "nameRequired": "El nombre es obligatorio.",
+    "empty": "Sin sedes",
+    "emptyDesc": "Añade tu primera sede de estudio."
   }
 }

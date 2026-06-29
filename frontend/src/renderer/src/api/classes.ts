@@ -35,6 +35,9 @@ export const classesApi = {
     const res = await apiClient.delete(`/api/v1/classes/${id}`)
     return res.data
   },
+  remove: async (id: number): Promise<void> => {
+    await apiClient.delete(`/api/v1/classes/${id}/remove`)
+  },
   roster: async (id: number) => {
     const res = await apiClient.get(`/api/v1/classes/${id}/roster`)
     return res.data

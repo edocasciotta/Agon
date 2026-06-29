@@ -19,7 +19,8 @@
     "memberships": "Üyelikler",
     "reports": "Raporlar",
     "settings": "Ayarlar",
-    "logout": "Çıkış"
+    "logout": "Çıkış",
+    "establishments": "Şubeler"
   },
   "common": {
     "save": "Kaydet",
@@ -115,14 +116,29 @@
     "goToDashboard": "Panele git"
   },
   "dashboard": {
-    "title": "Panel",
-    "subtitle": "Stüdyonuza genel bakış",
-    "totalClients": "Toplam müşteriler",
-    "registeredClients": "kayıtlı müşteriler",
+    "title": "Dashboard",
+    "subtitle": "Stüdyonuzun genel görünümü",
+    "greetingMorning": "Günaydın",
+    "greetingAfternoon": "İyi öğleden sonralar",
+    "greetingEvening": "İyi akşamlar",
+    "todaySummary": "İşte bugünün özeti",
+    "totalClients": "Aktif müşteriler",
+    "newThisMonth": "+{{n}} bu ay",
     "classesThisWeek": "Bu haftaki dersler",
+    "cancelledCount": "{{n}} iptal edildi",
     "activeMemberships": "Aktif üyelikler",
-    "currentlyActive": "şu anda aktif",
-    "revenueThisMonth": "Bu ayki gelir"
+    "expiringSoon": "{{n}} tanesi 7 gün içinde bitiyor",
+    "revenueThisMonth": "Bu ayki gelir",
+    "paymentsCount": "{{n}} ödeme",
+    "todayClasses": "Bugünkü dersler",
+    "noClassesToday": "Bugün planlanmış ders yok",
+    "quickActions": "Hızlı eylemler",
+    "scheduleClass": "Ders planla",
+    "addClient": "Müşteri ekle",
+    "assignMembership": "Üyelik ata",
+    "viewReports": "Raporları görüntüle",
+    "spotsFull": "Dolu",
+    "spotsAvailable": "{{booked}}/{{cap}}"
   },
   "calendar": {
     "title": "Takvim",
@@ -136,7 +152,18 @@
     "cancelClass": "Dersi iptal et",
     "cancelling": "İptal ediliyor...",
     "cancelError": "Ders iptal edilemedi. Lütfen tekrar deneyin.",
-    "closePanel": "Kapat"
+    "closePanel": "Kapat",
+    "removeClass": "Programdan Kaldır",
+    "removing": "Kaldırılıyor...",
+    "removeError": "Sınıf kaldırılamadı. Lütfen tekrar deneyin.",
+    "removeHasBookings": "Kaldırılamaz: sınıfın onaylanmış rezervasyonları var. 'İptal Et' seçeneğini kullanın.",
+    "instructor": "Eğitmen",
+    "spots": "yer",
+    "booked": "Rezerve",
+    "allLocations": "Tüm Konumlar",
+    "allInstructors": "Tüm Eğitmenler",
+    "allClassTypes": "Tüm Ders Türleri",
+    "clearFilters": "Filtreleri Temizle"
   },
   "classTypes": {
     "title": "Ders türleri",
@@ -358,7 +385,8 @@
     "durationPositive": "Süre pozitif olmalıdır.",
     "capacityPositive": "Kapasite pozitif olmalıdır.",
     "selectOneDay": "En az bir gün seçin.",
-    "endDateRequired": "Bitiş tarihi gereklidir."
+    "endDateRequired": "Bitiş tarihi gereklidir.",
+    "location": "Konum"
   },
   "marketing": {
     "sectionTitle": "Pazarlama",
@@ -399,5 +427,21 @@
     "emptyDescSmartLists": "Müşterilerini segmentlemek için akıllı liste oluştur.",
     "noTemplates": "E-posta şablonu yok",
     "noSmartLists": "Akıllı liste yok"
+  },
+  "establishments": {
+    "title": "Şubeler",
+    "subtitle": "Stüdyo konumlarınızı yönetin",
+    "add": "Şube Ekle",
+    "addTitle": "Yeni Şube",
+    "editTitle": "Şubeyi Düzenle",
+    "name": "Ad",
+    "address": "Adres",
+    "phone": "Telefon",
+    "inactive": "Pasif",
+    "deactivate": "Pasif Yap",
+    "saveError": "Kaydetme başarısız. Lütfen tekrar deneyin.",
+    "nameRequired": "Ad zorunludur.",
+    "empty": "Henüz şube yok",
+    "emptyDesc": "İlk stüdyo şubenizi ekleyin."
   }
 }
