@@ -143,8 +143,8 @@
   },
   "calendar": {
     "title": "Kalendarz",
-    "subtitle": "Tygodniowy plan zajęć",
-    "scheduleClass": "Zaplanuj zajęcia",
+    "subtitle": "Weekly classes",
+    "scheduleClass": "Add Class",
     "start": "Początek",
     "end": "Koniec",
     "statusLabel": "Status",
@@ -154,17 +154,14 @@
     "cancelling": "Anulowanie...",
     "cancelError": "Nie udało się anulować zajęć. Proszę spróbować ponownie.",
     "closePanel": "Zamknij",
-    "removeClass": "Usuń z harmonogramu",
-    "removing": "Usuwanie...",
-    "removeError": "Nie udało się usunąć klasy. Spróbuj ponownie.",
-    "removeHasBookings": "Nie można usunąć: klasa ma potwierdzone rezerwacje. Użyj opcji 'Anuluj'.",
     "instructor": "Instruktor",
     "spots": "miejsc",
     "booked": "Zarezerwowane",
     "allLocations": "Wszystkie lokalizacje",
     "allInstructors": "Wszyscy instruktorzy",
     "allClassTypes": "Wszystkie typy",
-    "clearFilters": "Wyczyść filtry"
+    "clearFilters": "Wyczyść filtry",
+    "editClass": "Edit"
   },
   "classTypes": {
     "title": "Typy zajęć",
@@ -477,5 +474,13 @@
     "removeConfirm": "Trwale usunąć tego instruktora?",
     "removeDesc": "Konto zostanie również usunięte. Tej akcji nie można cofnąć.",
     "hasClasses": "Nie można usunąć: ten instruktor ma zaplanowane zajęcia."
+  },
+  "editModal": {
+    "title": "Edit Class",
+    "close": "Close",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "saveChanges": "Save Changes",
+    "failedSave": "Failed to save changes. Please try again."
   }
 }

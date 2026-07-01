@@ -143,8 +143,8 @@
   },
   "calendar": {
     "title": "Takvim",
-    "subtitle": "Haftalık ders programı",
-    "scheduleClass": "Ders planla",
+    "subtitle": "Weekly classes",
+    "scheduleClass": "Add Class",
     "start": "Başlangıç",
     "end": "Bitiş",
     "statusLabel": "Durum",
@@ -154,17 +154,14 @@
     "cancelling": "İptal ediliyor...",
     "cancelError": "Ders iptal edilemedi. Lütfen tekrar deneyin.",
     "closePanel": "Kapat",
-    "removeClass": "Programdan Kaldır",
-    "removing": "Kaldırılıyor...",
-    "removeError": "Sınıf kaldırılamadı. Lütfen tekrar deneyin.",
-    "removeHasBookings": "Kaldırılamaz: sınıfın onaylanmış rezervasyonları var. 'İptal Et' seçeneğini kullanın.",
     "instructor": "Eğitmen",
     "spots": "yer",
     "booked": "Rezerve",
     "allLocations": "Tüm Konumlar",
     "allInstructors": "Tüm Eğitmenler",
     "allClassTypes": "Tüm Ders Türleri",
-    "clearFilters": "Filtreleri Temizle"
+    "clearFilters": "Filtreleri Temizle",
+    "editClass": "Edit"
   },
   "classTypes": {
     "title": "Ders türleri",
@@ -477,5 +474,13 @@
     "removeConfirm": "Bu eğitmeni kalıcı olarak kaldır?",
     "removeDesc": "Giriş hesabı da silinecek. Bu işlem geri alınamaz.",
     "hasClasses": "Kaldırılamıyor: bu eğitmenin planlanmış dersleri var."
+  },
+  "editModal": {
+    "title": "Edit Class",
+    "close": "Close",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "saveChanges": "Save Changes",
+    "failedSave": "Failed to save changes. Please try again."
   }
 }

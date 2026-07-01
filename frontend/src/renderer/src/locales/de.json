@@ -143,8 +143,8 @@
   },
   "calendar": {
     "title": "Kalender",
-    "subtitle": "Wöchentlicher Kursplan",
-    "scheduleClass": "Kurs planen",
+    "subtitle": "Weekly classes",
+    "scheduleClass": "Add Class",
     "start": "Start",
     "end": "Ende",
     "statusLabel": "Status",
@@ -154,17 +154,14 @@
     "cancelling": "Absagen...",
     "cancelError": "Kurs konnte nicht abgesagt werden. Bitte versuchen Sie es erneut.",
     "closePanel": "Schließen",
-    "removeClass": "Aus dem Stundenplan entfernen",
-    "removing": "Wird entfernt...",
-    "removeError": "Klasse konnte nicht entfernt werden. Bitte versuche es erneut.",
-    "removeHasBookings": "Kann nicht entfernt werden: Klasse hat bestätigte Buchungen. Verwende 'Absagen'.",
     "instructor": "Kursleiter",
     "spots": "Plätze",
     "booked": "Gebucht",
     "allLocations": "Alle Standorte",
     "allInstructors": "Alle Kursleiter",
     "allClassTypes": "Alle Kurstypen",
-    "clearFilters": "Filter zurücksetzen"
+    "clearFilters": "Filter zurücksetzen",
+    "editClass": "Edit"
   },
   "classTypes": {
     "title": "Kurstypen",
@@ -477,5 +474,13 @@
     "removeConfirm": "Diesen Trainer dauerhaft entfernen?",
     "removeDesc": "Dies löscht auch das zugehörige Konto. Diese Aktion kann nicht rückgängig gemacht werden.",
     "hasClasses": "Kann nicht entfernt werden: Dieser Trainer hat geplante Kurse."
+  },
+  "editModal": {
+    "title": "Edit Class",
+    "close": "Close",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "saveChanges": "Save Changes",
+    "failedSave": "Failed to save changes. Please try again."
   }
 }

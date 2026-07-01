@@ -4,6 +4,24 @@ import { useTranslation } from 'react-i18next'
 import i18n from '../i18n'
 import { useAuthStore } from '../store/authStore'
 import { SupportChat } from './SupportChat'
+import {
+  LayoutDashboard,
+  CalendarDays,
+  Tag,
+  Building2,
+  UserRound,
+  Users,
+  CreditCard,
+  TrendingUp,
+  Settings2,
+  Mail,
+  Megaphone,
+  ListFilter,
+  LogOut,
+  Globe,
+  ChevronUp,
+  ChevronDown,
+} from 'lucide-react'
 
 const LANGUAGES = [
   { code: 'en', label: 'English', flag: '🇬🇧' },
@@ -36,21 +54,21 @@ export function Layout() {
   }, [])
 
   const navItems = [
-    { to: '/dashboard', label: t('nav.dashboard'), icon: '📊' },
-    { to: '/calendar', label: t('nav.calendar'), icon: '📅' },
-    { to: '/class-types', label: t('nav.classTypes'), icon: '🏷️' },
-    { to: '/establishments', label: t('nav.establishments'), icon: '🏢' },
-    { to: '/instructors', label: t('nav.instructors'), icon: '👤' },
-    { to: '/clients', label: t('nav.clients'), icon: '👥' },
-    { to: '/memberships', label: t('nav.memberships'), icon: '🎫' },
-    { to: '/reports', label: t('nav.reports'), icon: '📈' },
-    { to: '/settings', label: t('nav.settings'), icon: '⚙️' },
+    { to: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
+    { to: '/calendar', label: t('nav.calendar'), icon: CalendarDays },
+    { to: '/class-types', label: t('nav.classTypes'), icon: Tag },
+    { to: '/establishments', label: t('nav.establishments'), icon: Building2 },
+    { to: '/instructors', label: t('nav.instructors'), icon: UserRound },
+    { to: '/clients', label: t('nav.clients'), icon: Users },
+    { to: '/memberships', label: t('nav.memberships'), icon: CreditCard },
+    { to: '/reports', label: t('nav.reports'), icon: TrendingUp },
+    { to: '/settings', label: t('nav.settings'), icon: Settings2 },
   ]
 
   const marketingItems = [
-    { to: '/marketing/templates', label: t('marketing.templates'), icon: '✉️' },
-    { to: '/marketing/events', label: t('marketing.events'), icon: '🔔' },
-    { to: '/marketing/smartlists', label: t('marketing.smartLists'), icon: '🎯' },
+    { to: '/marketing/templates', label: t('marketing.templates'), icon: Mail },
+    { to: '/marketing/events', label: t('marketing.events'), icon: Megaphone },
+    { to: '/marketing/smartlists', label: t('marketing.smartLists'), icon: ListFilter },
   ]
 
   return (
@@ -72,7 +90,7 @@ export function Layout() {
                 }`
               }
             >
-              <span>{item.icon}</span>
+              <item.icon size={16} strokeWidth={1.75} />
               {item.label}
             </NavLink>
           ))}
@@ -94,7 +112,7 @@ export function Layout() {
                 }`
               }
             >
-              <span>{item.icon}</span>
+              <item.icon size={16} strokeWidth={1.75} />
               {item.label}
             </NavLink>
           ))}
@@ -108,9 +126,13 @@ export function Layout() {
               aria-haspopup="listbox"
               aria-expanded={langOpen}
             >
-              <span className="text-base leading-none">{currentLang.flag}</span>
+              <Globe size={15} strokeWidth={1.75} className="text-gray-400 shrink-0" />
               <span className="flex-1 text-left">{currentLang.label}</span>
-              <span className="text-gray-400 text-xs">{langOpen ? '▲' : '▼'}</span>
+              {langOpen ? (
+                <ChevronUp size={14} className="text-gray-400 shrink-0" />
+              ) : (
+                <ChevronDown size={14} className="text-gray-400 shrink-0" />
+              )}
             </button>
             {langOpen && (
               <div
@@ -141,8 +163,9 @@ export function Layout() {
           </div>
           <button
             onClick={logout}
-            className="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md"
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
           >
+            <LogOut size={15} strokeWidth={1.75} className="text-gray-400 shrink-0" />
             {t('nav.logout')}
           </button>
         </div>

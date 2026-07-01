@@ -143,8 +143,8 @@
   },
   "calendar": {
     "title": "Calendário",
-    "subtitle": "Programação semanal de aulas",
-    "scheduleClass": "Agendar aula",
+    "subtitle": "Weekly classes",
+    "scheduleClass": "Add Class",
     "start": "Início",
     "end": "Fim",
     "statusLabel": "Status",
@@ -154,17 +154,14 @@
     "cancelling": "Cancelando...",
     "cancelError": "Falha ao cancelar a aula. Por favor, tente novamente.",
     "closePanel": "Fechar",
-    "removeClass": "Remover da agenda",
-    "removing": "Removendo...",
-    "removeError": "Não foi possível remover a aula. Tente novamente.",
-    "removeHasBookings": "Não é possível remover: a aula tem reservas confirmadas. Use 'Cancelar'.",
     "instructor": "Instrutor",
     "spots": "vagas",
     "booked": "Reservadas",
     "allLocations": "Todos os locais",
     "allInstructors": "Todos os instrutores",
     "allClassTypes": "Todos os tipos",
-    "clearFilters": "Limpar filtros"
+    "clearFilters": "Limpar filtros",
+    "editClass": "Edit"
   },
   "classTypes": {
     "title": "Tipos de aula",
@@ -477,5 +474,13 @@
     "removeConfirm": "Remover permanentemente este instrutor?",
     "removeDesc": "A conta de acesso também será excluída. Esta ação não pode ser desfeita.",
     "hasClasses": "Não é possível remover: este instrutor tem aulas agendadas."
+  },
+  "editModal": {
+    "title": "Edit Class",
+    "close": "Close",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "saveChanges": "Save Changes",
+    "failedSave": "Failed to save changes. Please try again."
   }
 }

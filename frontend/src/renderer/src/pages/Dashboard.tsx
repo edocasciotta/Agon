@@ -7,10 +7,19 @@ import {
   endOfWeek,
   startOfMonth,
   endOfMonth,
-  startOfDay,
-  endOfDay,
   isSameDay,
 } from 'date-fns'
+import {
+  Users,
+  CalendarDays,
+  BadgeCheck,
+  Banknote,
+  CalendarPlus,
+  UserPlus,
+  CreditCard,
+  BarChart2,
+  type LucideIcon,
+} from 'lucide-react'
 import { classesApi } from '../api/classes'
 import { classTemplatesApi } from '../api/classTemplates'
 import { instructorsApi } from '../api/instructors'
@@ -37,7 +46,7 @@ function fmtMoney(value: number, currency?: string): string {
 // ─── sub-components ─────────────────────────────────────────────────────────
 
 interface KpiCardProps {
-  icon: string
+  icon: LucideIcon
   label: string
   value: string | number
   sub?: string
@@ -47,16 +56,16 @@ interface KpiCardProps {
   loading?: boolean
 }
 
-function KpiCard({ icon, label, value, sub, accentClass, iconBg, iconColor, loading }: KpiCardProps) {
+function KpiCard({ icon: Icon, label, value, sub, accentClass, iconBg, iconColor, loading }: KpiCardProps) {
   return (
     <div className="bg-white border border-gray-100 rounded-xl overflow-hidden relative">
       <div className={`h-0.5 w-full ${accentClass}`} />
       <div className="p-5">
         <div
-          className="w-8 h-8 rounded-lg flex items-center justify-center mb-3 text-base"
+          className="w-8 h-8 rounded-lg flex items-center justify-center mb-3"
           style={{ background: iconBg, color: iconColor }}
         >
-          <i className={`ti ${icon}`} aria-hidden="true" />
+          <Icon size={16} strokeWidth={1.75} />
         </div>
         {loading ? (
           <div className="mt-1"><LoadingSpinner size="sm" /></div>
@@ -119,24 +128,24 @@ function ClassRow({ cls, template, instructorName, locationName }: ClassRowProps
 }
 
 interface QuickActionProps {
-  icon: string
+  icon: LucideIcon
   label: string
   iconBg: string
   iconColor: string
   onClick: () => void
 }
 
-function QuickAction({ icon, label, iconBg, iconColor, onClick }: QuickActionProps) {
+function QuickAction({ icon: Icon, label, iconBg, iconColor, onClick }: QuickActionProps) {
   return (
     <button
       onClick={onClick}
       className="flex items-center gap-3 px-4 py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors w-full text-left"
     >
       <span
-        className="w-7 h-7 rounded-md flex items-center justify-center text-sm flex-shrink-0"
+        className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0"
         style={{ background: iconBg, color: iconColor }}
       >
-        <i className={`ti ${icon}`} aria-hidden="true" />
+        <Icon size={15} strokeWidth={1.75} />
       </span>
       <span className="text-sm font-medium text-gray-800">{label}</span>
       <span className="ml-auto text-gray-300 text-base">›</span>
@@ -238,7 +247,7 @@ export function Dashboard() {
       {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KpiCard
-          icon="ti-users"
+          icon={Users}
           label={t('dashboard.totalClients')}
           value={clients?.length ?? '—'}
           sub={newClientsThisMonth > 0 ? t('dashboard.newThisMonth').replace('{{n}}', String(newClientsThisMonth)) : undefined}
@@ -248,7 +257,7 @@ export function Dashboard() {
           loading={clientsLoading}
         />
         <KpiCard
-          icon="ti-calendar"
+          icon={CalendarDays}
           label={t('dashboard.classesThisWeek')}
           value={classesLoading ? '—' : weekScheduled}
           sub={weekCancelled > 0 ? t('dashboard.cancelledCount').replace('{{n}}', String(weekCancelled)) : undefined}
@@ -258,7 +267,7 @@ export function Dashboard() {
           loading={classesLoading}
         />
         <KpiCard
-          icon="ti-id-badge"
+          icon={BadgeCheck}
           label={t('dashboard.activeMemberships')}
           value={membershipsReport?.total_active ?? '—'}
           sub={
@@ -272,7 +281,7 @@ export function Dashboard() {
           loading={membershipsLoading}
         />
         <KpiCard
-          icon="ti-currency-euro"
+          icon={Banknote}
           label={t('dashboard.revenueThisMonth')}
           value={revenueLoading ? '—' : fmtMoney(revenue, currency)}
           sub={paymentCount > 0 ? t('dashboard.paymentsCount').replace('{{n}}', String(paymentCount)) : undefined}
@@ -320,28 +329,28 @@ export function Dashboard() {
             <span className="text-sm font-medium text-gray-900">{t('dashboard.quickActions')}</span>
           </div>
           <QuickAction
-            icon="ti-calendar-plus"
+            icon={CalendarPlus}
             label={t('dashboard.scheduleClass')}
             iconBg="#E6F1FB"
             iconColor="#185FA5"
             onClick={() => navigate('/calendar')}
           />
           <QuickAction
-            icon="ti-user-plus"
+            icon={UserPlus}
             label={t('dashboard.addClient')}
             iconBg="#EAF3DE"
             iconColor="#3B6D11"
             onClick={() => navigate('/clients')}
           />
           <QuickAction
-            icon="ti-id-badge-2"
+            icon={CreditCard}
             label={t('dashboard.assignMembership')}
             iconBg="#FAEEDA"
             iconColor="#854F0B"
             onClick={() => navigate('/memberships')}
           />
           <QuickAction
-            icon="ti-chart-bar"
+            icon={BarChart2}
             label={t('dashboard.viewReports')}
             iconBg="#EEEDFE"
             iconColor="#534AB7"

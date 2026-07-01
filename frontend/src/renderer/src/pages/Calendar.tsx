@@ -18,6 +18,7 @@ import { locationsApi } from '../api/locations'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { PageHeader } from '../components/PageHeader'
 import { ScheduleClassModal } from '../components/ScheduleClassModal'
+import { EditClassModal } from '../components/EditClassModal'
 import type { ScheduledClass, ClassTemplate } from '../types'
 
 // Grid configuration
@@ -60,6 +61,7 @@ export function CalendarPage() {
   const [actionError, setActionError] = useState<string | null>(null)
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false)
   const [scheduleDefaultDate, setScheduleDefaultDate] = useState<Date | undefined>()
+  const [editModalClass, setEditModalClass] = useState<ScheduledClass | null>(null)
 
   // Active filters
   const [filterLocation, setFilterLocation] = useState<number | null>(null)
@@ -118,23 +120,6 @@ export function CalendarPage() {
       setActionError(null)
     },
     onError: () => setActionError(t('calendar.cancelError')),
-  })
-
-  const removeMutation = useMutation({
-    mutationFn: (id: number) => classesApi.remove(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['classes'] })
-      setSelectedClass(null)
-      setActionError(null)
-    },
-    onError: (err: any) => {
-      const code = err?.response?.data?.detail?.error?.code
-      if (code === 'CLASS_HAS_BOOKINGS') {
-        setActionError(t('calendar.removeHasBookings'))
-      } else {
-        setActionError(t('calendar.removeError'))
-      }
-    },
   })
 
   const handleSelectClass = (cls: ScheduledClass) => {
@@ -437,24 +422,23 @@ export function CalendarPage() {
                   {selectedClass.status === 'scheduled' && (
                     <>
                       <button
+                        onClick={() => { setEditModalClass(selectedClass); setSelectedClass(null); setActionError(null) }}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-indigo-200 text-indigo-700 hover:bg-indigo-50 transition-colors"
+                      >
+                        <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        {t('calendar.editClass')}
+                      </button>
+                      <button
                         onClick={() => cancelMutation.mutate(selectedClass.id)}
-                        disabled={cancelMutation.isPending || removeMutation.isPending}
+                        disabled={cancelMutation.isPending}
                         className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-amber-200 text-amber-700 hover:bg-amber-50 disabled:opacity-50 transition-colors"
                       >
                         <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                         </svg>
                         {cancelMutation.isPending ? t('calendar.cancelling') : t('calendar.cancelClass')}
-                      </button>
-                      <button
-                        onClick={() => removeMutation.mutate(selectedClass.id)}
-                        disabled={cancelMutation.isPending || removeMutation.isPending}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50 transition-colors"
-                      >
-                        <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                        {removeMutation.isPending ? t('calendar.removing') : t('calendar.removeClass')}
                       </button>
                     </>
                   )}
@@ -477,6 +461,15 @@ export function CalendarPage() {
         onSuccess={() => queryClient.invalidateQueries({ queryKey: ['classes'] })}
         defaultDate={scheduleDefaultDate}
       />
+
+      {editModalClass && (
+        <EditClassModal
+          isOpen={true}
+          onClose={() => setEditModalClass(null)}
+          onSuccess={() => queryClient.invalidateQueries({ queryKey: ['classes'] })}
+          editClass={editModalClass}
+        />
+      )}
     </div>
   )
 }

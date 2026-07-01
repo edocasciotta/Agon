@@ -143,8 +143,8 @@
   },
   "calendar": {
     "title": "Agenda",
-    "subtitle": "Wekelijks lesrooster",
-    "scheduleClass": "Les plannen",
+    "subtitle": "Weekly classes",
+    "scheduleClass": "Add Class",
     "start": "Start",
     "end": "Einde",
     "statusLabel": "Status",
@@ -154,17 +154,14 @@
     "cancelling": "Annuleren...",
     "cancelError": "Les annuleren mislukt. Probeer het opnieuw.",
     "closePanel": "Sluiten",
-    "removeClass": "Verwijder uit rooster",
-    "removing": "Verwijderen...",
-    "removeError": "Klasse kon niet worden verwijderd. Probeer het opnieuw.",
-    "removeHasBookings": "Kan niet verwijderen: klasse heeft bevestigde boekingen. Gebruik 'Annuleren'.",
     "instructor": "Instructeur",
     "spots": "plaatsen",
     "booked": "Geboekt",
     "allLocations": "Alle locaties",
     "allInstructors": "Alle instructeurs",
     "allClassTypes": "Alle lestypen",
-    "clearFilters": "Filters wissen"
+    "clearFilters": "Filters wissen",
+    "editClass": "Edit"
   },
   "classTypes": {
     "title": "Lestypen",
@@ -477,5 +474,13 @@
     "removeConfirm": "Deze instructeur permanent verwijderen?",
     "removeDesc": "Het bijbehorende account wordt ook verwijderd. Deze actie kan niet ongedaan worden gemaakt.",
     "hasClasses": "Kan niet verwijderen: deze instructeur heeft geplande lessen."
+  },
+  "editModal": {
+    "title": "Edit Class",
+    "close": "Close",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "saveChanges": "Save Changes",
+    "failedSave": "Failed to save changes. Please try again."
   }
 }

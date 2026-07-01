@@ -143,8 +143,8 @@
   },
   "calendar": {
     "title": "Calendario",
-    "subtitle": "Horario semanal de clases",
-    "scheduleClass": "Programar clase",
+    "subtitle": "Weekly classes",
+    "scheduleClass": "Add Class",
     "start": "Inicio",
     "end": "Fin",
     "statusLabel": "Estado",
@@ -154,17 +154,14 @@
     "cancelling": "Cancelando...",
     "cancelError": "Error al cancelar la clase. Por favor, inténtalo de nuevo.",
     "closePanel": "Cerrar",
-    "removeClass": "Eliminar del horario",
-    "removing": "Eliminando...",
-    "removeError": "No se pudo eliminar la clase. Inténtalo de nuevo.",
-    "removeHasBookings": "No se puede eliminar: la clase tiene reservas confirmadas. Usa 'Cancelar'.",
     "instructor": "Instructor",
     "spots": "plazas",
     "booked": "Reservadas",
     "allLocations": "Todas las sedes",
     "allInstructors": "Todos los instructores",
     "allClassTypes": "Todos los tipos",
-    "clearFilters": "Borrar filtros"
+    "clearFilters": "Borrar filtros",
+    "editClass": "Edit"
   },
   "classTypes": {
     "title": "Tipos de clase",
@@ -477,5 +474,13 @@
     "removeConfirm": "¿Eliminar permanentemente este instructor?",
     "removeDesc": "También se eliminará su cuenta de acceso. Esta acción no se puede deshacer.",
     "hasClasses": "No se puede eliminar: este instructor tiene clases programadas."
+  },
+  "editModal": {
+    "title": "Edit Class",
+    "close": "Close",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "saveChanges": "Save Changes",
+    "failedSave": "Failed to save changes. Please try again."
   }
 }

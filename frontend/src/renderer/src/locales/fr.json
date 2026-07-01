@@ -143,8 +143,8 @@
   },
   "calendar": {
     "title": "Calendrier",
-    "subtitle": "Planning hebdomadaire des cours",
-    "scheduleClass": "Planifier un cours",
+    "subtitle": "Weekly classes",
+    "scheduleClass": "Add Class",
     "start": "Début",
     "end": "Fin",
     "statusLabel": "Statut",
@@ -154,17 +154,14 @@
     "cancelling": "Annulation...",
     "cancelError": "Échec de l'annulation du cours. Veuillez réessayer.",
     "closePanel": "Fermer",
-    "removeClass": "Retirer du planning",
-    "removing": "Suppression...",
-    "removeError": "Impossible de supprimer le cours. Veuillez réessayer.",
-    "removeHasBookings": "Impossible de supprimer : le cours a des réservations confirmées. Utilisez 'Annuler'.",
     "instructor": "Instructeur",
     "spots": "places",
     "booked": "Réservées",
     "allLocations": "Tous les lieux",
     "allInstructors": "Tous les instructeurs",
     "allClassTypes": "Tous les types",
-    "clearFilters": "Effacer les filtres"
+    "clearFilters": "Effacer les filtres",
+    "editClass": "Edit"
   },
   "classTypes": {
     "title": "Types de cours",
@@ -477,5 +474,13 @@
     "removeConfirm": "Supprimer définitivement cet instructeur ?",
     "removeDesc": "Son compte sera également supprimé. Cette action est irréversible.",
     "hasClasses": "Impossible de supprimer : cet instructeur a des cours planifiés."
+  },
+  "editModal": {
+    "title": "Edit Class",
+    "close": "Close",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "saveChanges": "Save Changes",
+    "failedSave": "Failed to save changes. Please try again."
   }
 }
