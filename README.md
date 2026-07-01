@@ -6,7 +6,7 @@ Free, open-source fitness studio management software. Install it on your own com
 
 ## What is Agon?
 
-Agon replaces paid SaaS tools like Mindbody, BSport, and Momence with a self-hosted platform that costs nothing to run. Studio managers get a full-featured desktop app; clients connect via a mobile app.
+A self-hosted platform that costs nothing to run. Studio managers get a full-featured desktop app; clients connect via a mobile app.
 
 **No subscriptions. No data sharing. No vendor lock-in.**
 
@@ -56,7 +56,7 @@ Desktop app (Electron + React)
 ### Installation (Development)
 
 ```bash
-git clone https://github.com/your-org/agon.git
+git clone https://github.com/edocasciotta/Agon.git
 cd agon
 
 # Backend
@@ -79,7 +79,13 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for a full development setup guide.
 
 ## Documentation
 
-Full documentation is available at **[docs.agonapp.io](https://docs.agonapp.io)**.
+Full documentation is in the [`docs-site/`](docs-site/) directory and can be run locally:
+
+```bash
+cd docs-site
+npm ci
+npm run start
+```
 
 Topics include:
 - Onboarding wizard walkthrough
