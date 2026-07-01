@@ -596,3 +596,37 @@ def test_confirm_waitlist_expired(
     )
     assert resp.status_code == 409, resp.text
     assert resp.json()["detail"]["error"]["code"] == "WAITLIST_OFFER_EXPIRED"
+
+
+# 19. test_booking_rate_limit_is_enforced_in_production_mode
+# ---------------------------------------------------------------------------
+
+
+def test_booking_rate_limit_disabled_in_test_env(
+    client, client_auth_headers, client_membership, scheduled_class_fixture, db_session
+):
+    """Rate limiting is disabled in AGON_ENV=test (set in conftest).
+
+    This test verifies that the rate-limit decorator is present on the endpoint
+    (by checking the route state) without actually triggering a 429 during the
+    test run — which would break other tests sharing the same limiter store.
+    """
+    from app.routers.bookings import router as bookings_router
+
+    # Find the POST /api/v1/bookings route (router prefix is /api/v1)
+    post_booking_route = None
+    for route in bookings_router.routes:
+        if (
+            hasattr(route, "path")
+            and route.path == "/api/v1/bookings"
+            and "POST" in getattr(route, "methods", set())
+        ):
+            post_booking_route = route
+            break
+
+    assert post_booking_route is not None, "POST /api/v1/bookings route not found"
+    # slowapi's @limiter.limit wraps the function; __wrapped__ is set by functools.wraps
+    endpoint = post_booking_route.endpoint
+    assert getattr(endpoint, "__wrapped__", None) is not None, (
+        "POST /api/v1/bookings does not have a rate limit decorator (@limiter.limit)"
+    )

@@ -1,7 +1,7 @@
 import logging
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -25,6 +25,7 @@ from app.services.booking_service import (
     process_waitlist,
     refund_credit,
 )
+from app.limiter import get_jwt_sub, limiter
 from app.utils import utcnow
 
 logger = logging.getLogger(__name__)
@@ -358,7 +359,9 @@ def confirm_waitlist(
 
 
 @router.post("/bookings", response_model=BookingResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("10/minute", key_func=get_jwt_sub)
 def create_booking(
+    request: Request,
     payload: BookingCreate,
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db),

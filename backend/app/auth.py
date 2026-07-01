@@ -110,7 +110,7 @@ def create_qr_token(booking_id: int) -> str:
     to_encode = {
         "booking_id": booking_id,
         "type": "qr_checkin",
-        "exp": datetime.now(timezone.utc) + timedelta(hours=24),
+        "exp": datetime.now(timezone.utc) + timedelta(hours=2),
     }
     return jwt.encode(to_encode, settings.AGON_JWT_SECRET, algorithm="HS256")
 

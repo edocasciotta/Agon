@@ -146,6 +146,23 @@ Use GitHub Issues. Please include:
 
 ---
 
+## Security Review Checklist
+
+Before opening a pull request that touches auth, data access, or API endpoints, verify each item:
+
+- [ ] No secrets, API keys, or passwords hardcoded in source or commit history
+- [ ] Input validation on every new endpoint (Pydantic schema required)
+- [ ] Rate limiting applied to sensitive endpoints (auth, booking creation)
+- [ ] No PII (emails, phone numbers, names) written to application logs
+- [ ] IDOR check: a client can only read/modify their own data — tested with a second client account
+- [ ] All DB queries built via SQLAlchemy ORM — no raw string concatenation with user input
+- [ ] New JWT token types include an `exp` claim with an appropriate short lifetime
+- [ ] Stripe webhook handlers check idempotency (`provider_payment_id` uniqueness) before writing
+
+If any item does not apply to your PR, write "N/A" next to it in the PR description.
+
+---
+
 ## License
 
 By contributing, you agree that your contributions will be licensed under the same AGPL-3.0 license as the project.

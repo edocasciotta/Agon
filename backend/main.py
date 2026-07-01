@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 from app.database import create_tables
 from app.limiter import limiter
+from app.logging_config import configure_logging
 from app.routers import (
     auth as auth_router,
 )
@@ -56,6 +57,9 @@ def _seed_email_event_assignments():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    from app.config import settings
+
+    configure_logging(settings.LOG_LEVEL)
     create_tables()
     _seed_email_event_assignments()
     tasks = [
