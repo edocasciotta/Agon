@@ -58,7 +58,8 @@ const sidebars: SidebarsConfig = {
         'api/overview',
         'api/database-schema'
       ]
-    }
+    },
+    'glossary'
   ]
 }
 

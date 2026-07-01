@@ -163,6 +163,32 @@ If any item does not apply to your PR, write "N/A" next to it in the PR descript
 
 ---
 
+## Becoming a Co-Maintainer
+
+Active contributors can become co-maintainers. Co-maintainers have merge access and help review PRs, triage issues, and coordinate releases.
+
+### Criteria
+
+- At least 5 merged pull requests with non-trivial changes
+- Sustained engagement over at least 2 months (reviews, issue responses, or commits)
+- Demonstrated understanding of the project's design principles (see ARCHITECTURE.md)
+
+### Responsibilities
+
+- Review and merge pull requests (at least one review per week when active)
+- Respond to critical issues within 48 hours
+- Coordinate releases: tag, update CHANGELOG.md, publish a GitHub Release
+- Uphold the Code of Conduct
+
+### Process
+
+1. Open a GitHub issue titled "Co-maintainer nomination: [your GitHub handle]".
+2. Existing maintainers review your contribution history.
+3. After a 1-week comment period with no objections, you receive merge access.
+4. A 1-month trial period follows — merge access may be withdrawn if the responsibilities above are not met.
+
+---
+
 ## License
 
 By contributing, you agree that your contributions will be licensed under the same AGPL-3.0 license as the project.
