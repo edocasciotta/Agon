@@ -9,6 +9,7 @@ import { EmptyState } from '../components/EmptyState'
 import { Pagination } from '../components/Pagination'
 import type { ClassTemplate } from '../types'
 import type { ApiError } from '../api/client'
+import { classTypeSchema } from '../lib/formSchemas'
 
 const PAGE_SIZE = 12
 
@@ -114,8 +115,9 @@ export function ClassTypesPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setFormError(null)
-    if (!formData.name.trim()) {
-      setFormError(t('classTypes.nameRequired'))
+    const zodResult = classTypeSchema.safeParse(formData)
+    if (!zodResult.success) {
+      setFormError(zodResult.error.errors[0].message)
       return
     }
     const payload: ClassTemplateCreate = {

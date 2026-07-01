@@ -1,12 +1,14 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+
+import bcrypt as _bcrypt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-import bcrypt as _bcrypt
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
-from app.database import get_db
+
 from app.config import settings
+from app.database import get_db
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
@@ -52,6 +54,7 @@ def decode_token(token: str) -> dict:
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     """Returns the authenticated User (manager or instructor) from JWT."""
     from app.models.user import User
+
     payload = decode_token(token)
     if payload.get("type") != "access":
         raise HTTPException(
@@ -68,7 +71,9 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     if not user or not user.is_active:
         raise HTTPException(
             status_code=401,
-            detail={"error": {"code": "AUTH_TOKEN_INVALID", "message": "User not found or inactive"}},
+            detail={
+                "error": {"code": "AUTH_TOKEN_INVALID", "message": "User not found or inactive"}
+            },
         )
     return user
 
@@ -76,6 +81,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 def get_current_client(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     """Returns the authenticated Client from JWT."""
     from app.models.client import Client
+
     payload = decode_token(token)
     if payload.get("type") != "access":
         raise HTTPException(
@@ -92,7 +98,9 @@ def get_current_client(token: str = Depends(oauth2_scheme), db: Session = Depend
     if not client or not client.is_active:
         raise HTTPException(
             status_code=401,
-            detail={"error": {"code": "AUTH_TOKEN_INVALID", "message": "Client not found or inactive"}},
+            detail={
+                "error": {"code": "AUTH_TOKEN_INVALID", "message": "Client not found or inactive"}
+            },
         )
     return client
 
@@ -114,13 +122,17 @@ def decode_qr_token(token: str) -> dict:
         if payload.get("type") != "qr_checkin":
             raise HTTPException(
                 400,
-                detail={"error": {"code": "CHECKIN_INVALID_QR", "message": "Invalid QR token type"}},
+                detail={
+                    "error": {"code": "CHECKIN_INVALID_QR", "message": "Invalid QR token type"}
+                },
             )
         return payload
     except JWTError:
         raise HTTPException(
             400,
-            detail={"error": {"code": "CHECKIN_INVALID_QR", "message": "Invalid or expired QR code"}},
+            detail={
+                "error": {"code": "CHECKIN_INVALID_QR", "message": "Invalid or expired QR code"}
+            },
         )
 
 
@@ -129,6 +141,11 @@ def require_manager(current_user=Depends(get_current_user)):
     if current_user.role != "manager":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail={"error": {"code": "AUTH_INSUFFICIENT_PERMISSIONS", "message": "Manager access required"}},
+            detail={
+                "error": {
+                    "code": "AUTH_INSUFFICIENT_PERMISSIONS",
+                    "message": "Manager access required",
+                }
+            },
         )
     return current_user

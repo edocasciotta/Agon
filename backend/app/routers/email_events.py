@@ -1,13 +1,16 @@
 """
 Email Event Assignments — /api/v1/email/events
 """
-from typing import List, Optional
+
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from app.database import get_db
+
 from app.auth import require_manager
-from app.models.email_event_assignment import EmailEventAssignment, EVENT_TYPES
+from app.database import get_db
+from app.models.email_event_assignment import EVENT_TYPES, EmailEventAssignment
 from app.models.email_template import EmailTemplate
 
 router = APIRouter(prefix="/api/v1/email/events", tags=["email-events"])
@@ -27,23 +30,24 @@ def list_event_assignments(
     db: Session = Depends(get_db),
     _=Depends(require_manager),
 ):
-    assignments = {
-        a.event_type: a
-        for a in db.query(EmailEventAssignment).all()
-    }
+    assignments = {a.event_type: a for a in db.query(EmailEventAssignment).all()}
     result = []
     for et in EVENT_TYPES:
         assignment = assignments.get(et)
         template_info = None
         if assignment and assignment.template_id:
-            tmpl = db.query(EmailTemplate).filter(EmailTemplate.id == assignment.template_id).first()
+            tmpl = (
+                db.query(EmailTemplate).filter(EmailTemplate.id == assignment.template_id).first()
+            )
             if tmpl:
                 template_info = {"id": tmpl.id, "name": tmpl.name}
-        result.append({
-            "event_type": et,
-            "label": _event_label(et),
-            "template": template_info,
-        })
+        result.append(
+            {
+                "event_type": et,
+                "label": _event_label(et),
+                "template": template_info,
+            }
+        )
     return result
 
 
@@ -57,7 +61,9 @@ def assign_template_to_event(
     if event_type not in EVENT_TYPES:
         raise HTTPException(
             status_code=404,
-            detail={"error": {"code": "NOT_FOUND", "message": f"Event type '{event_type}' not found"}},
+            detail={
+                "error": {"code": "NOT_FOUND", "message": f"Event type '{event_type}' not found"}
+            },
         )
 
     # Validate template_id if provided
@@ -69,9 +75,9 @@ def assign_template_to_event(
                 detail={"error": {"code": "NOT_FOUND", "message": "Template not found"}},
             )
 
-    assignment = db.query(EmailEventAssignment).filter(
-        EmailEventAssignment.event_type == event_type
-    ).first()
+    assignment = (
+        db.query(EmailEventAssignment).filter(EmailEventAssignment.event_type == event_type).first()
+    )
 
     if assignment:
         assignment.template_id = payload.template_id

@@ -1,6 +1,7 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional
 from datetime import datetime
+from typing import Optional
+
+from pydantic import BaseModel, EmailStr
 
 
 class InstructorCreate(BaseModel):
@@ -19,9 +20,9 @@ class InstructorResponse(BaseModel):
     id: int
     user_id: int
     bio: Optional[str] = None
-    full_name: str      # denormalised from user
-    email: str          # denormalised from user
-    is_active: bool     # denormalised from user
+    full_name: str  # denormalised from user
+    email: str  # denormalised from user
+    is_active: bool  # denormalised from user
     created_at: datetime
     updated_at: datetime
     model_config = {"from_attributes": True}

@@ -1,9 +1,9 @@
-from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.auth import decode_token, oauth2_scheme
 from app.database import get_db
-from app.auth import oauth2_scheme, decode_token, require_manager
 from app.schemas.gdpr import ConsentRequest, ConsentResponse
 
 router = APIRouter(prefix="/api/v1/gdpr", tags=["gdpr"])
@@ -15,8 +15,8 @@ def _get_caller(token: str, db: Session):
     Uses the 'role' claim in the JWT to decide which table to query.
     Raises 401 if the token is invalid.
     """
-    from app.models.user import User
     from app.models.client import Client
+    from app.models.user import User
 
     payload = decode_token(token)
     sub = payload.get("sub")
@@ -63,12 +63,12 @@ def gdpr_export(
     db: Session = Depends(get_db),
     token: str = Depends(oauth2_scheme),
 ):
-    from app.models.client import Client
     from app.models.booking import Booking
+    from app.models.checkin import Checkin
+    from app.models.client import Client
+    from app.models.consent_log import ConsentLog
     from app.models.membership import Membership
     from app.models.payment import Payment
-    from app.models.checkin import Checkin
-    from app.models.consent_log import ConsentLog
 
     _require_manager_or_own_client(client_id, token, db)
 
@@ -89,11 +89,22 @@ def gdpr_export(
 
     return {
         "client": to_dict(client),
-        "bookings": [to_dict(b) for b in db.query(Booking).filter(Booking.client_id == client_id).all()],
-        "memberships": [to_dict(m) for m in db.query(Membership).filter(Membership.client_id == client_id).all()],
-        "payments": [to_dict(p) for p in db.query(Payment).filter(Payment.client_id == client_id).all()],
-        "checkins": [to_dict(ci) for ci in db.query(Checkin).filter(Checkin.client_id == client_id).all()],
-        "consent_log": [to_dict(cl) for cl in db.query(ConsentLog).filter(ConsentLog.client_id == client_id).all()],
+        "bookings": [
+            to_dict(b) for b in db.query(Booking).filter(Booking.client_id == client_id).all()
+        ],
+        "memberships": [
+            to_dict(m) for m in db.query(Membership).filter(Membership.client_id == client_id).all()
+        ],
+        "payments": [
+            to_dict(p) for p in db.query(Payment).filter(Payment.client_id == client_id).all()
+        ],
+        "checkins": [
+            to_dict(ci) for ci in db.query(Checkin).filter(Checkin.client_id == client_id).all()
+        ],
+        "consent_log": [
+            to_dict(cl)
+            for cl in db.query(ConsentLog).filter(ConsentLog.client_id == client_id).all()
+        ],
     }
 
 
@@ -103,9 +114,9 @@ def gdpr_delete(
     db: Session = Depends(get_db),
     token: str = Depends(oauth2_scheme),
 ):
+    from app.models.booking import Booking
     from app.models.client import Client
     from app.models.membership import Membership
-    from app.models.booking import Booking
 
     _require_manager_or_own_client(client_id, token, db)
 
@@ -168,14 +179,18 @@ def record_consent(
     db: Session = Depends(get_db),
     token: str = Depends(oauth2_scheme),
 ):
-    from app.models.client import Client
     from app.models.consent_log import ConsentLog
 
     caller, role = _get_caller(token, db)
     if role != "client":
         raise HTTPException(
             status_code=403,
-            detail={"error": {"code": "AUTH_INSUFFICIENT_PERMISSIONS", "message": "Client access required"}},
+            detail={
+                "error": {
+                    "code": "AUTH_INSUFFICIENT_PERMISSIONS",
+                    "message": "Client access required",
+                }
+            },
         )
 
     entry = ConsentLog(

@@ -1,4 +1,3 @@
-import pytest
 
 
 def test_create_membership_type(client, manager_auth_headers):
@@ -29,7 +28,9 @@ def test_list_membership_types(client, manager_auth_headers, membership_type):
 
 
 def test_get_membership_type(client, manager_auth_headers, membership_type):
-    response = client.get(f"/api/v1/membership-types/{membership_type.id}", headers=manager_auth_headers)
+    response = client.get(
+        f"/api/v1/membership-types/{membership_type.id}", headers=manager_auth_headers
+    )
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == membership_type.id
@@ -60,8 +61,9 @@ def test_deactivate_membership_type(client, manager_auth_headers, membership_typ
 
 def test_create_requires_manager(client, db_session):
     """POST as non-manager (instructor role) → 403"""
+    from app.auth import create_access_token, hash_password
     from app.models.user import User
-    from app.auth import hash_password, create_access_token
+
     instructor = User(
         email="inst_mt@example.com",
         password_hash=hash_password("pass123"),

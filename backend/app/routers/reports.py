@@ -1,16 +1,16 @@
-from app.utils import utcnow
 import csv
-from io import StringIO
-from datetime import datetime, timedelta, date, timezone
-from typing import Optional
 from collections import defaultdict
+from datetime import date, datetime, timedelta
+from io import StringIO
+from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
-from app.database import get_db
 from app.auth import require_manager
+from app.database import get_db
+from app.utils import utcnow
 
 router = APIRouter(prefix="/api/v1/reports", tags=["reports"])
 
@@ -39,10 +39,10 @@ def get_attendance_report(
     db: Session = Depends(get_db),
     _manager=Depends(require_manager),
 ):
-    from app.models.scheduled_class import ScheduledClass
     from app.models.booking import Booking
     from app.models.checkin import Checkin
     from app.models.class_template import ClassTemplate
+    from app.models.scheduled_class import ScheduledClass
 
     start_dt, end_dt = _parse_dates(start_date, end_date)
 
@@ -67,7 +67,11 @@ def get_attendance_report(
 
     total_bookings = (
         db.query(Booking)
-        .filter(Booking.created_at >= start_dt, Booking.created_at <= end_dt, Booking.status == "confirmed")
+        .filter(
+            Booking.created_at >= start_dt,
+            Booking.created_at <= end_dt,
+            Booking.status == "confirmed",
+        )
         .count()
     )
     total_checkins = (
@@ -97,16 +101,16 @@ def get_attendance_report(
             .count()
         )
         tmpl_checkins = (
-            db.query(Checkin)
-            .filter(Checkin.scheduled_class_id.in_(tmpl_class_ids))
-            .count()
+            db.query(Checkin).filter(Checkin.scheduled_class_id.in_(tmpl_class_ids)).count()
         )
-        by_template.append({
-            "template_name": tmpl.name,
-            "classes": len(tmpl_classes),
-            "bookings": tmpl_bookings,
-            "checkins": tmpl_checkins,
-        })
+        by_template.append(
+            {
+                "template_name": tmpl.name,
+                "classes": len(tmpl_classes),
+                "bookings": tmpl_bookings,
+                "checkins": tmpl_checkins,
+            }
+        )
 
     return {
         "period": {"start": start_dt.date().isoformat(), "end": end_dt.date().isoformat()},
@@ -129,9 +133,9 @@ def get_revenue_report(
     db: Session = Depends(get_db),
     _manager=Depends(require_manager),
 ):
-    from app.models.payment import Payment
     from app.models.membership import Membership
     from app.models.membership_type import MembershipType
+    from app.models.payment import Payment
 
     start_dt, end_dt = _parse_dates(start_date, end_date)
 
@@ -163,7 +167,11 @@ def get_revenue_report(
         if p.membership_id:
             membership = db.query(Membership).filter(Membership.id == p.membership_id).first()
             if membership:
-                mtype = db.query(MembershipType).filter(MembershipType.id == membership.membership_type_id).first()
+                mtype = (
+                    db.query(MembershipType)
+                    .filter(MembershipType.id == membership.membership_type_id)
+                    .first()
+                )
                 if mtype:
                     type_revenue[mtype.name]["revenue"] += p.amount
                     type_revenue[mtype.name]["count"] += 1
@@ -180,8 +188,7 @@ def get_revenue_report(
             key = p.paid_at.strftime("%Y-%m")
             monthly[key] += p.amount
     monthly_trend = [
-        {"month": month, "revenue": round(revenue, 2)}
-        for month, revenue in sorted(monthly.items())
+        {"month": month, "revenue": round(revenue, 2)} for month, revenue in sorted(monthly.items())
     ]
 
     return {
@@ -234,10 +241,12 @@ def get_memberships_report(
         for name, data in type_stats.items()
     ]
 
-    from datetime import date, timedelta
+    from datetime import timedelta
+
     in_7_days = date.today() + timedelta(days=7)
     expiring_soon = sum(
-        1 for m in all_memberships
+        1
+        for m in all_memberships
         if m.status == "active" and m.expires_at is not None and m.expires_at <= in_7_days
     )
 
@@ -259,8 +268,8 @@ def get_retention_report(
     db: Session = Depends(get_db),
     _manager=Depends(require_manager),
 ):
-    from app.models.client import Client
     from app.models.booking import Booking
+    from app.models.client import Client
 
     start_dt, end_dt = _parse_dates(start_date, end_date)
 
@@ -268,9 +277,7 @@ def get_retention_report(
 
     # New clients created in period
     new_clients = (
-        db.query(Client)
-        .filter(Client.created_at >= start_dt, Client.created_at <= end_dt)
-        .count()
+        db.query(Client).filter(Client.created_at >= start_dt, Client.created_at <= end_dt).count()
     )
 
     # Active clients: had at least one confirmed booking in the period
@@ -317,11 +324,11 @@ def export_attendance_csv(
     db: Session = Depends(get_db),
     _manager=Depends(require_manager),
 ):
-    from app.models.scheduled_class import ScheduledClass
     from app.models.booking import Booking
     from app.models.checkin import Checkin
     from app.models.class_template import ClassTemplate
     from app.models.instructor import Instructor
+    from app.models.scheduled_class import ScheduledClass
     from app.models.user import User
 
     start_dt, end_dt = _parse_dates(start_date, end_date)
@@ -351,20 +358,18 @@ def export_attendance_csv(
             .filter(Booking.scheduled_class_id == sc.id, Booking.status == "confirmed")
             .count()
         )
-        checkin_count = (
-            db.query(Checkin)
-            .filter(Checkin.scheduled_class_id == sc.id)
-            .count()
+        checkin_count = db.query(Checkin).filter(Checkin.scheduled_class_id == sc.id).count()
+        rows.append(
+            [
+                sc.starts_at.date().isoformat(),
+                class_name,
+                instructor_name,
+                sc.capacity,
+                booking_count,
+                checkin_count,
+                sc.status,
+            ]
         )
-        rows.append([
-            sc.starts_at.date().isoformat(),
-            class_name,
-            instructor_name,
-            sc.capacity,
-            booking_count,
-            checkin_count,
-            sc.status,
-        ])
 
     output = StringIO()
     writer = csv.writer(output)
@@ -387,10 +392,10 @@ def export_revenue_csv(
     db: Session = Depends(get_db),
     _manager=Depends(require_manager),
 ):
-    from app.models.payment import Payment
     from app.models.client import Client
     from app.models.membership import Membership
     from app.models.membership_type import MembershipType
+    from app.models.payment import Payment
 
     start_dt, end_dt = _parse_dates(start_date, end_date)
 
@@ -414,19 +419,25 @@ def export_revenue_csv(
         if p.membership_id:
             m = db.query(Membership).filter(Membership.id == p.membership_id).first()
             if m:
-                mt = db.query(MembershipType).filter(MembershipType.id == m.membership_type_id).first()
+                mt = (
+                    db.query(MembershipType)
+                    .filter(MembershipType.id == m.membership_type_id)
+                    .first()
+                )
                 if mt:
                     mtype_name = mt.name
 
-        rows.append([
-            p.paid_at.date().isoformat() if p.paid_at else "",
-            client_name,
-            mtype_name,
-            p.amount,
-            p.currency,
-            p.provider,
-            p.status,
-        ])
+        rows.append(
+            [
+                p.paid_at.date().isoformat() if p.paid_at else "",
+                client_name,
+                mtype_name,
+                p.amount,
+                p.currency,
+                p.provider,
+                p.status,
+            ]
+        )
 
     output = StringIO()
     writer = csv.writer(output)

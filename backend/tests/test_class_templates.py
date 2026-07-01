@@ -1,6 +1,5 @@
 import pytest
 
-
 TEMPLATE_PAYLOAD = {
     "name": "Yoga Flow",
     "description": "A relaxing yoga session",
@@ -32,7 +31,7 @@ def test_create_template(client, manager_auth_headers):
     data = response.json()
     assert data["name"] == "Yoga Flow"
     assert data["duration_minutes"] == 60
-    assert data["is_active"] == True
+    assert data["is_active"] is True
     assert "id" in data
 
 
@@ -79,7 +78,7 @@ def test_delete_template_deactivates(client, manager_auth_headers, created_templ
     )
     assert response.status_code == 200
     data = response.json()
-    assert data["is_active"] == False
+    assert not data["is_active"]
 
     # Should not appear in the default list anymore
     list_resp = client.get("/api/v1/class-templates", headers=manager_auth_headers)
@@ -94,8 +93,9 @@ def test_delete_template_deactivates(client, manager_auth_headers, created_templ
 
 def test_create_template_requires_manager(client, db_session):
     """POST as non-manager (instructor role) → 403"""
+    from app.auth import create_access_token, hash_password
     from app.models.user import User
-    from app.auth import hash_password, create_access_token
+
     non_manager = User(
         email="inst_tmpl@example.com",
         password_hash=hash_password("pass123"),

@@ -8,16 +8,17 @@ Tests for the booking engine (Phase 3):
 - DELETE /api/v1/bookings/waitlist/{id}
 - POST /api/v1/bookings/waitlist/{id}/confirm
 """
-import datetime
-import pytest
 
+import datetime
 
 # ---------------------------------------------------------------------------
 # Helper to get client id from registered_client fixture
 # ---------------------------------------------------------------------------
 
+
 def _get_client_id(db_session, email):
     from app.models.client import Client
+
     return db_session.query(Client).filter_by(email=email).first().id
 
 
@@ -25,7 +26,10 @@ def _get_client_id(db_session, email):
 # 1. test_create_booking_success
 # ---------------------------------------------------------------------------
 
-def test_create_booking_success(client, client_auth_headers, client_membership, scheduled_class_fixture, db_session):
+
+def test_create_booking_success(
+    client, client_auth_headers, client_membership, scheduled_class_fixture, db_session
+):
     resp = client.post(
         "/api/v1/bookings",
         json={"scheduled_class_id": scheduled_class_fixture.id},
@@ -41,6 +45,7 @@ def test_create_booking_success(client, client_auth_headers, client_membership, 
 # 2. test_create_booking_no_membership
 # ---------------------------------------------------------------------------
 
+
 def test_create_booking_no_membership(client, client_auth_headers, scheduled_class_fixture):
     resp = client.post(
         "/api/v1/bookings",
@@ -55,8 +60,12 @@ def test_create_booking_no_membership(client, client_auth_headers, scheduled_cla
 # 3. test_create_booking_guest_allowed
 # ---------------------------------------------------------------------------
 
-def test_create_booking_guest_allowed(client, client_auth_headers, scheduled_class_fixture, db_session):
+
+def test_create_booking_guest_allowed(
+    client, client_auth_headers, scheduled_class_fixture, db_session
+):
     from app.models.studio_settings import StudioSettings
+
     settings = StudioSettings(
         id=1,
         studio_name="Test Studio",
@@ -81,7 +90,10 @@ def test_create_booking_guest_allowed(client, client_auth_headers, scheduled_cla
 # 4. test_create_booking_class_full
 # ---------------------------------------------------------------------------
 
-def test_create_booking_class_full(client, client_auth_headers, client_membership, full_class_fixture):
+
+def test_create_booking_class_full(
+    client, client_auth_headers, client_membership, full_class_fixture
+):
     resp = client.post(
         "/api/v1/bookings",
         json={"scheduled_class_id": full_class_fixture.id},
@@ -95,7 +107,10 @@ def test_create_booking_class_full(client, client_auth_headers, client_membershi
 # 5. test_create_booking_duplicate
 # ---------------------------------------------------------------------------
 
-def test_create_booking_duplicate(client, client_auth_headers, client_membership, scheduled_class_fixture):
+
+def test_create_booking_duplicate(
+    client, client_auth_headers, client_membership, scheduled_class_fixture
+):
     # First booking
     resp1 = client.post(
         "/api/v1/bookings",
@@ -118,7 +133,10 @@ def test_create_booking_duplicate(client, client_auth_headers, client_membership
 # 6. test_create_booking_class_not_scheduled
 # ---------------------------------------------------------------------------
 
-def test_create_booking_class_not_scheduled(client, client_auth_headers, client_membership, scheduled_class_fixture, db_session):
+
+def test_create_booking_class_not_scheduled(
+    client, client_auth_headers, client_membership, scheduled_class_fixture, db_session
+):
     # Cancel the class
     scheduled_class_fixture.status = "cancelled"
     db_session.commit()
@@ -136,7 +154,15 @@ def test_create_booking_class_not_scheduled(client, client_auth_headers, client_
 # 7. test_list_bookings_as_manager
 # ---------------------------------------------------------------------------
 
-def test_list_bookings_as_manager(client, manager_auth_headers, client_auth_headers, client_membership, scheduled_class_fixture, db_session):
+
+def test_list_bookings_as_manager(
+    client,
+    manager_auth_headers,
+    client_auth_headers,
+    client_membership,
+    scheduled_class_fixture,
+    db_session,
+):
     # Client creates a booking
     client.post(
         "/api/v1/bookings",
@@ -153,29 +179,52 @@ def test_list_bookings_as_manager(client, manager_auth_headers, client_auth_head
 # 8. test_list_bookings_as_client
 # ---------------------------------------------------------------------------
 
-def test_list_bookings_as_client(client, client_auth_headers, manager_auth_headers, client_membership, scheduled_class_fixture, db_session, registered_client):
-    from app.models.client import Client
+
+def test_list_bookings_as_client(
+    client,
+    client_auth_headers,
+    manager_auth_headers,
+    client_membership,
+    scheduled_class_fixture,
+    db_session,
+    registered_client,
+):
     from app.auth import hash_password
-    from app.models.membership_type import MembershipType
-    from app.models.membership import Membership
+    from app.models.client import Client
 
     # Create another client with a booking
-    other = Client(email="other@example.com", password_hash=hash_password("pass12345"), full_name="Other", is_active=True)
+    other = Client(
+        email="other@example.com",
+        password_hash=hash_password("pass12345"),
+        full_name="Other",
+        is_active=True,
+    )
     db_session.add(other)
     db_session.commit()
 
     # Create a second class for the other client
+    from app.models.booking import Booking
     from app.models.class_template import ClassTemplate
     from app.models.scheduled_class import ScheduledClass
-    from app.models.booking import Booking
-    tmpl = ClassTemplate(name="Spin", duration_minutes=45, default_capacity=5, color="#111111", is_active=True)
+
+    tmpl = ClassTemplate(
+        name="Spin", duration_minutes=45, default_capacity=5, color="#111111", is_active=True
+    )
     db_session.add(tmpl)
     db_session.commit()
     future = datetime.datetime.utcnow() + datetime.timedelta(hours=48)
-    sc2 = ScheduledClass(template_id=tmpl.id, starts_at=future, ends_at=future + datetime.timedelta(hours=1), capacity=5, status="scheduled")
+    sc2 = ScheduledClass(
+        template_id=tmpl.id,
+        starts_at=future,
+        ends_at=future + datetime.timedelta(hours=1),
+        capacity=5,
+        status="scheduled",
+    )
     db_session.add(sc2)
     db_session.commit()
-    other_booking = Booking(client_id=other.id, scheduled_class_id=sc2.id, status="confirmed", credit_deducted=False)
+    other_booking = Booking(
+        client_id=other.id, scheduled_class_id=sc2.id, status="confirmed", credit_deducted=False
+    )
     db_session.add(other_booking)
     db_session.commit()
 
@@ -199,7 +248,10 @@ def test_list_bookings_as_client(client, client_auth_headers, manager_auth_heade
 # 9. test_get_booking_as_owner
 # ---------------------------------------------------------------------------
 
-def test_get_booking_as_owner(client, client_auth_headers, client_membership, scheduled_class_fixture):
+
+def test_get_booking_as_owner(
+    client, client_auth_headers, client_membership, scheduled_class_fixture
+):
     create_resp = client.post(
         "/api/v1/bookings",
         json={"scheduled_class_id": scheduled_class_fixture.id},
@@ -217,26 +269,42 @@ def test_get_booking_as_owner(client, client_auth_headers, client_membership, sc
 # 10. test_get_booking_forbidden
 # ---------------------------------------------------------------------------
 
+
 def test_get_booking_forbidden(client, client_auth_headers, db_session):
-    from app.models.client import Client
     from app.auth import hash_password
-    from app.models.class_template import ClassTemplate
-    from app.models.scheduled_class import ScheduledClass
     from app.models.booking import Booking
+    from app.models.class_template import ClassTemplate
+    from app.models.client import Client
+    from app.models.scheduled_class import ScheduledClass
 
     # Create another client's booking
-    other = Client(email="other2@example.com", password_hash=hash_password("pass12345"), full_name="Other2", is_active=True)
+    other = Client(
+        email="other2@example.com",
+        password_hash=hash_password("pass12345"),
+        full_name="Other2",
+        is_active=True,
+    )
     db_session.add(other)
     db_session.commit()
 
-    tmpl = ClassTemplate(name="Zumba", duration_minutes=60, default_capacity=5, color="#222222", is_active=True)
+    tmpl = ClassTemplate(
+        name="Zumba", duration_minutes=60, default_capacity=5, color="#222222", is_active=True
+    )
     db_session.add(tmpl)
     db_session.commit()
     future = datetime.datetime.utcnow() + datetime.timedelta(hours=48)
-    sc = ScheduledClass(template_id=tmpl.id, starts_at=future, ends_at=future + datetime.timedelta(hours=1), capacity=5, status="scheduled")
+    sc = ScheduledClass(
+        template_id=tmpl.id,
+        starts_at=future,
+        ends_at=future + datetime.timedelta(hours=1),
+        capacity=5,
+        status="scheduled",
+    )
     db_session.add(sc)
     db_session.commit()
-    booking = Booking(client_id=other.id, scheduled_class_id=sc.id, status="confirmed", credit_deducted=False)
+    booking = Booking(
+        client_id=other.id, scheduled_class_id=sc.id, status="confirmed", credit_deducted=False
+    )
     db_session.add(booking)
     db_session.commit()
 
@@ -248,7 +316,10 @@ def test_get_booking_forbidden(client, client_auth_headers, db_session):
 # 11. test_cancel_booking_success (credit refunded)
 # ---------------------------------------------------------------------------
 
-def test_cancel_booking_success(client, client_auth_headers, client_membership, scheduled_class_fixture, db_session):
+
+def test_cancel_booking_success(
+    client, client_auth_headers, client_membership, scheduled_class_fixture, db_session
+):
     # Book
     create_resp = client.post(
         "/api/v1/bookings",
@@ -260,7 +331,7 @@ def test_cancel_booking_success(client, client_auth_headers, client_membership, 
     assert create_resp.json()["credit_deducted"] is True
 
     # Check credits before cancel
-    from app.models.membership import Membership
+
     db_session.refresh(client_membership)
     credits_before = client_membership.credits_remaining
 
@@ -278,14 +349,15 @@ def test_cancel_booking_success(client, client_auth_headers, client_membership, 
 # 12. test_cancel_booking_late_no_refund
 # ---------------------------------------------------------------------------
 
+
 def test_cancel_booking_late_no_refund(client, client_auth_headers, db_session, registered_client):
-    from app.models.studio_settings import StudioSettings
-    from app.models.membership_type import MembershipType
-    from app.models.membership import Membership
-    from app.models.class_template import ClassTemplate
-    from app.models.scheduled_class import ScheduledClass
     from app.models.booking import Booking
+    from app.models.class_template import ClassTemplate
     from app.models.client import Client
+    from app.models.membership import Membership
+    from app.models.membership_type import MembershipType
+    from app.models.scheduled_class import ScheduledClass
+    from app.models.studio_settings import StudioSettings
 
     # Studio settings: 48h cancellation window, credit is deducted on late cancel
     settings = StudioSettings(
@@ -298,7 +370,9 @@ def test_cancel_booking_late_no_refund(client, client_auth_headers, db_session, 
     db_session.commit()
 
     # Create a membership type and membership
-    mt = MembershipType(name="Pack", type="credit_pack", price=50.0, credits_included=5, is_active=True)
+    mt = MembershipType(
+        name="Pack", type="credit_pack", price=50.0, credits_included=5, is_active=True
+    )
     db_session.add(mt)
     db_session.commit()
 
@@ -315,11 +389,19 @@ def test_cancel_booking_late_no_refund(client, client_auth_headers, db_session, 
     db_session.commit()
 
     # Class starting in 1 hour (within 48h window = late)
-    tmpl = ClassTemplate(name="Late Class", duration_minutes=60, default_capacity=5, color="#333333", is_active=True)
+    tmpl = ClassTemplate(
+        name="Late Class", duration_minutes=60, default_capacity=5, color="#333333", is_active=True
+    )
     db_session.add(tmpl)
     db_session.commit()
     soon = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
-    sc = ScheduledClass(template_id=tmpl.id, starts_at=soon, ends_at=soon + datetime.timedelta(hours=1), capacity=5, status="scheduled")
+    sc = ScheduledClass(
+        template_id=tmpl.id,
+        starts_at=soon,
+        ends_at=soon + datetime.timedelta(hours=1),
+        capacity=5,
+        status="scheduled",
+    )
     db_session.add(sc)
     db_session.commit()
 
@@ -349,7 +431,10 @@ def test_cancel_booking_late_no_refund(client, client_auth_headers, db_session, 
 # 13. test_cancel_booking_already_cancelled
 # ---------------------------------------------------------------------------
 
-def test_cancel_booking_already_cancelled(client, client_auth_headers, client_membership, scheduled_class_fixture):
+
+def test_cancel_booking_already_cancelled(
+    client, client_auth_headers, client_membership, scheduled_class_fixture
+):
     # Book
     create_resp = client.post(
         "/api/v1/bookings",
@@ -372,6 +457,7 @@ def test_cancel_booking_already_cancelled(client, client_auth_headers, client_me
 # 14. test_join_waitlist_success
 # ---------------------------------------------------------------------------
 
+
 def test_join_waitlist_success(client, client_auth_headers, client_membership, full_class_fixture):
     resp = client.post(
         "/api/v1/bookings/waitlist",
@@ -381,14 +467,19 @@ def test_join_waitlist_success(client, client_auth_headers, client_membership, f
     assert resp.status_code == 201, resp.text
     data = resp.json()
     assert data["status"] == "waiting"
-    assert data["position"] == 1  # first waitlist entry (filler has a booking, not a waitlist entry)
+    assert (
+        data["position"] == 1
+    )  # first waitlist entry (filler has a booking, not a waitlist entry)
 
 
 # ---------------------------------------------------------------------------
 # 15. test_join_waitlist_duplicate
 # ---------------------------------------------------------------------------
 
-def test_join_waitlist_duplicate(client, client_auth_headers, client_membership, full_class_fixture):
+
+def test_join_waitlist_duplicate(
+    client, client_auth_headers, client_membership, full_class_fixture
+):
     # Join waitlist
     client.post(
         "/api/v1/bookings/waitlist",
@@ -410,6 +501,7 @@ def test_join_waitlist_duplicate(client, client_auth_headers, client_membership,
 # 16. test_leave_waitlist
 # ---------------------------------------------------------------------------
 
+
 def test_leave_waitlist(client, client_auth_headers, client_membership, full_class_fixture):
     join_resp = client.post(
         "/api/v1/bookings/waitlist",
@@ -428,9 +520,17 @@ def test_leave_waitlist(client, client_auth_headers, client_membership, full_cla
 # 17. test_confirm_waitlist_offer
 # ---------------------------------------------------------------------------
 
-def test_confirm_waitlist_offer(client, client_auth_headers, client_membership, full_class_fixture, db_session, registered_client):
-    from app.models.waitlist import Waitlist
+
+def test_confirm_waitlist_offer(
+    client,
+    client_auth_headers,
+    client_membership,
+    full_class_fixture,
+    db_session,
+    registered_client,
+):
     from app.models.client import Client
+    from app.models.waitlist import Waitlist
 
     client_obj = db_session.query(Client).filter_by(email=registered_client["email"]).first()
 
@@ -448,7 +548,12 @@ def test_confirm_waitlist_offer(client, client_auth_headers, client_membership, 
 
     # Free up a spot: cancel the filler's booking
     from app.models.booking import Booking
-    filler_booking = db_session.query(Booking).filter_by(scheduled_class_id=full_class_fixture.id, status="confirmed").first()
+
+    filler_booking = (
+        db_session.query(Booking)
+        .filter_by(scheduled_class_id=full_class_fixture.id, status="confirmed")
+        .first()
+    )
     filler_booking.status = "cancelled"
     db_session.commit()
 
@@ -464,9 +569,12 @@ def test_confirm_waitlist_offer(client, client_auth_headers, client_membership, 
 # 18. test_confirm_waitlist_expired
 # ---------------------------------------------------------------------------
 
-def test_confirm_waitlist_expired(client, client_auth_headers, full_class_fixture, db_session, registered_client):
-    from app.models.waitlist import Waitlist
+
+def test_confirm_waitlist_expired(
+    client, client_auth_headers, full_class_fixture, db_session, registered_client
+):
     from app.models.client import Client
+    from app.models.waitlist import Waitlist
 
     client_obj = db_session.query(Client).filter_by(email=registered_client["email"]).first()
 

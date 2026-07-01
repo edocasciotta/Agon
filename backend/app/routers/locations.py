@@ -5,12 +5,15 @@ POST   /api/v1/locations          → create
 PUT    /api/v1/locations/{id}     → update
 DELETE /api/v1/locations/{id}     → soft-delete (set is_active=False)
 """
+
+from typing import List, Optional
+
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from typing import Optional, List
 from pydantic import BaseModel
-from app.database import get_db
+from sqlalchemy.orm import Session
+
 from app.auth import require_manager
+from app.database import get_db
 from app.models.location import Location
 
 router = APIRouter(prefix="/api/v1/locations", tags=["locations"])
@@ -47,7 +50,7 @@ def list_locations(
 ):
     q = db.query(Location)
     if not include_inactive:
-        q = q.filter(Location.is_active == True)
+        q = q.filter(Location.is_active.is_(True))
     return q.order_by(Location.name).all()
 
 
@@ -125,7 +128,12 @@ def remove_location(
     if has_classes:
         raise HTTPException(
             status_code=409,
-            detail={"error": {"code": "LOCATION_HAS_CLASSES", "message": "Cannot remove a location that has scheduled classes"}},
+            detail={
+                "error": {
+                    "code": "LOCATION_HAS_CLASSES",
+                    "message": "Cannot remove a location that has scheduled classes",
+                }
+            },
         )
     db.delete(loc)
     db.commit()

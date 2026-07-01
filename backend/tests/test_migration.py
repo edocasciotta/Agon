@@ -3,14 +3,13 @@ Phase 8 — Migration Assistant
 10 tests covering templates, CSV analysis, import confirmation, status,
 invitation generation, invitation CSV export, and invite token validation.
 """
+
 import io
 import uuid
 from datetime import datetime, timedelta
 
-import pytest
-
-
 # ─── Template downloads ───────────────────────────────────────────────────────
+
 
 def test_download_clients_template(client, manager_auth_headers):
     response = client.get("/api/v1/migration/templates/clients", headers=manager_auth_headers)
@@ -37,8 +36,11 @@ def test_download_classes_template(client, manager_auth_headers):
 
 # ─── Analyse CSV ──────────────────────────────────────────────────────────────
 
+
 def test_analyse_csv_clients(client, manager_auth_headers):
-    csv_content = b"full_name,email,phone\nJohn Doe,john@example.com,+39123456\nJane Doe,jane@example.com,"
+    csv_content = (
+        b"full_name,email,phone\nJohn Doe,john@example.com,+39123456\nJane Doe,jane@example.com,"
+    )
     files = {"file": ("clients.csv", io.BytesIO(csv_content), "text/csv")}
     response = client.post(
         "/api/v1/migration/analyse?entity=clients",
@@ -58,9 +60,12 @@ def test_analyse_csv_clients(client, manager_auth_headers):
 
 # ─── Confirm import ───────────────────────────────────────────────────────────
 
+
 def test_confirm_import_clients(client, manager_auth_headers):
     # First analyse
-    csv_content = b"full_name,email,phone\nAlice Import,alice@import.com,+390001\nBob Import,bob@import.com,"
+    csv_content = (
+        b"full_name,email,phone\nAlice Import,alice@import.com,+390001\nBob Import,bob@import.com,"
+    )
     files = {"file": ("clients.csv", io.BytesIO(csv_content), "text/csv")}
     analyse_response = client.post(
         "/api/v1/migration/analyse?entity=clients",
@@ -84,6 +89,7 @@ def test_confirm_import_clients(client, manager_auth_headers):
 
 
 # ─── Status ───────────────────────────────────────────────────────────────────
+
 
 def test_migration_status(client, manager_auth_headers):
     # Create a job first
@@ -112,9 +118,12 @@ def test_migration_status(client, manager_auth_headers):
 
 # ─── Invitations ─────────────────────────────────────────────────────────────
 
+
 def test_generate_invitations(client, manager_auth_headers, db_session):
     # Analyse + confirm to get a completed job with imported clients
-    csv_content = b"full_name,email\nInvite Alice,invitealice@example.com\nInvite Bob,invitebob@example.com"
+    csv_content = (
+        b"full_name,email\nInvite Alice,invitealice@example.com\nInvite Bob,invitebob@example.com"
+    )
     files = {"file": ("clients.csv", io.BytesIO(csv_content), "text/csv")}
     analyse_resp = client.post(
         "/api/v1/migration/analyse?entity=clients",
@@ -134,7 +143,12 @@ def test_generate_invitations(client, manager_auth_headers, db_session):
 
     # Get imported client IDs from DB
     from app.models.client import Client
-    clients = db_session.query(Client).filter(Client.email.in_(["invitealice@example.com", "invitebob@example.com"])).all()
+
+    clients = (
+        db_session.query(Client)
+        .filter(Client.email.in_(["invitealice@example.com", "invitebob@example.com"]))
+        .all()
+    )
     client_ids = [c.id for c in clients]
     assert len(client_ids) >= 1
 
@@ -171,7 +185,10 @@ def test_export_invitations_csv(client, manager_auth_headers, db_session):
     )
 
     from app.models.client import Client
-    imported_client = db_session.query(Client).filter(Client.email == "exportalice@example.com").first()
+
+    imported_client = (
+        db_session.query(Client).filter(Client.email == "exportalice@example.com").first()
+    )
     if imported_client:
         client.post(
             "/api/v1/migration/invitations/send",
@@ -179,7 +196,9 @@ def test_export_invitations_csv(client, manager_auth_headers, db_session):
             headers=manager_auth_headers,
         )
 
-    export_resp = client.get(f"/api/v1/migration/invitations/export?job_id={job_id}", headers=manager_auth_headers)
+    export_resp = client.get(
+        f"/api/v1/migration/invitations/export?job_id={job_id}", headers=manager_auth_headers
+    )
     assert export_resp.status_code == 200
     assert "text/csv" in export_resp.headers["content-type"]
     assert "client_id" in export_resp.text
@@ -187,11 +206,12 @@ def test_export_invitations_csv(client, manager_auth_headers, db_session):
 
 # ─── Invite token endpoint ────────────────────────────────────────────────────
 
+
 def test_invite_token_endpoint(client, db_session):
     """Valid invitation token returns client info."""
+    from app.auth import hash_password
     from app.models.client import Client
     from app.models.invitation_token import InvitationToken
-    from app.auth import hash_password
 
     # Create a client directly
     c = Client(
@@ -224,9 +244,9 @@ def test_invite_token_endpoint(client, db_session):
 
 def test_invite_token_expired(client, db_session):
     """Expired invitation token returns 409 INVITATION_EXPIRED."""
+    from app.auth import hash_password
     from app.models.client import Client
     from app.models.invitation_token import InvitationToken
-    from app.auth import hash_password
 
     # Create a client directly
     c = Client(

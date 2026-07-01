@@ -3,14 +3,16 @@ Tests for:
 - Email Templates CRUD  (GET/POST/PUT/DELETE /api/v1/email/templates)
 - Email Event Assignments  (GET/PUT /api/v1/email/events)
 """
-import pytest
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _create_template(client, manager_auth_headers, name="Welcome EN", subject="Hi {{client_name}}!"):
+
+def _create_template(
+    client, manager_auth_headers, name="Welcome EN", subject="Hi {{client_name}}!"
+):
     resp = client.post(
         "/api/v1/email/templates",
         json={"name": name, "subject": subject, "html_body": "<p>Hello {{client_name}}</p>"},
@@ -23,6 +25,7 @@ def _create_template(client, manager_auth_headers, name="Welcome EN", subject="H
 # ---------------------------------------------------------------------------
 # Email Templates
 # ---------------------------------------------------------------------------
+
 
 def test_list_templates_empty(client, manager_auth_headers):
     resp = client.get("/api/v1/email/templates", headers=manager_auth_headers)
@@ -99,7 +102,9 @@ def test_delete_template_assigned_returns_409(client, manager_auth_headers):
     assert assign_resp.status_code == 200
 
     # Now try to delete
-    del_resp = client.delete(f"/api/v1/email/templates/{created['id']}", headers=manager_auth_headers)
+    del_resp = client.delete(
+        f"/api/v1/email/templates/{created['id']}", headers=manager_auth_headers
+    )
     assert del_resp.status_code == 409
     assert del_resp.json()["detail"]["error"]["code"] == "TEMPLATE_IN_USE"
 
@@ -107,6 +112,7 @@ def test_delete_template_assigned_returns_409(client, manager_auth_headers):
 # ---------------------------------------------------------------------------
 # Email Event Assignments
 # ---------------------------------------------------------------------------
+
 
 def test_get_event_assignments_all_types(client, manager_auth_headers):
     """All 7 event types should appear in the list."""

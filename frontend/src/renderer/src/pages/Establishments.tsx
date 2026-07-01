@@ -8,6 +8,7 @@ import { LoadingSpinner } from '../components/LoadingSpinner'
 import { PageHeader } from '../components/PageHeader'
 import { EmptyState } from '../components/EmptyState'
 import { Pagination } from '../components/Pagination'
+import { establishmentSchema } from '../lib/formSchemas'
 
 const PAGE_SIZE = 12
 
@@ -190,8 +191,9 @@ export function EstablishmentsPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.name.trim()) {
-      setFormError(t('establishments.nameRequired'))
+    const zodResult = establishmentSchema.safeParse(formData)
+    if (!zodResult.success) {
+      setFormError(zodResult.error.errors[0].message)
       return
     }
     const payload: LocationCreate = {

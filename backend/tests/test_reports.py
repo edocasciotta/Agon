@@ -1,18 +1,19 @@
-import pytest
 import datetime
+
+import pytest
 
 
 @pytest.fixture
 def report_data(db_session, manager_user, membership_type):
     """Seeds minimal data for report queries."""
+    from app.auth import hash_password
+    from app.models.booking import Booking
+    from app.models.checkin import Checkin
+    from app.models.class_template import ClassTemplate
     from app.models.client import Client
     from app.models.membership import Membership
     from app.models.payment import Payment
-    from app.models.class_template import ClassTemplate
     from app.models.scheduled_class import ScheduledClass
-    from app.models.booking import Booking
-    from app.models.checkin import Checkin
-    from app.auth import hash_password
 
     # Client
     c = Client(

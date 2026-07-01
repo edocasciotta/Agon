@@ -1,8 +1,8 @@
 """
 Tests for POST/GET /api/v1/studio/ai (AI setup endpoint).
 """
-from unittest.mock import patch, MagicMock
 
+from unittest.mock import MagicMock, patch
 
 AI_URL = "/api/v1/studio/ai"
 VALID_KEY = "AIzaSy_test_key_valid"
@@ -17,8 +17,10 @@ def _make_llm_response():
 
 def test_ai_setup_saves_key(client, manager_auth_headers):
     """Valid API key: litellm succeeds, .env is written, returns {success: true}."""
-    with patch("app.routers.studio.completion", return_value=_make_llm_response()), \
-         patch("app.routers.studio._update_env_file") as mock_write:
+    with (
+        patch("app.routers.studio.completion", return_value=_make_llm_response()),
+        patch("app.routers.studio._update_env_file") as mock_write,
+    ):
         response = client.post(
             AI_URL,
             json={"api_key": VALID_KEY},

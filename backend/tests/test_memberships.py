@@ -1,11 +1,13 @@
-import pytest
 import datetime
-from app.models.membership_type import MembershipType
-from app.models.membership import Membership
+
 from app.models.client import Client
+from app.models.membership import Membership
+from app.models.membership_type import MembershipType
 
 
-def test_assign_membership(client, manager_auth_headers, db_session, registered_client, membership_type):
+def test_assign_membership(
+    client, manager_auth_headers, db_session, registered_client, membership_type
+):
     client_obj = db_session.query(Client).filter_by(email=registered_client["email"]).first()
     response = client.post(
         "/api/v1/memberships",

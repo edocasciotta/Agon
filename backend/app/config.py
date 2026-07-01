@@ -1,9 +1,10 @@
-import secrets
-import os
 import logging
-from pydantic_settings import BaseSettings
-from pydantic import model_validator
+import os
+import secrets
+
 from dotenv import load_dotenv
+from pydantic import ConfigDict, model_validator
+from pydantic_settings import BaseSettings
 
 _config_logger = logging.getLogger(__name__)
 
@@ -27,10 +28,7 @@ class Settings(BaseSettings):
     STRIPE_WEBHOOK_SECRET: str = "whsec_test"
     EXPO_ACCESS_TOKEN: str = ""
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        extra = "ignore"
+    model_config = ConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     @model_validator(mode="after")
     def _ensure_secrets(self) -> "Settings":

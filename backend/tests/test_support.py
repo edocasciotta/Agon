@@ -2,20 +2,18 @@
 Phase 11.2 — AI Support Agent
 Tests: success, unauthenticated, LLM error fallback, pre-screening.
 """
-from unittest.mock import patch, MagicMock
-import pytest
+
+from unittest.mock import MagicMock, patch
 
 import app.routers.support as support_module
 
-
 CHAT_URL = "/api/v1/support/chat"
 
-SAMPLE_MESSAGES = [
-    {"role": "user", "content": "How do I cancel a class?"}
-]
+SAMPLE_MESSAGES = [{"role": "user", "content": "How do I cancel a class?"}]
 
 
 # ─── Helpers ─────────────────────────────────────────────────────────────────
+
 
 def _make_llm_response(text: str):
     """Build a mock litellm completion response."""
@@ -32,11 +30,14 @@ def _reset_docs_cache():
 
 # ─── Tests ───────────────────────────────────────────────────────────────────
 
+
 def test_support_chat_success(client, manager_auth_headers):
     """Valid request with mocked LLM returns a reply."""
     expected_reply = "To cancel a class, navigate to the calendar and select the class."
 
-    with patch("app.routers.support.completion", return_value=_make_llm_response(expected_reply)) as mock_llm:
+    with patch(
+        "app.routers.support.completion", return_value=_make_llm_response(expected_reply)
+    ) as mock_llm:
         response = client.post(
             CHAT_URL,
             json={"messages": SAMPLE_MESSAGES},
@@ -78,6 +79,7 @@ def test_support_chat_llm_error(client, manager_auth_headers):
 
 # ─── Pre-screening tests ──────────────────────────────────────────────────────
 
+
 def test_prescreening_rejects_out_of_scope_without_calling_llm(client, manager_auth_headers):
     """
     A message with no Agon keywords and no question/help words must return
@@ -92,7 +94,9 @@ def test_prescreening_rejects_out_of_scope_without_calling_llm(client, manager_a
         response = client.post(
             CHAT_URL,
             # No question words, no Agon keywords, more than 3 tokens
-            json={"messages": [{"role": "user", "content": "Tell me about Mindbody software please."}]},
+            json={
+                "messages": [{"role": "user", "content": "Tell me about Mindbody software please."}]
+            },
             headers=manager_auth_headers,
         )
 
@@ -112,10 +116,14 @@ def test_prescreening_allows_agon_question(client, manager_auth_headers):
     _reset_docs_cache()
     support_module._DOCS_CONTEXT = ""
 
-    with patch("app.routers.support.completion", return_value=_make_llm_response(expected_reply)) as mock_llm:
+    with patch(
+        "app.routers.support.completion", return_value=_make_llm_response(expected_reply)
+    ) as mock_llm:
         response = client.post(
             CHAT_URL,
-            json={"messages": [{"role": "user", "content": "How do I manage bookings for a class?"}]},
+            json={
+                "messages": [{"role": "user", "content": "How do I manage bookings for a class?"}]
+            },
             headers=manager_auth_headers,
         )
 

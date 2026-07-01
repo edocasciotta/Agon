@@ -1,11 +1,13 @@
+from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List
+
+from app.auth import get_current_user, hash_password, require_manager
 from app.database import get_db
-from app.auth import get_current_user, require_manager, hash_password
-from app.models.user import User
 from app.models.instructor import Instructor
-from app.schemas.instructor import InstructorCreate, InstructorUpdate, InstructorResponse
+from app.models.user import User
+from app.schemas.instructor import InstructorCreate, InstructorResponse, InstructorUpdate
 
 router = APIRouter(prefix="/api/v1/instructors", tags=["instructors"])
 
@@ -160,7 +162,12 @@ def remove_instructor(
     if has_classes:
         raise HTTPException(
             status_code=409,
-            detail={"error": {"code": "INSTRUCTOR_HAS_CLASSES", "message": "Cannot remove an instructor that has scheduled classes"}},
+            detail={
+                "error": {
+                    "code": "INSTRUCTOR_HAS_CLASSES",
+                    "message": "Cannot remove an instructor that has scheduled classes",
+                }
+            },
         )
     user = db.query(User).filter(User.id == instructor.user_id).first()
     db.delete(instructor)

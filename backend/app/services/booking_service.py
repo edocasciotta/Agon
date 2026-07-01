@@ -1,13 +1,13 @@
-from app.utils import utcnow
-from datetime import datetime, timedelta, date, timezone
+from datetime import date, timedelta
 from typing import Optional
+
 from sqlalchemy.orm import Session
-from sqlalchemy import func
 
 from app.models.membership import Membership
 from app.models.membership_type import MembershipType
-from app.models.waitlist import Waitlist
 from app.models.studio_settings import StudioSettings
+from app.models.waitlist import Waitlist
+from app.utils import utcnow
 
 
 def get_studio_settings(db: Session) -> Optional[StudioSettings]:
@@ -23,7 +23,7 @@ def get_active_membership(db: Session, client_id: int) -> Optional[Membership]:
         .filter(
             Membership.client_id == client_id,
             Membership.status == "active",
-            (Membership.expires_at == None) | (Membership.expires_at >= today),
+            (Membership.expires_at.is_(None)) | (Membership.expires_at >= today),
         )
         .first()
     )
@@ -36,7 +36,9 @@ def can_book(db: Session, client_id: int, studio_settings) -> bool:
     - Has an active membership with credits_remaining > 0, OR
     - Guest bookings are enabled
     """
-    guest_enabled = getattr(studio_settings, "guest_bookings_enabled", False) if studio_settings else False
+    guest_enabled = (
+        getattr(studio_settings, "guest_bookings_enabled", False) if studio_settings else False
+    )
 
     membership = get_active_membership(db, client_id)
     if membership is None:
@@ -101,7 +103,9 @@ def process_waitlist(db: Session, scheduled_class_id: int, studio_settings) -> O
     if entry is None:
         return None
 
-    confirm_minutes = getattr(studio_settings, "waitlist_confirm_minutes", 30) if studio_settings else 30
+    confirm_minutes = (
+        getattr(studio_settings, "waitlist_confirm_minutes", 30) if studio_settings else 30
+    )
     now = utcnow()
     entry.status = "offered"
     entry.offered_at = now

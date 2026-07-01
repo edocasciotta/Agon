@@ -1,6 +1,7 @@
-from pydantic import BaseModel
-from typing import Optional, List
 from datetime import datetime
+from typing import List, Optional
+
+from pydantic import BaseModel
 
 
 class ScheduledClassCreate(BaseModel):
@@ -17,11 +18,11 @@ class RecurringClassCreate(BaseModel):
     template_id: int
     instructor_id: Optional[int] = None
     location_id: Optional[int] = 1
-    starts_at: datetime   # first occurrence datetime
-    ends_at: datetime     # first occurrence end datetime
+    starts_at: datetime  # first occurrence datetime
+    ends_at: datetime  # first occurrence end datetime
     capacity: int
     notes: Optional[str] = None
-    days_of_week: List[int]   # 0=Monday ... 6=Sunday
+    days_of_week: List[int]  # 0=Monday ... 6=Sunday
     recurrence_end_date: Optional[datetime] = None  # None = 1 year from start
     max_occurrences: Optional[int] = None
 

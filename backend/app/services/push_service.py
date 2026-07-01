@@ -1,9 +1,10 @@
-from app.utils import utcnow
 import logging
 from typing import Optional
-from datetime import datetime, timezone
+
 from sqlalchemy.orm import Session
+
 from app.models.notification_log import NotificationLog
+from app.utils import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +16,7 @@ try:
         PushServerError,
         PushTicketError,
     )
+
     _EXPO_AVAILABLE = True
 except ImportError:
     _EXPO_AVAILABLE = False

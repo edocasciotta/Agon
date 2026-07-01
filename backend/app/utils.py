@@ -1,4 +1,24 @@
 from datetime import datetime, timezone
+from typing import Any
+
+from fastapi import HTTPException
+
+
+def raise_api_error(
+    code: str,
+    message: str,
+    status_code: int = 400,
+    details: dict[str, Any] | None = None,
+) -> None:
+    """Raise an HTTPException with the standard Agon error envelope.
+
+    Always use this instead of raising HTTPException directly so the
+    response shape is guaranteed to match TECHNICAL_SPEC section 11.
+    """
+    error: dict[str, Any] = {"code": code, "message": message}
+    if details is not None:
+        error["details"] = details
+    raise HTTPException(status_code=status_code, detail={"error": error})
 
 
 def utcnow() -> datetime:

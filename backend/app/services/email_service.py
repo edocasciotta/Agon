@@ -2,12 +2,14 @@
 Email service — sends emails via SMTP using config from StudioSettings.
 All functions are async. db.commit() is never called here.
 """
-import re
-import aiosmtplib
+
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from html.parser import HTMLParser
+
+import aiosmtplib
 from sqlalchemy.orm import Session
+
 from app.models.studio_settings import StudioSettings
 
 
@@ -135,7 +137,9 @@ async def send_invite_email(
         f"{invite_url}\n\n"
         f"This link expires in 7 days."
     )
-    await send_email(db, to_email, to_name, f"Welcome to {studio_name} — Set your password", html_body, text_body)
+    await send_email(
+        db, to_email, to_name, f"Welcome to {studio_name} — Set your password", html_body, text_body
+    )
 
 
 async def send_password_reset_email(
@@ -173,7 +177,9 @@ async def send_password_reset_email(
         f"{reset_url}\n\n"
         f"This link expires in 2 hours. If you did not request this, ignore this email."
     )
-    await send_email(db, to_email, to_name, f"Reset your password — {studio_name}", html_body, text_body)
+    await send_email(
+        db, to_email, to_name, f"Reset your password — {studio_name}", html_body, text_body
+    )
 
 
 async def send_event_email(
@@ -193,9 +199,7 @@ async def send_event_email(
     from app.models.email_template import EmailTemplate
 
     assignment = (
-        db.query(EmailEventAssignment)
-        .filter(EmailEventAssignment.event_type == event_type)
-        .first()
+        db.query(EmailEventAssignment).filter(EmailEventAssignment.event_type == event_type).first()
     )
 
     if assignment and assignment.template_id:
@@ -216,7 +220,9 @@ async def send_event_email(
     if event_type == "client_invite":
         await send_invite_email(db, to_email, to_name, variables.get("invite_url", ""), studio_name)
     elif event_type == "password_reset":
-        await send_password_reset_email(db, to_email, to_name, variables.get("reset_url", ""), studio_name)
+        await send_password_reset_email(
+            db, to_email, to_name, variables.get("reset_url", ""), studio_name
+        )
     else:
         # For other event types without a custom template, build a minimal generic email
         subject = event_type.replace("_", " ").capitalize()

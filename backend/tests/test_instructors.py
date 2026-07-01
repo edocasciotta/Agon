@@ -1,6 +1,5 @@
 import pytest
 
-
 INSTRUCTOR_PAYLOAD = {
     "email": "instructor@example.com",
     "password": "instructorpass123",
@@ -39,8 +38,9 @@ def test_create_instructor(client, manager_auth_headers):
 
 def test_create_instructor_requires_manager(client, db_session):
     """POST as non-manager (instructor role) → 403"""
+    from app.auth import create_access_token, hash_password
     from app.models.user import User
-    from app.auth import hash_password, create_access_token
+
     non_manager = User(
         email="other_inst@example.com",
         password_hash=hash_password("pass123"),

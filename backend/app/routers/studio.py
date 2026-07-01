@@ -1,14 +1,16 @@
 import os
 import tempfile
-from fastapi import APIRouter, Depends, HTTPException, status
+
+from fastapi import APIRouter, Depends, HTTPException
+from litellm import completion
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from litellm import completion
-from app.database import get_db
+
 from app.auth import get_current_user, require_manager
 from app.config import settings as app_settings
+from app.database import get_db
 from app.models.studio_settings import StudioSettings
-from app.schemas.studio import StudioSettingsUpdate, StudioSettingsResponse
+from app.schemas.studio import StudioSettingsResponse, StudioSettingsUpdate
 
 router = APIRouter(prefix="/api/v1/studio", tags=["studio"])
 
@@ -157,6 +159,7 @@ def configure_ai(
 
     # 4. Reset docs cache in support router
     import app.routers.support as support_router
+
     support_router._DOCS_CONTEXT = None
 
     return {"success": True}

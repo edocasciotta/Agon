@@ -1,11 +1,13 @@
 """Tests for the check-in system (Phase 4)."""
-import datetime
-import pytest
 
+import datetime
+
+import pytest
 
 # ---------------------------------------------------------------------------
 # Local fixtures: class with check-in window open (starts in 10 min)
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def checkin_window_open_class(db_session):
@@ -38,7 +40,9 @@ def checkin_window_open_class(db_session):
 
 
 @pytest.fixture
-def confirmed_booking_open_window(db_session, registered_client, client_membership, checkin_window_open_class):
+def confirmed_booking_open_window(
+    db_session, registered_client, client_membership, checkin_window_open_class
+):
     from app.models.booking import Booking
     from app.models.client import Client
 
@@ -59,6 +63,7 @@ def confirmed_booking_open_window(db_session, registered_client, client_membersh
 # Test 1: Generate QR code (owner)
 # ---------------------------------------------------------------------------
 
+
 def test_generate_qr_code(client, confirmed_booking, client_auth_headers):
     response = client.get(
         f"/api/v1/checkins/qr/{confirmed_booking.id}",
@@ -76,10 +81,11 @@ def test_generate_qr_code(client, confirmed_booking, client_auth_headers):
 # Test 2: Generate QR code forbidden for a different client
 # ---------------------------------------------------------------------------
 
+
 def test_generate_qr_code_forbidden(client, db_session, confirmed_booking, manager_user):
     """A different client cannot get the QR for someone else's booking."""
-    from app.models.client import Client
     from app.auth import hash_password
+    from app.models.client import Client
 
     # Create a second client
     other_client = Client(
@@ -92,11 +98,14 @@ def test_generate_qr_code_forbidden(client, db_session, confirmed_booking, manag
     db_session.commit()
 
     # Register via API to get their token
-    reg_resp = client.post("/api/v1/auth/register/client", json={
-        "email": "other2@example.com",
-        "password": "otherpass123",
-        "full_name": "Other Client 2",
-    })
+    reg_resp = client.post(
+        "/api/v1/auth/register/client",
+        json={
+            "email": "other2@example.com",
+            "password": "otherpass123",
+            "full_name": "Other Client 2",
+        },
+    )
     assert reg_resp.status_code == 201
     other_token = reg_resp.json()["access_token"]
     other_headers = {"Authorization": f"Bearer {other_token}"}
@@ -112,6 +121,7 @@ def test_generate_qr_code_forbidden(client, db_session, confirmed_booking, manag
 # Test 3: Manual check-in by manager succeeds
 # ---------------------------------------------------------------------------
 
+
 def test_checkin_manual_success(
     client,
     db_session,
@@ -121,6 +131,7 @@ def test_checkin_manual_success(
     registered_client,
 ):
     from app.models.client import Client
+
     client_obj = db_session.query(Client).filter_by(email=registered_client["email"]).first()
 
     response = client.post(
@@ -143,8 +154,17 @@ def test_checkin_manual_success(
 # Test 4: Manual check-in rejected for a client
 # ---------------------------------------------------------------------------
 
-def test_checkin_manual_requires_staff(client, confirmed_booking_open_window, client_auth_headers, checkin_window_open_class, db_session, registered_client):
+
+def test_checkin_manual_requires_staff(
+    client,
+    confirmed_booking_open_window,
+    client_auth_headers,
+    checkin_window_open_class,
+    db_session,
+    registered_client,
+):
     from app.models.client import Client
+
     client_obj = db_session.query(Client).filter_by(email=registered_client["email"]).first()
 
     response = client.post(
@@ -163,6 +183,7 @@ def test_checkin_manual_requires_staff(client, confirmed_booking_open_window, cl
 # ---------------------------------------------------------------------------
 # Test 5: App check-in by owning client succeeds
 # ---------------------------------------------------------------------------
+
 
 def test_checkin_app_success(client, confirmed_booking_open_window, client_auth_headers):
     response = client.post(
@@ -183,6 +204,7 @@ def test_checkin_app_success(client, confirmed_booking_open_window, client_auth_
 # ---------------------------------------------------------------------------
 # Test 6: QR check-in with valid token succeeds
 # ---------------------------------------------------------------------------
+
 
 def test_checkin_qr_success(client, confirmed_booking_open_window, client_auth_headers):
     # First get a QR token
@@ -211,6 +233,7 @@ def test_checkin_qr_success(client, confirmed_booking_open_window, client_auth_h
 # Test 7: Already checked in → 409
 # ---------------------------------------------------------------------------
 
+
 def test_checkin_already_checked_in(client, confirmed_booking_open_window, client_auth_headers):
     # First check-in
     r1 = client.post(
@@ -234,6 +257,7 @@ def test_checkin_already_checked_in(client, confirmed_booking_open_window, clien
 # Test 8: Check-in window not open (class starts in 24h, window is 15 min before)
 # ---------------------------------------------------------------------------
 
+
 def test_checkin_window_not_open(client, confirmed_booking, client_auth_headers):
     """scheduled_class_fixture starts in 24h — well outside the 15-min open window."""
     response = client.post(
@@ -249,7 +273,15 @@ def test_checkin_window_not_open(client, confirmed_booking, client_auth_headers)
 # Test 9: Booking not confirmed (cancelled booking)
 # ---------------------------------------------------------------------------
 
-def test_checkin_booking_not_confirmed(client, db_session, registered_client, client_membership, checkin_window_open_class, client_auth_headers):
+
+def test_checkin_booking_not_confirmed(
+    client,
+    db_session,
+    registered_client,
+    client_membership,
+    checkin_window_open_class,
+    client_auth_headers,
+):
     from app.models.booking import Booking
     from app.models.client import Client
 
@@ -276,6 +308,7 @@ def test_checkin_booking_not_confirmed(client, db_session, registered_client, cl
 # ---------------------------------------------------------------------------
 # Test 10: List check-ins for a class (manager)
 # ---------------------------------------------------------------------------
+
 
 def test_list_checkins_for_class(
     client,

@@ -1,19 +1,26 @@
-from app.utils import utcnow
 import csv
 import io
 import json
 import logging
-import uuid
 import secrets
-from datetime import datetime, timedelta, timezone
-from typing import Optional
+import uuid
+from datetime import timedelta
+
 from sqlalchemy.orm import Session
+
+from app.utils import utcnow
 
 logger = logging.getLogger(__name__)
 
 # Agon's canonical schema fields by entity type
 AGON_CLIENT_FIELDS = ["full_name", "email", "phone", "date_of_birth"]
-AGON_MEMBERSHIP_FIELDS = ["client_email", "membership_type_name", "starts_at", "expires_at", "credits_remaining"]
+AGON_MEMBERSHIP_FIELDS = [
+    "client_email",
+    "membership_type_name",
+    "starts_at",
+    "expires_at",
+    "credits_remaining",
+]
 AGON_CLASS_FIELDS = ["class_name", "starts_at", "ends_at", "capacity", "instructor_name"]
 
 
@@ -65,6 +72,7 @@ def llm_map_columns(source_headers: list[str], target_fields: list[str]) -> dict
     # Try LLM for unmapped columns
     try:
         from litellm import completion
+
         prompt = f"""You are a data migration assistant. Map these CSV column headers to Agon's fields.
 
 Source columns (unmapped): {unmapped}
@@ -92,12 +100,14 @@ Example: {{"First Name": "full_name", "DOB": "date_of_birth", "Notes": null}}"""
     return mapping
 
 
-def execute_client_import(db: Session, rows: list[dict], column_mapping: dict, job_id: int) -> tuple[int, int, list[str]]:
+def execute_client_import(
+    db: Session, rows: list[dict], column_mapping: dict, job_id: int
+) -> tuple[int, int, list[str]]:
     """
     Import client rows. Returns (imported_count, skipped_count, skipped_reasons).
     """
-    from app.models.client import Client
     from app.auth import hash_password
+    from app.models.client import Client
 
     imported = 0
     skipped = 0
@@ -120,7 +130,6 @@ def execute_client_import(db: Session, rows: list[dict], column_mapping: dict, j
 
         full_name_col = reverse_map.get("full_name")
         phone_col = reverse_map.get("phone")
-        dob_col = reverse_map.get("date_of_birth")
 
         c = Client(
             email=email,
@@ -143,17 +152,23 @@ def generate_invitation_tokens(db: Session, client_ids: list[int], studio_settin
     from app.models.invitation_token import InvitationToken
 
     results = []
-    tunnel_url = studio_settings.tunnel_url if studio_settings and studio_settings.tunnel_url else "http://localhost:8000"
+    tunnel_url = (
+        studio_settings.tunnel_url
+        if studio_settings and studio_settings.tunnel_url
+        else "http://localhost:8000"
+    )
     expires = utcnow() + timedelta(days=7)
 
     for client_id in client_ids:
         token = str(uuid.uuid4())
         inv = InvitationToken(client_id=client_id, token=token, expires_at=expires)
         db.add(inv)
-        results.append({
-            "client_id": client_id,
-            "token": token,
-            "invite_url": f"{tunnel_url}/invite/{token}",
-        })
+        results.append(
+            {
+                "client_id": client_id,
+                "token": token,
+                "invite_url": f"{tunnel_url}/invite/{token}",
+            }
+        )
 
     return results

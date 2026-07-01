@@ -1,21 +1,23 @@
 """
 Tests for Phase 1 — JWT authentication and auth endpoints.
 """
-import pytest
-from fastapi.testclient import TestClient
 
 
 # ---------------------------------------------------------------------------
 # Registration
 # ---------------------------------------------------------------------------
 
+
 def test_register_client_success(client):
     """POST /api/v1/auth/register/client — happy path returns 201 with tokens."""
-    response = client.post("/api/v1/auth/register/client", json={
-        "email": "newclient@example.com",
-        "password": "securepassword1",
-        "full_name": "New Client",
-    })
+    response = client.post(
+        "/api/v1/auth/register/client",
+        json={
+            "email": "newclient@example.com",
+            "password": "securepassword1",
+            "full_name": "New Client",
+        },
+    )
     assert response.status_code == 201
     data = response.json()
     assert "access_token" in data
@@ -40,11 +42,14 @@ def test_register_client_duplicate_email(client):
 
 def test_register_client_password_too_short(client):
     """POST /api/v1/auth/register/client — password < 8 chars returns 422."""
-    response = client.post("/api/v1/auth/register/client", json={
-        "email": "short@example.com",
-        "password": "abc",
-        "full_name": "Short Password",
-    })
+    response = client.post(
+        "/api/v1/auth/register/client",
+        json={
+            "email": "short@example.com",
+            "password": "abc",
+            "full_name": "Short Password",
+        },
+    )
     assert response.status_code == 422
 
 
@@ -52,12 +57,16 @@ def test_register_client_password_too_short(client):
 # Login
 # ---------------------------------------------------------------------------
 
+
 def test_login_client_success(client, registered_client):
     """POST /api/v1/auth/login — valid client credentials return 200 with tokens."""
-    response = client.post("/api/v1/auth/login", json={
-        "email": registered_client["email"],
-        "password": registered_client["password"],
-    })
+    response = client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": registered_client["email"],
+            "password": registered_client["password"],
+        },
+    )
     assert response.status_code == 200
     data = response.json()
     assert "access_token" in data
@@ -67,10 +76,13 @@ def test_login_client_success(client, registered_client):
 
 def test_login_manager_success(client, manager_user):
     """POST /api/v1/auth/login — valid manager credentials return 200 with tokens."""
-    response = client.post("/api/v1/auth/login", json={
-        "email": "manager@example.com",
-        "password": "managerpass123",
-    })
+    response = client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": "manager@example.com",
+            "password": "managerpass123",
+        },
+    )
     assert response.status_code == 200
     data = response.json()
     assert "access_token" in data
@@ -79,20 +91,26 @@ def test_login_manager_success(client, manager_user):
 
 def test_login_wrong_password(client, registered_client):
     """POST /api/v1/auth/login — wrong password returns 401 with AUTH_INVALID_CREDENTIALS."""
-    response = client.post("/api/v1/auth/login", json={
-        "email": registered_client["email"],
-        "password": "wrongpassword",
-    })
+    response = client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": registered_client["email"],
+            "password": "wrongpassword",
+        },
+    )
     assert response.status_code == 401
     assert response.json()["detail"]["error"]["code"] == "AUTH_INVALID_CREDENTIALS"
 
 
 def test_login_wrong_email(client):
     """POST /api/v1/auth/login — nonexistent email returns 401 with AUTH_INVALID_CREDENTIALS."""
-    response = client.post("/api/v1/auth/login", json={
-        "email": "nobody@example.com",
-        "password": "somepassword",
-    })
+    response = client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": "nobody@example.com",
+            "password": "somepassword",
+        },
+    )
     assert response.status_code == 401
     assert response.json()["detail"]["error"]["code"] == "AUTH_INVALID_CREDENTIALS"
 
@@ -100,6 +118,7 @@ def test_login_wrong_email(client):
 # ---------------------------------------------------------------------------
 # Refresh
 # ---------------------------------------------------------------------------
+
 
 def test_refresh_token_success(client, registered_client):
     """POST /api/v1/auth/refresh — valid refresh token returns new access token."""
@@ -129,6 +148,7 @@ def test_refresh_with_access_token_fails(client, registered_client):
 # ---------------------------------------------------------------------------
 # Protected route (/me)
 # ---------------------------------------------------------------------------
+
 
 def test_protected_route_no_token(client):
     """GET /api/v1/auth/me — no token returns 401."""
@@ -165,6 +185,7 @@ def test_protected_route_invalid_token(client):
 # Logout, forgot-password, reset-password (stubs)
 # ---------------------------------------------------------------------------
 
+
 def test_logout(client):
     """POST /api/v1/auth/logout — always returns 200."""
     response = client.post("/api/v1/auth/logout")
@@ -179,8 +200,11 @@ def test_forgot_password(client):
 
 def test_reset_password_invalid_token(client):
     """POST /api/v1/auth/reset-password — returns 404 for unknown token."""
-    response = client.post("/api/v1/auth/reset-password", json={
-        "token": "sometoken",
-        "new_password": "newpassword123",
-    })
+    response = client.post(
+        "/api/v1/auth/reset-password",
+        json={
+            "token": "sometoken",
+            "new_password": "newpassword123",
+        },
+    )
     assert response.status_code == 404

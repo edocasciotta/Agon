@@ -2,12 +2,15 @@
 Smart list filter service.
 db.commit() is never called here — that belongs in the router layer.
 """
+
 from datetime import timedelta
-from sqlalchemy.orm import Session
+
 from sqlalchemy import exists
+from sqlalchemy.orm import Session
+
+from app.models.booking import Booking
 from app.models.client import Client
 from app.models.membership import Membership
-from app.models.booking import Booking
 from app.utils import utcnow
 
 
@@ -25,7 +28,7 @@ def apply_filters(db: Session, filters: dict) -> list:
     """
     from datetime import datetime
 
-    query = db.query(Client).filter(Client.is_active == True)
+    query = db.query(Client).filter(Client.is_active.is_(True))
     now = utcnow()
 
     membership_status = filters.get("membership_status")
@@ -51,9 +54,7 @@ def apply_filters(db: Session, filters: dict) -> list:
         )
     elif membership_status == "none":
         # Has no membership rows at all
-        query = query.filter(
-            ~exists().where(Membership.client_id == Client.id)
-        )
+        query = query.filter(~exists().where(Membership.client_id == Client.id))
 
     last_booked_within_days = filters.get("last_booked_within_days")
     if last_booked_within_days is not None:

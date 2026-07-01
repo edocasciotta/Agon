@@ -1,17 +1,20 @@
 """
 Smart Lists — /api/v1/smartlists
 """
+
 import json
 from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.database import get_db
+
 from app.auth import require_manager
+from app.database import get_db
 from app.models.smart_list import SmartList
 from app.schemas.smart_list import (
     SmartListCreate,
-    SmartListUpdate,
     SmartListListItem,
+    SmartListUpdate,
 )
 from app.services import smart_list_service
 
@@ -127,8 +130,5 @@ def preview_smart_list(
     clients = smart_list_service.apply_filters(db, filters)
     return {
         "count": len(clients),
-        "clients": [
-            {"id": c.id, "full_name": c.full_name, "email": c.email}
-            for c in clients
-        ],
+        "clients": [{"id": c.id, "full_name": c.full_name, "email": c.email} for c in clients],
     }

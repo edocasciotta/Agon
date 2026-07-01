@@ -10,6 +10,7 @@ import { ErrorMessage } from '../../components/ErrorMessage'
 import { PageHeader } from '../../components/PageHeader'
 import { EmptyState } from '../../components/EmptyState'
 import type { ApiError } from '../../api/client'
+import { clientSchema } from '../../lib/formSchemas'
 
 export function ClientsPage() {
   const { t } = useTranslation()
@@ -61,6 +62,11 @@ export function ClientsPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setFormError(null)
+    const result = clientSchema.safeParse(form)
+    if (!result.success) {
+      setFormError(result.error.errors[0].message)
+      return
+    }
     createMutation.mutate({ ...form, phone: form.phone || undefined })
   }
 

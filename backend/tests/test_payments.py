@@ -1,9 +1,9 @@
-import pytest
 import datetime
 
 
 def test_record_manual_payment(client, manager_auth_headers, db_session, registered_client):
     from app.models.client import Client
+
     client_obj = db_session.query(Client).filter_by(email=registered_client["email"]).first()
     response = client.post(
         "/api/v1/payments",
@@ -26,6 +26,7 @@ def test_record_manual_payment(client, manager_auth_headers, db_session, registe
 def test_list_payments_as_manager(client, manager_auth_headers, db_session, registered_client):
     from app.models.client import Client
     from app.models.payment import Payment
+
     client_obj = db_session.query(Client).filter_by(email=registered_client["email"]).first()
     p = Payment(
         client_id=client_obj.id,
@@ -48,6 +49,7 @@ def test_list_payments_as_manager(client, manager_auth_headers, db_session, regi
 def test_list_payments_as_client(client, client_auth_headers, db_session, registered_client):
     from app.models.client import Client
     from app.models.payment import Payment
+
     client_obj = db_session.query(Client).filter_by(email=registered_client["email"]).first()
     p = Payment(
         client_id=client_obj.id,
@@ -71,6 +73,7 @@ def test_list_payments_as_client(client, client_auth_headers, db_session, regist
 def test_get_payment(client, manager_auth_headers, db_session, registered_client):
     from app.models.client import Client
     from app.models.payment import Payment
+
     client_obj = db_session.query(Client).filter_by(email=registered_client["email"]).first()
     p = Payment(
         client_id=client_obj.id,
@@ -94,6 +97,7 @@ def test_get_payment(client, manager_auth_headers, db_session, registered_client
 def test_refund_payment(client, manager_auth_headers, db_session, registered_client):
     from app.models.client import Client
     from app.models.payment import Payment
+
     client_obj = db_session.query(Client).filter_by(email=registered_client["email"]).first()
     p = Payment(
         client_id=client_obj.id,

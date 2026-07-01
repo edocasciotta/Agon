@@ -1,0 +1,42 @@
+repos:
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        language_version: python3.11
+        args: [--line-length=100]
+
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: [--profile=black, --line-length=100]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix]
+
+  - repo: local
+    hooks:
+      - id: pytest-quick
+        name: pytest (fast)
+        entry: bash -c 'cd backend && .venv/bin/pytest tests/ -q -x --timeout=30 -k "not test_e2e and not test_load"'
+        language: system
+        pass_filenames: false
+        types: [python]
+
+      - id: eslint-frontend
+        name: eslint (frontend)
+        entry: bash -c 'cd frontend && npm run lint'
+        language: system
+        pass_filenames: false
+        types_or: [ts, tsx]
+
+      - id: tsc-frontend
+        name: tsc (frontend)
+        entry: bash -c 'cd frontend && npm run typecheck'
+        language: system
+        pass_filenames: false
+        types_or: [ts, tsx]

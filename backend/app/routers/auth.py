@@ -1,52 +1,66 @@
 import uuid
 from datetime import timedelta
-from app.utils import utcnow
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
-from app.database import get_db
-from app.limiter import limiter
+
 from app.auth import (
-    hash_password,
-    verify_password,
+    ACCESS_TOKEN_EXPIRE_CLIENT,
+    ACCESS_TOKEN_EXPIRE_MANAGER,
+    REFRESH_TOKEN_EXPIRE_CLIENT,
+    REFRESH_TOKEN_EXPIRE_MANAGER,
     create_access_token,
     create_refresh_token,
     decode_token,
+    hash_password,
     oauth2_scheme,
-    ACCESS_TOKEN_EXPIRE_MANAGER,
-    ACCESS_TOKEN_EXPIRE_CLIENT,
-    REFRESH_TOKEN_EXPIRE_MANAGER,
-    REFRESH_TOKEN_EXPIRE_CLIENT,
+    verify_password,
 )
-from app.schemas.auth import (
-    LoginRequest,
-    ClientRegisterRequest,
-    TokenResponse,
-    RefreshRequest,
-    ForgotPasswordRequest,
-    ResetPasswordRequest,
-)
-from app.models.user import User
+from app.database import get_db
+from app.limiter import limiter
 from app.models.client import Client
 from app.models.invitation_token import InvitationToken
 from app.models.studio_settings import StudioSettings
+from app.models.user import User
+from app.schemas.auth import (
+    ClientRegisterRequest,
+    ForgotPasswordRequest,
+    LoginRequest,
+    RefreshRequest,
+    ResetPasswordRequest,
+    TokenResponse,
+)
+from app.utils import utcnow
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
 
 @router.post("/register/client", response_model=TokenResponse, status_code=201)
 @limiter.limit("5/minute")
-async def register_client(request: Request, payload: ClientRegisterRequest, db: Session = Depends(get_db)):
+async def register_client(
+    request: Request, payload: ClientRegisterRequest, db: Session = Depends(get_db)
+):
     """Register a new client account (mobile app). Auto-logs in and returns tokens."""
     if len(payload.password) < 8:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail={"error": {"code": "AUTH_PASSWORD_TOO_SHORT", "message": "Password must be at least 8 characters"}},
+            detail={
+                "error": {
+                    "code": "AUTH_PASSWORD_TOO_SHORT",
+                    "message": "Password must be at least 8 characters",
+                }
+            },
         )
     existing = db.query(Client).filter(Client.email == payload.email).first()
     if existing:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail={"error": {"code": "AUTH_EMAIL_ALREADY_EXISTS", "message": "A client with this email already exists"}},
+            detail={
+                "error": {
+                    "code": "AUTH_EMAIL_ALREADY_EXISTS",
+                    "message": "A client with this email already exists",
+                }
+            },
         )
     client = Client(
         email=payload.email,
@@ -73,7 +87,9 @@ async def login(request: Request, payload: LoginRequest, db: Session = Depends(g
         if not user.is_active:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail={"error": {"code": "AUTH_ACCOUNT_INACTIVE", "message": "Account is inactive"}},
+                detail={
+                    "error": {"code": "AUTH_ACCOUNT_INACTIVE", "message": "Account is inactive"}
+                },
             )
         token_data = {"sub": str(user.id), "role": user.role}
         access_token = create_access_token(token_data, expires_delta=ACCESS_TOKEN_EXPIRE_MANAGER)
@@ -86,7 +102,9 @@ async def login(request: Request, payload: LoginRequest, db: Session = Depends(g
         if not client.is_active:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail={"error": {"code": "AUTH_ACCOUNT_INACTIVE", "message": "Account is inactive"}},
+                detail={
+                    "error": {"code": "AUTH_ACCOUNT_INACTIVE", "message": "Account is inactive"}
+                },
             )
         token_data = {"sub": str(client.id), "role": "client"}
         access_token = create_access_token(token_data, expires_delta=ACCESS_TOKEN_EXPIRE_CLIENT)
@@ -95,7 +113,9 @@ async def login(request: Request, payload: LoginRequest, db: Session = Depends(g
 
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail={"error": {"code": "AUTH_INVALID_CREDENTIALS", "message": "Invalid email or password"}},
+        detail={
+            "error": {"code": "AUTH_INVALID_CREDENTIALS", "message": "Invalid email or password"}
+        },
     )
 
 
@@ -130,7 +150,12 @@ async def refresh_token_endpoint(payload: RefreshRequest, db: Session = Depends(
 
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail={"error": {"code": "AUTH_TOKEN_INVALID", "message": "User or client not found or inactive"}},
+        detail={
+            "error": {
+                "code": "AUTH_TOKEN_INVALID",
+                "message": "User or client not found or inactive",
+            }
+        },
     )
 
 
@@ -142,7 +167,9 @@ async def logout():
 
 @router.post("/forgot-password", status_code=200)
 @limiter.limit("3/hour")
-async def forgot_password(request: Request, payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
+async def forgot_password(
+    request: Request, payload: ForgotPasswordRequest, db: Session = Depends(get_db)
+):
     """Request a password reset email."""
     # Always return 200 regardless of whether the email exists (security best practice)
     client = db.query(Client).filter(Client.email == payload.email).first()
@@ -156,18 +183,27 @@ async def forgot_password(request: Request, payload: ForgotPasswordRequest, db: 
         db.add(invitation)
 
         studio_settings = db.query(StudioSettings).filter(StudioSettings.id == 1).first()
-        base_url = (studio_settings.tunnel_url if studio_settings and studio_settings.tunnel_url else "http://localhost:5173")
+        base_url = (
+            studio_settings.tunnel_url
+            if studio_settings and studio_settings.tunnel_url
+            else "http://localhost:5173"
+        )
         reset_url = f"{base_url}/reset-password?token={token_str}"
-        studio_name = (studio_settings.studio_name if studio_settings else "Agon Studio")
+        studio_name = studio_settings.studio_name if studio_settings else "Agon Studio"
 
         try:
             from app.services.email_service import send_event_email
+
             await send_event_email(
                 db,
                 "password_reset",
                 client.email,
                 client.full_name,
-                {"reset_url": reset_url, "studio_name": studio_name, "client_name": client.full_name},
+                {
+                    "reset_url": reset_url,
+                    "studio_name": studio_name,
+                    "client_name": client.full_name,
+                },
                 studio_name,
             )
         except Exception:
@@ -190,17 +226,29 @@ async def reset_password(payload: ResetPasswordRequest, db: Session = Depends(ge
     if inv.used:
         raise HTTPException(
             status_code=400,
-            detail={"error": {"code": "RESET_TOKEN_ALREADY_USED", "message": "This reset token has already been used"}},
+            detail={
+                "error": {
+                    "code": "RESET_TOKEN_ALREADY_USED",
+                    "message": "This reset token has already been used",
+                }
+            },
         )
     if inv.expires_at < utcnow():
         raise HTTPException(
             status_code=400,
-            detail={"error": {"code": "RESET_TOKEN_EXPIRED", "message": "This reset token has expired"}},
+            detail={
+                "error": {"code": "RESET_TOKEN_EXPIRED", "message": "This reset token has expired"}
+            },
         )
     if len(payload.new_password) < 8:
         raise HTTPException(
             status_code=422,
-            detail={"error": {"code": "AUTH_PASSWORD_TOO_SHORT", "message": "Password must be at least 8 characters"}},
+            detail={
+                "error": {
+                    "code": "AUTH_PASSWORD_TOO_SHORT",
+                    "message": "Password must be at least 8 characters",
+                }
+            },
         )
     client = db.query(Client).filter(Client.id == inv.client_id).first()
     if not client:
@@ -221,17 +269,26 @@ async def validate_invite_token(token: str, db: Session = Depends(get_db)):
     if not inv:
         raise HTTPException(
             status_code=404,
-            detail={"error": {"code": "INVITATION_NOT_FOUND", "message": "Invitation token not found"}},
+            detail={
+                "error": {"code": "INVITATION_NOT_FOUND", "message": "Invitation token not found"}
+            },
         )
     if inv.used:
         raise HTTPException(
             status_code=409,
-            detail={"error": {"code": "INVITATION_ALREADY_USED", "message": "This invitation has already been used"}},
+            detail={
+                "error": {
+                    "code": "INVITATION_ALREADY_USED",
+                    "message": "This invitation has already been used",
+                }
+            },
         )
     if inv.expires_at < utcnow():
         raise HTTPException(
             status_code=409,
-            detail={"error": {"code": "INVITATION_EXPIRED", "message": "This invitation has expired"}},
+            detail={
+                "error": {"code": "INVITATION_EXPIRED", "message": "This invitation has expired"}
+            },
         )
     client_obj = db.query(Client).filter(Client.id == inv.client_id).first()
     if not client_obj:
@@ -267,7 +324,9 @@ async def get_me(
         if not user or not user.is_active:
             raise HTTPException(
                 status_code=401,
-                detail={"error": {"code": "AUTH_TOKEN_INVALID", "message": "User not found or inactive"}},
+                detail={
+                    "error": {"code": "AUTH_TOKEN_INVALID", "message": "User not found or inactive"}
+                },
             )
         return {
             "id": user.id,
@@ -281,7 +340,12 @@ async def get_me(
         if not client or not client.is_active:
             raise HTTPException(
                 status_code=401,
-                detail={"error": {"code": "AUTH_TOKEN_INVALID", "message": "Client not found or inactive"}},
+                detail={
+                    "error": {
+                        "code": "AUTH_TOKEN_INVALID",
+                        "message": "Client not found or inactive",
+                    }
+                },
             )
         return {
             "id": client.id,

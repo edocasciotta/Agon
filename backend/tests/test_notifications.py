@@ -1,7 +1,8 @@
+from unittest.mock import MagicMock
+
 import pytest
-from unittest.mock import patch, MagicMock
-from app.models.notification_log import NotificationLog
 from app.models.client import Client
+from app.models.notification_log import NotificationLog
 
 
 @pytest.fixture(autouse=True)
@@ -17,6 +18,7 @@ def mock_push(monkeypatch):
     mock_push_client_cls = MagicMock(return_value=mock_instance)
 
     import app.services.push_service as push_svc
+
     monkeypatch.setattr(push_svc, "PushClient", mock_push_client_cls)
     monkeypatch.setattr(push_svc, "_EXPO_AVAILABLE", True)
     yield mock_push_client_cls
@@ -37,9 +39,10 @@ def test_send_notification_as_manager(client, manager_auth_headers, registered_c
 
 def test_send_notification_requires_manager(client, db_session, registered_client):
     """Non-managers (instructor role) cannot send manual push notifications."""
-    from app.models.user import User
     from app.auth import hash_password
     from app.models.client import Client
+    from app.models.user import User
+
     # Create an instructor user and log in
     instructor = User(
         email="instructor2@example.com",
@@ -50,7 +53,9 @@ def test_send_notification_requires_manager(client, db_session, registered_clien
     )
     db_session.add(instructor)
     db_session.commit()
-    login_resp = client.post("/api/v1/auth/login", json={"email": "instructor2@example.com", "password": "instrpass123"})
+    login_resp = client.post(
+        "/api/v1/auth/login", json={"email": "instructor2@example.com", "password": "instrpass123"}
+    )
     token = login_resp.json()["access_token"]
     instructor_headers = {"Authorization": f"Bearer {token}"}
 

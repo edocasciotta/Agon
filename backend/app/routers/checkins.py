@@ -1,7 +1,6 @@
-from app.utils import utcnow
 import base64
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from io import BytesIO
 from typing import List
 
@@ -9,14 +8,15 @@ import qrcode
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.auth import create_qr_token, decode_qr_token, decode_token, oauth2_scheme
 from app.database import get_db
-from app.auth import oauth2_scheme, decode_token, create_qr_token, decode_qr_token
 from app.models.booking import Booking
 from app.models.checkin import Checkin
-from app.models.scheduled_class import ScheduledClass
 from app.models.client import Client
+from app.models.scheduled_class import ScheduledClass
 from app.schemas.checkin import CheckinCreate, CheckinResponse, QRCodeResponse
 from app.services.booking_service import get_studio_settings
+from app.utils import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -168,6 +168,7 @@ def _checkin_response(checkin: Checkin, db: Session) -> CheckinResponse:
 # (must be declared BEFORE parameterised routes if any)
 # ---------------------------------------------------------------------------
 
+
 @router.get("/checkins/qr/{booking_id}", response_model=QRCodeResponse)
 def generate_qr_code(
     booking_id: int,
@@ -228,6 +229,7 @@ def generate_qr_code(
 # GET /checkins/class/{class_id} — List all check-ins for a class
 # ---------------------------------------------------------------------------
 
+
 @router.get("/checkins/class/{class_id}", response_model=List[CheckinResponse])
 def list_checkins_for_class(
     class_id: int,
@@ -248,11 +250,7 @@ def list_checkins_for_class(
             },
         )
 
-    checkins = (
-        db.query(Checkin)
-        .filter(Checkin.scheduled_class_id == class_id)
-        .all()
-    )
+    checkins = db.query(Checkin).filter(Checkin.scheduled_class_id == class_id).all()
 
     return [_checkin_response(c, db) for c in checkins]
 
@@ -260,6 +258,7 @@ def list_checkins_for_class(
 # ---------------------------------------------------------------------------
 # POST /checkins — Check in (all three methods)
 # ---------------------------------------------------------------------------
+
 
 @router.post("/checkins", response_model=CheckinResponse, status_code=status.HTTP_201_CREATED)
 def create_checkin(
@@ -276,7 +275,12 @@ def create_checkin(
         if payload.booking_id is None:
             raise HTTPException(
                 status_code=422,
-                detail={"error": {"code": "VALIDATION_ERROR", "message": "booking_id required for app check-in"}},
+                detail={
+                    "error": {
+                        "code": "VALIDATION_ERROR",
+                        "message": "booking_id required for app check-in",
+                    }
+                },
             )
         booking = db.query(Booking).filter(Booking.id == payload.booking_id).first()
         if not booking:
@@ -288,7 +292,12 @@ def create_checkin(
         if role == "client" and booking.client_id != subject_id:
             raise HTTPException(
                 status_code=403,
-                detail={"error": {"code": "AUTH_INSUFFICIENT_PERMISSIONS", "message": "Not your booking"}},
+                detail={
+                    "error": {
+                        "code": "AUTH_INSUFFICIENT_PERMISSIONS",
+                        "message": "Not your booking",
+                    }
+                },
             )
 
     elif method == "qr":
@@ -296,7 +305,12 @@ def create_checkin(
         if payload.qr_token is None:
             raise HTTPException(
                 status_code=422,
-                detail={"error": {"code": "VALIDATION_ERROR", "message": "qr_token required for QR check-in"}},
+                detail={
+                    "error": {
+                        "code": "VALIDATION_ERROR",
+                        "message": "qr_token required for QR check-in",
+                    }
+                },
             )
         qr_payload = decode_qr_token(payload.qr_token)
         booking_id_from_qr = qr_payload.get("booking_id")
@@ -310,7 +324,12 @@ def create_checkin(
         if role == "client" and booking.client_id != subject_id:
             raise HTTPException(
                 status_code=403,
-                detail={"error": {"code": "AUTH_INSUFFICIENT_PERMISSIONS", "message": "Not your booking"}},
+                detail={
+                    "error": {
+                        "code": "AUTH_INSUFFICIENT_PERMISSIONS",
+                        "message": "Not your booking",
+                    }
+                },
             )
 
     elif method == "manual":

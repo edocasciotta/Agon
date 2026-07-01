@@ -1,10 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
 from typing import List
-from app.database import get_db
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
 from app.auth import get_current_user, require_manager
+from app.database import get_db
 from app.models.membership_type import MembershipType
-from app.schemas.membership_type import MembershipTypeCreate, MembershipTypeUpdate, MembershipTypeResponse
+from app.schemas.membership_type import (
+    MembershipTypeCreate,
+    MembershipTypeResponse,
+    MembershipTypeUpdate,
+)
 
 router = APIRouter(prefix="/api/v1", tags=["membership-types"])
 
@@ -17,7 +23,7 @@ def list_membership_types(
 ):
     query = db.query(MembershipType)
     if not include_inactive:
-        query = query.filter(MembershipType.is_active == True)
+        query = query.filter(MembershipType.is_active.is_(True))
     return query.all()
 
 

@@ -1,22 +1,31 @@
 import uuid
 from datetime import timedelta
+from typing import List, Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import List, Optional
+
+from app.auth import get_current_client, get_current_user, require_manager
 from app.database import get_db
-from app.auth import get_current_user, get_current_client, require_manager
-from app.models.client import Client
 from app.models.booking import Booking
-from app.models.membership import Membership
+from app.models.client import Client
 from app.models.invitation_token import InvitationToken
+from app.models.membership import Membership
 from app.models.studio_settings import StudioSettings
-from app.schemas.client import ClientResponse, ClientUpdate, ClientListResponse, ClientCreate, ClientCreateResponse
+from app.schemas.client import (
+    ClientCreate,
+    ClientCreateResponse,
+    ClientListResponse,
+    ClientResponse,
+    ClientUpdate,
+)
 from app.utils import utcnow
 
 router = APIRouter(prefix="/api/v1/clients", tags=["clients"])
 
 
 # ---- /me routes MUST come before /{id} ----
+
 
 @router.get("/me", response_model=ClientResponse)
 def get_own_profile(
@@ -58,6 +67,7 @@ def update_push_token(
 
 # ---- Collection and /{id} routes ----
 
+
 @router.get("", response_model=List[ClientListResponse])
 def list_clients(
     search: Optional[str] = Query(None),
@@ -67,12 +77,10 @@ def list_clients(
 ):
     query = db.query(Client)
     if active_only:
-        query = query.filter(Client.is_active == True)
+        query = query.filter(Client.is_active.is_(True))
     if search:
         pattern = f"%{search}%"
-        query = query.filter(
-            (Client.full_name.ilike(pattern)) | (Client.email.ilike(pattern))
-        )
+        query = query.filter((Client.full_name.ilike(pattern)) | (Client.email.ilike(pattern)))
     return query.all()
 
 
@@ -87,7 +95,12 @@ async def create_client(
     if existing:
         raise HTTPException(
             status_code=409,
-            detail={"error": {"code": "CLIENT_EMAIL_ALREADY_EXISTS", "message": "A client with this email already exists"}},
+            detail={
+                "error": {
+                    "code": "CLIENT_EMAIL_ALREADY_EXISTS",
+                    "message": "A client with this email already exists",
+                }
+            },
         )
 
     client = Client(
@@ -110,14 +123,19 @@ async def create_client(
 
     # Build invite URL
     studio_settings = db.query(StudioSettings).filter(StudioSettings.id == 1).first()
-    base_url = (studio_settings.tunnel_url if studio_settings and studio_settings.tunnel_url else "http://localhost:5173")
+    base_url = (
+        studio_settings.tunnel_url
+        if studio_settings and studio_settings.tunnel_url
+        else "http://localhost:5173"
+    )
     invite_url = f"{base_url}/set-password?token={token_str}"
-    studio_name = (studio_settings.studio_name if studio_settings else "Agon Studio")
+    studio_name = studio_settings.studio_name if studio_settings else "Agon Studio"
 
     # Try to send email
     email_sent = False
     try:
         from app.services.email_service import send_event_email
+
         await send_event_email(
             db,
             "client_invite",

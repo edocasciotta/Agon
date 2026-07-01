@@ -1,4 +1,3 @@
-import pytest
 
 
 def test_get_studio_not_configured(client, manager_auth_headers):
@@ -38,8 +37,9 @@ def test_get_studio_after_update(client, manager_auth_headers):
 
 def test_update_studio_requires_manager(client, db_session, manager_auth_headers):
     """PUT /studio as non-manager (instructor) → 403"""
+    from app.auth import create_access_token, hash_password
     from app.models.user import User
-    from app.auth import hash_password, create_access_token
+
     instructor_user = User(
         email="inst_studio@example.com",
         password_hash=hash_password("pass123"),

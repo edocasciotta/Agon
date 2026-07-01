@@ -4,8 +4,9 @@ import pytest
 @pytest.fixture
 def sample_client(db_session):
     """Creates a second client directly in the DB for manager operations."""
-    from app.models.client import Client
     from app.auth import hash_password
+    from app.models.client import Client
+
     c = Client(
         email="john@example.com",
         password_hash=hash_password("password123"),
@@ -79,7 +80,7 @@ def test_delete_client_anonymizes(client, manager_auth_headers, sample_client):
     data = get_resp.json()
     assert data["full_name"] == "[deleted]"
     assert data["email"] == f"deleted_{sample_client.id}@anon.agon"
-    assert data["is_active"] == False
+    assert not data["is_active"]
 
 
 def test_client_get_own_profile(client, registered_client, client_auth_headers):

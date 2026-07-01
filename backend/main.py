@@ -1,21 +1,48 @@
 import asyncio
 from contextlib import asynccontextmanager
+
+from app.database import create_tables
+from app.limiter import limiter
+from app.routers import (
+    auth as auth_router,
+)
+from app.routers import (
+    bookings,
+    checkins,
+    class_templates,
+    classes,
+    clients,
+    email_events,
+    email_settings,
+    email_templates,
+    gdpr,
+    instructors,
+    locations,
+    membership_types,
+    memberships,
+    migration,
+    notifications,
+    payments,
+    reports,
+    smart_lists,
+    studio,
+    support,
+)
+from app.tasks.class_reminders import run_class_reminder_loop
+from app.tasks.membership_expiry import run_membership_expiry_loop
+from app.tasks.nightly_backup import run_nightly_backup_loop
+from app.tasks.waitlist_expiry import run_waitlist_expiry_loop
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
-from app.database import create_tables
-from app.limiter import limiter
-from app.tasks.waitlist_expiry import run_waitlist_expiry_loop
-from app.tasks.membership_expiry import run_membership_expiry_loop
-from app.tasks.class_reminders import run_class_reminder_loop
-from app.tasks.nightly_backup import run_nightly_backup_loop
 
 
 def _seed_email_event_assignments():
     """Insert any missing EmailEventAssignment rows at startup."""
     from app.database import SessionLocal
-    from app.models.email_event_assignment import EmailEventAssignment, EVENT_TYPES
+    from app.models.email_event_assignment import EVENT_TYPES, EmailEventAssignment
+
     db = SessionLocal()
     try:
         existing = {r.event_type for r in db.query(EmailEventAssignment).all()}
@@ -63,49 +90,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from app.routers import auth as auth_router
 app.include_router(auth_router.router)
-
-from app.routers import studio, clients, instructors, class_templates, classes
 app.include_router(studio.router)
 app.include_router(clients.router)
 app.include_router(instructors.router)
 app.include_router(class_templates.router)
 app.include_router(classes.router)
-
-from app.routers import bookings
 app.include_router(bookings.router)
-
-from app.routers import checkins
 app.include_router(checkins.router)
-
-from app.routers import membership_types, memberships, payments
 app.include_router(membership_types.router)
 app.include_router(memberships.router)
 app.include_router(payments.router)
-
-from app.routers import notifications
 app.include_router(notifications.router)
-
-from app.routers import reports, gdpr
 app.include_router(reports.router)
 app.include_router(gdpr.router)
-
-from app.routers import migration
 app.include_router(migration.router)
-
-from app.routers import support
 app.include_router(support.router)
-
-from app.routers import email_settings
 app.include_router(email_settings.router)
-
-from app.routers import email_templates, email_events, smart_lists
 app.include_router(email_templates.router)
 app.include_router(email_events.router)
 app.include_router(smart_lists.router)
-
-from app.routers import locations
 app.include_router(locations.router)
 
 

@@ -8,6 +8,7 @@ import { LoadingSpinner } from '../components/LoadingSpinner'
 import { PageHeader } from '../components/PageHeader'
 import { EmptyState } from '../components/EmptyState'
 import { Pagination } from '../components/Pagination'
+import { instructorSchema } from '../lib/formSchemas'
 
 const PAGE_SIZE = 12
 
@@ -160,6 +161,17 @@ export function InstructorsPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setApiError(null)
+    // Zod schema check for format-level validation (email format, lengths)
+    const zodResult = instructorSchema.safeParse({
+      ...formData,
+      email: formData.email || undefined,
+      password: formData.password || undefined,
+    })
+    if (!zodResult.success) {
+      const firstError = zodResult.error.errors[0]
+      setFormErrors({ [firstError.path[0]]: firstError.message } as Partial<FormData>)
+      return
+    }
     if (!validate()) return
 
     if (editing) {

@@ -1,16 +1,14 @@
-import pytest
 import datetime
+
+import pytest
 
 
 @pytest.fixture
 def gdpr_client_data(db_session, membership_type):
     """Creates a client with some associated data for GDPR tests."""
+    from app.auth import hash_password
     from app.models.client import Client
     from app.models.membership import Membership
-    from app.models.booking import Booking
-    from app.models.class_template import ClassTemplate
-    from app.models.scheduled_class import ScheduledClass
-    from app.auth import hash_password
 
     c = Client(
         email="gdprclient@example.com",
@@ -38,10 +36,13 @@ def gdpr_client_data(db_session, membership_type):
 @pytest.fixture
 def gdpr_client_auth_headers(client, gdpr_client_data):
     """Returns auth headers for the gdpr test client."""
-    response = client.post("/api/v1/auth/login", json={
-        "email": "gdprclient@example.com",
-        "password": "gdprpass123",
-    })
+    response = client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": "gdprclient@example.com",
+            "password": "gdprpass123",
+        },
+    )
     assert response.status_code == 200
     token = response.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
@@ -78,6 +79,7 @@ def test_gdpr_delete(client, manager_auth_headers, gdpr_client_data, db_session)
 
     # Verify anonymization
     from app.models.client import Client
+
     db_session.expire_all()
     updated = db_session.query(Client).filter(Client.id == client_id).first()
     assert updated.full_name == "[deleted]"
@@ -97,7 +99,9 @@ def test_record_consent(client, gdpr_client_auth_headers):
     assert data["granted"] is True
 
 
-def test_get_consent_log(client, manager_auth_headers, gdpr_client_data, gdpr_client_auth_headers, db_session):
+def test_get_consent_log(
+    client, manager_auth_headers, gdpr_client_data, gdpr_client_auth_headers, db_session
+):
     # First record a consent entry
     client.post(
         "/api/v1/gdpr/consent",

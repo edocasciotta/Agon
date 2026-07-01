@@ -1,17 +1,18 @@
-from app.utils import utcnow
-from datetime import datetime, timezone
+from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
-from typing import List
+
+from app.auth import decode_token, get_current_client, oauth2_scheme, require_manager
+from app.config import settings
 from app.database import get_db
-from app.auth import get_current_client, require_manager, oauth2_scheme, decode_token
-from app.models.payment import Payment
 from app.models.client import Client
-from app.models.membership_type import MembershipType
 from app.models.membership import Membership
+from app.models.membership_type import MembershipType
+from app.models.payment import Payment
 from app.models.studio_settings import StudioSettings
 from app.schemas.payment import PaymentCreate, PaymentResponse, StripeCheckoutRequest
-from app.config import settings
+from app.utils import utcnow
 
 router = APIRouter(prefix="/api/v1", tags=["payments"])
 
@@ -48,10 +49,16 @@ def _get_payment_or_404(db: Session, payment_id: int) -> Payment:
 @router.post("/payments/stripe/webhook", status_code=200)
 async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
     import stripe
+
     if settings.STRIPE_WEBHOOK_SECRET == "whsec_test":
         raise HTTPException(
             status_code=503,
-            detail={"error": {"code": "STRIPE_NOT_CONFIGURED", "message": "Stripe webhook secret not configured"}},
+            detail={
+                "error": {
+                    "code": "STRIPE_NOT_CONFIGURED",
+                    "message": "Stripe webhook secret not configured",
+                }
+            },
         )
     raw_body = await request.body()
     sig_header = request.headers.get("Stripe-Signature", "")
@@ -63,7 +70,12 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
     except stripe.error.SignatureVerificationError:
         raise HTTPException(
             status_code=400,
-            detail={"error": {"code": "STRIPE_INVALID_SIGNATURE", "message": "Invalid Stripe webhook signature"}},
+            detail={
+                "error": {
+                    "code": "STRIPE_INVALID_SIGNATURE",
+                    "message": "Invalid Stripe webhook signature",
+                }
+            },
         )
 
     if event["type"] == "checkout.session.completed":
@@ -75,6 +87,7 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
         mt = db.query(MembershipType).filter(MembershipType.id == membership_type_id).first()
         if mt:
             from datetime import date, timedelta
+
             today = date.today()
             expires_at = today + timedelta(days=mt.validity_days) if mt.validity_days else None
 
@@ -118,7 +131,12 @@ def stripe_checkout(
     if not studio or not studio.stripe_connected or not studio.self_service_purchases_enabled:
         raise HTTPException(
             status_code=403,
-            detail={"error": {"code": "STRIPE_NOT_CONFIGURED", "message": "Stripe is not configured or self-service purchases are disabled"}},
+            detail={
+                "error": {
+                    "code": "STRIPE_NOT_CONFIGURED",
+                    "message": "Stripe is not configured or self-service purchases are disabled",
+                }
+            },
         )
 
     mt = db.query(MembershipType).filter(MembershipType.id == payload.membership_type_id).first()
@@ -132,14 +150,16 @@ def stripe_checkout(
     try:
         session = stripe.checkout.Session.create(
             mode="payment",
-            line_items=[{
-                "price_data": {
-                    "currency": mt.currency.lower(),
-                    "product_data": {"name": mt.name},
-                    "unit_amount": int(mt.price * 100),
-                },
-                "quantity": 1,
-            }],
+            line_items=[
+                {
+                    "price_data": {
+                        "currency": mt.currency.lower(),
+                        "product_data": {"name": mt.name},
+                        "unit_amount": int(mt.price * 100),
+                    },
+                    "quantity": 1,
+                }
+            ],
             success_url=payload.success_url,
             cancel_url=payload.cancel_url,
             metadata={"client_id": str(current_client.id), "membership_type_id": str(mt.id)},
@@ -162,7 +182,12 @@ def refund_payment(
     if p.status != "completed":
         raise HTTPException(
             status_code=409,
-            detail={"error": {"code": "PAYMENT_CANNOT_REFUND", "message": "Only completed payments can be refunded"}},
+            detail={
+                "error": {
+                    "code": "PAYMENT_CANNOT_REFUND",
+                    "message": "Only completed payments can be refunded",
+                }
+            },
         )
     p.status = "refunded"
     db.commit()

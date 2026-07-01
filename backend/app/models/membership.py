@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Date, ForeignKey
+from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String
 from sqlalchemy.sql import func
+
 from app.database import Base
 
 
@@ -9,7 +10,9 @@ class Membership(Base):
     location_id = Column(Integer, nullable=False, default=1)
     client_id = Column(Integer, ForeignKey("clients.id"), nullable=False)
     membership_type_id = Column(Integer, ForeignKey("membership_types.id"), nullable=False)
-    status = Column(String, nullable=False, default="active")  # active|expired|cancelled|paused|payment_overdue
+    status = Column(
+        String, nullable=False, default="active"
+    )  # active|expired|cancelled|paused|payment_overdue
     starts_at = Column(Date, nullable=False)
     expires_at = Column(Date)
     credits_remaining = Column(Integer)

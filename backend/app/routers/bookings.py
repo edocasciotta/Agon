@@ -1,23 +1,19 @@
-from app.utils import utcnow
 import logging
-from datetime import datetime, timezone
-from typing import Optional, List
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
 from sqlalchemy import func
+from sqlalchemy.orm import Session
 
+from app.auth import decode_token, oauth2_scheme
 from app.database import get_db
-from app.auth import oauth2_scheme, decode_token, get_current_client
 from app.models.booking import Booking
-from app.models.waitlist import Waitlist
 from app.models.scheduled_class import ScheduledClass
-from app.models.client import Client
-from app.models.user import User
+from app.models.waitlist import Waitlist
 from app.schemas.booking import (
+    BookingCancelRequest,
     BookingCreate,
     BookingResponse,
-    BookingCancelRequest,
     WaitlistJoinRequest,
     WaitlistResponse,
 )
@@ -29,6 +25,7 @@ from app.services.booking_service import (
     process_waitlist,
     refund_credit,
 )
+from app.utils import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +35,7 @@ router = APIRouter(prefix="/api/v1", tags=["bookings"])
 # ---------------------------------------------------------------------------
 # Helper: resolve caller role from token
 # ---------------------------------------------------------------------------
+
 
 def _resolve_caller(token: str, db: Session):
     """
@@ -65,6 +63,7 @@ def _resolve_caller(token: str, db: Session):
 # ---------------------------------------------------------------------------
 # GET /bookings
 # ---------------------------------------------------------------------------
+
 
 @router.get("/bookings", response_model=List[BookingResponse])
 def list_bookings(
@@ -94,7 +93,10 @@ def list_bookings(
 # POST /bookings/waitlist  (must be declared BEFORE /bookings/{id})
 # ---------------------------------------------------------------------------
 
-@router.post("/bookings/waitlist", response_model=WaitlistResponse, status_code=status.HTTP_201_CREATED)
+
+@router.post(
+    "/bookings/waitlist", response_model=WaitlistResponse, status_code=status.HTTP_201_CREATED
+)
 def join_waitlist(
     payload: WaitlistJoinRequest,
     token: str = Depends(oauth2_scheme),
@@ -107,7 +109,12 @@ def join_waitlist(
         if payload.client_id is None:
             raise HTTPException(
                 status_code=422,
-                detail={"error": {"code": "VALIDATION_ERROR", "message": "client_id required for manager"}},
+                detail={
+                    "error": {
+                        "code": "VALIDATION_ERROR",
+                        "message": "client_id required for manager",
+                    }
+                },
             )
         target_client_id = payload.client_id
     else:
@@ -124,43 +131,70 @@ def join_waitlist(
     if sc.status != "scheduled":
         raise HTTPException(
             status_code=409,
-            detail={"error": {"code": "BOOKING_CLASS_NOT_SCHEDULED", "message": "Class is not scheduled"}},
+            detail={
+                "error": {
+                    "code": "BOOKING_CLASS_NOT_SCHEDULED",
+                    "message": "Class is not scheduled",
+                }
+            },
         )
 
     now = utcnow()
     if sc.starts_at <= now:
         raise HTTPException(
             status_code=409,
-            detail={"error": {"code": "BOOKING_CLASS_ALREADY_STARTED", "message": "Class has already started"}},
+            detail={
+                "error": {
+                    "code": "BOOKING_CLASS_ALREADY_STARTED",
+                    "message": "Class has already started",
+                }
+            },
         )
 
     # Check no existing waitlist entry
-    existing_wl = db.query(Waitlist).filter(
-        Waitlist.client_id == target_client_id,
-        Waitlist.scheduled_class_id == payload.scheduled_class_id,
-    ).first()
+    existing_wl = (
+        db.query(Waitlist)
+        .filter(
+            Waitlist.client_id == target_client_id,
+            Waitlist.scheduled_class_id == payload.scheduled_class_id,
+        )
+        .first()
+    )
     if existing_wl:
         raise HTTPException(
             status_code=409,
-            detail={"error": {"code": "BOOKING_WAITLIST_DUPLICATE", "message": "Already on the waitlist"}},
+            detail={
+                "error": {
+                    "code": "BOOKING_WAITLIST_DUPLICATE",
+                    "message": "Already on the waitlist",
+                }
+            },
         )
 
     # Check no confirmed booking (already booked = no need for waitlist)
-    existing_booking = db.query(Booking).filter(
-        Booking.client_id == target_client_id,
-        Booking.scheduled_class_id == payload.scheduled_class_id,
-        Booking.status == "confirmed",
-    ).first()
+    existing_booking = (
+        db.query(Booking)
+        .filter(
+            Booking.client_id == target_client_id,
+            Booking.scheduled_class_id == payload.scheduled_class_id,
+            Booking.status == "confirmed",
+        )
+        .first()
+    )
     if existing_booking:
         raise HTTPException(
             status_code=409,
-            detail={"error": {"code": "BOOKING_DUPLICATE", "message": "Already booked for this class"}},
+            detail={
+                "error": {"code": "BOOKING_DUPLICATE", "message": "Already booked for this class"}
+            },
         )
 
     # Get next position
-    max_pos = db.query(func.max(Waitlist.position)).filter(
-        Waitlist.scheduled_class_id == payload.scheduled_class_id
-    ).scalar()
+    max_pos = (
+        db.query(func.max(Waitlist.position))
+        .filter(Waitlist.scheduled_class_id == payload.scheduled_class_id)
+        .scalar()
+    )
     next_pos = (max_pos or 0) + 1
 
     entry = Waitlist(
@@ -178,6 +212,7 @@ def join_waitlist(
 # ---------------------------------------------------------------------------
 # DELETE /bookings/waitlist/{waitlist_id}
 # ---------------------------------------------------------------------------
+
 
 @router.delete("/bookings/waitlist/{waitlist_id}", response_model=WaitlistResponse)
 def leave_waitlist(
@@ -197,7 +232,12 @@ def leave_waitlist(
     if role == "client" and entry.client_id != subject_id:
         raise HTTPException(
             status_code=403,
-            detail={"error": {"code": "AUTH_INSUFFICIENT_PERMISSIONS", "message": "Not your waitlist entry"}},
+            detail={
+                "error": {
+                    "code": "AUTH_INSUFFICIENT_PERMISSIONS",
+                    "message": "Not your waitlist entry",
+                }
+            },
         )
 
     entry.status = "declined"
@@ -211,7 +251,12 @@ def leave_waitlist(
 # POST /bookings/waitlist/{waitlist_id}/confirm
 # ---------------------------------------------------------------------------
 
-@router.post("/bookings/waitlist/{waitlist_id}/confirm", response_model=BookingResponse, status_code=status.HTTP_201_CREATED)
+
+@router.post(
+    "/bookings/waitlist/{waitlist_id}/confirm",
+    response_model=BookingResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 def confirm_waitlist(
     waitlist_id: int,
     token: str = Depends(oauth2_scheme),
@@ -229,20 +274,32 @@ def confirm_waitlist(
     if role == "client" and entry.client_id != subject_id:
         raise HTTPException(
             status_code=403,
-            detail={"error": {"code": "AUTH_INSUFFICIENT_PERMISSIONS", "message": "Not your waitlist entry"}},
+            detail={
+                "error": {
+                    "code": "AUTH_INSUFFICIENT_PERMISSIONS",
+                    "message": "Not your waitlist entry",
+                }
+            },
         )
 
     if entry.status != "offered":
         raise HTTPException(
             status_code=409,
-            detail={"error": {"code": "WAITLIST_OFFER_NOT_ACTIVE", "message": "Waitlist offer is not active"}},
+            detail={
+                "error": {
+                    "code": "WAITLIST_OFFER_NOT_ACTIVE",
+                    "message": "Waitlist offer is not active",
+                }
+            },
         )
 
     now = utcnow()
     if entry.offer_expires_at and entry.offer_expires_at <= now:
         raise HTTPException(
             status_code=409,
-            detail={"error": {"code": "WAITLIST_OFFER_EXPIRED", "message": "Waitlist offer has expired"}},
+            detail={
+                "error": {"code": "WAITLIST_OFFER_EXPIRED", "message": "Waitlist offer has expired"}
+            },
         )
 
     studio_settings = get_studio_settings(db)
@@ -250,15 +307,24 @@ def confirm_waitlist(
     if not can_book(db, entry.client_id, studio_settings):
         raise HTTPException(
             status_code=403,
-            detail={"error": {"code": "BOOKING_NO_MEMBERSHIP", "message": "No valid membership or credits"}},
+            detail={
+                "error": {
+                    "code": "BOOKING_NO_MEMBERSHIP",
+                    "message": "No valid membership or credits",
+                }
+            },
         )
 
     # Race condition safety: check capacity again
     sc = db.query(ScheduledClass).filter(ScheduledClass.id == entry.scheduled_class_id).first()
-    confirmed_count = db.query(Booking).filter(
-        Booking.scheduled_class_id == entry.scheduled_class_id,
-        Booking.status == "confirmed",
-    ).count()
+    confirmed_count = (
+        db.query(Booking)
+        .filter(
+            Booking.scheduled_class_id == entry.scheduled_class_id,
+            Booking.status == "confirmed",
+        )
+        .count()
+    )
     if confirmed_count >= sc.capacity:
         raise HTTPException(
             status_code=409,
@@ -290,6 +356,7 @@ def confirm_waitlist(
 # POST /bookings  (create booking)
 # ---------------------------------------------------------------------------
 
+
 @router.post("/bookings", response_model=BookingResponse, status_code=status.HTTP_201_CREATED)
 def create_booking(
     payload: BookingCreate,
@@ -303,7 +370,12 @@ def create_booking(
         if payload.client_id is None:
             raise HTTPException(
                 status_code=422,
-                detail={"error": {"code": "VALIDATION_ERROR", "message": "client_id required for manager"}},
+                detail={
+                    "error": {
+                        "code": "VALIDATION_ERROR",
+                        "message": "client_id required for manager",
+                    }
+                },
             )
         target_client_id = payload.client_id
     else:
@@ -320,26 +392,42 @@ def create_booking(
     if sc.status != "scheduled":
         raise HTTPException(
             status_code=409,
-            detail={"error": {"code": "BOOKING_CLASS_NOT_SCHEDULED", "message": "Class is not scheduled"}},
+            detail={
+                "error": {
+                    "code": "BOOKING_CLASS_NOT_SCHEDULED",
+                    "message": "Class is not scheduled",
+                }
+            },
         )
 
     now = utcnow()
     if sc.starts_at <= now:
         raise HTTPException(
             status_code=409,
-            detail={"error": {"code": "BOOKING_CLASS_ALREADY_STARTED", "message": "Class has already started"}},
+            detail={
+                "error": {
+                    "code": "BOOKING_CLASS_ALREADY_STARTED",
+                    "message": "Class has already started",
+                }
+            },
         )
 
     # Check no duplicate confirmed booking
-    existing = db.query(Booking).filter(
-        Booking.client_id == target_client_id,
-        Booking.scheduled_class_id == payload.scheduled_class_id,
-        Booking.status == "confirmed",
-    ).first()
+    existing = (
+        db.query(Booking)
+        .filter(
+            Booking.client_id == target_client_id,
+            Booking.scheduled_class_id == payload.scheduled_class_id,
+            Booking.status == "confirmed",
+        )
+        .first()
+    )
     if existing:
         raise HTTPException(
             status_code=409,
-            detail={"error": {"code": "BOOKING_DUPLICATE", "message": "Already booked for this class"}},
+            detail={
+                "error": {"code": "BOOKING_DUPLICATE", "message": "Already booked for this class"}
+            },
         )
 
     # Studio settings
@@ -349,14 +437,23 @@ def create_booking(
     if not can_book(db, target_client_id, studio_settings):
         raise HTTPException(
             status_code=403,
-            detail={"error": {"code": "BOOKING_NO_MEMBERSHIP", "message": "No valid membership or credits"}},
+            detail={
+                "error": {
+                    "code": "BOOKING_NO_MEMBERSHIP",
+                    "message": "No valid membership or credits",
+                }
+            },
         )
 
     # Check capacity
-    confirmed_count = db.query(Booking).filter(
-        Booking.scheduled_class_id == payload.scheduled_class_id,
-        Booking.status == "confirmed",
-    ).count()
+    confirmed_count = (
+        db.query(Booking)
+        .filter(
+            Booking.scheduled_class_id == payload.scheduled_class_id,
+            Booking.status == "confirmed",
+        )
+        .count()
+    )
     if confirmed_count >= sc.capacity:
         raise HTTPException(
             status_code=409,
@@ -386,13 +483,16 @@ def create_booking(
     db.commit()
     db.refresh(booking)
 
-    logger.info(f"Booking created: client_id={target_client_id}, class_id={payload.scheduled_class_id}")
+    logger.info(
+        f"Booking created: client_id={target_client_id}, class_id={payload.scheduled_class_id}"
+    )
     return booking
 
 
 # ---------------------------------------------------------------------------
 # GET /bookings/{id}
 # ---------------------------------------------------------------------------
+
 
 @router.get("/bookings/{booking_id}", response_model=BookingResponse)
 def get_booking(
@@ -412,7 +512,9 @@ def get_booking(
     if role == "client" and booking.client_id != subject_id:
         raise HTTPException(
             status_code=403,
-            detail={"error": {"code": "AUTH_INSUFFICIENT_PERMISSIONS", "message": "Not your booking"}},
+            detail={
+                "error": {"code": "AUTH_INSUFFICIENT_PERMISSIONS", "message": "Not your booking"}
+            },
         )
 
     return booking
@@ -421,6 +523,7 @@ def get_booking(
 # ---------------------------------------------------------------------------
 # DELETE /bookings/{id}  (cancel booking)
 # ---------------------------------------------------------------------------
+
 
 @router.delete("/bookings/{booking_id}", response_model=BookingResponse)
 def cancel_booking(
@@ -444,18 +547,27 @@ def cancel_booking(
     if role == "client" and booking.client_id != subject_id:
         raise HTTPException(
             status_code=403,
-            detail={"error": {"code": "AUTH_INSUFFICIENT_PERMISSIONS", "message": "Not your booking"}},
+            detail={
+                "error": {"code": "AUTH_INSUFFICIENT_PERMISSIONS", "message": "Not your booking"}
+            },
         )
 
     if booking.status != "confirmed":
         raise HTTPException(
             status_code=409,
-            detail={"error": {"code": "BOOKING_ALREADY_CANCELLED", "message": "Booking is not confirmed"}},
+            detail={
+                "error": {
+                    "code": "BOOKING_ALREADY_CANCELLED",
+                    "message": "Booking is not confirmed",
+                }
+            },
         )
 
     studio_settings = get_studio_settings(db)
     cancellation_hours = getattr(studio_settings, "cancellation_hours", 2) if studio_settings else 2
-    cancellation_deducts_credit = getattr(studio_settings, "cancellation_deducts_credit", False) if studio_settings else False
+    cancellation_deducts_credit = (
+        getattr(studio_settings, "cancellation_deducts_credit", False) if studio_settings else False
+    )
 
     sc = db.query(ScheduledClass).filter(ScheduledClass.id == booking.scheduled_class_id).first()
     now = utcnow()

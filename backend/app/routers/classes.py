@@ -1,29 +1,34 @@
-from app.utils import utcnow
 import uuid
-from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.orm import Session
+from datetime import datetime, timedelta
 from typing import List, Optional
-from app.database import get_db
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
+
 from app.auth import get_current_user, require_manager
-from app.models.scheduled_class import ScheduledClass
+from app.database import get_db
 from app.models.booking import Booking
 from app.models.client import Client
+from app.models.scheduled_class import ScheduledClass
 from app.models.waitlist import Waitlist
 from app.schemas.scheduled_class import (
-    ScheduledClassCreate,
-    ScheduledClassUpdate,
-    ScheduledClassResponse,
     RecurringClassCreate,
     RecurringClassResponse,
+    ScheduledClassCreate,
+    ScheduledClassResponse,
+    ScheduledClassUpdate,
 )
+from app.utils import utcnow
 
 router = APIRouter(prefix="/api/v1/classes", tags=["classes"])
 
 
 # ---- /recurring must come BEFORE /{id} ----
 
-@router.post("/recurring", response_model=RecurringClassResponse, status_code=status.HTTP_201_CREATED)
+
+@router.post(
+    "/recurring", response_model=RecurringClassResponse, status_code=status.HTTP_201_CREATED
+)
 def schedule_recurring_classes(
     payload: RecurringClassCreate,
     db: Session = Depends(get_db),
@@ -34,7 +39,9 @@ def schedule_recurring_classes(
         if day < 0 or day > 6:
             raise HTTPException(
                 status_code=422,
-                detail={"error": {"code": "VALIDATION_ERROR", "message": "days_of_week must be 0–6"}},
+                detail={
+                    "error": {"code": "VALIDATION_ERROR", "message": "days_of_week must be 0–6"}
+                },
             )
 
     # Determine recurrence end
@@ -57,15 +64,19 @@ def schedule_recurring_classes(
         end_date = end_date.date()
 
     # Iterate from the start date
-    from datetime import date as date_type
+
     cursor = current_date
 
     while cursor <= end_date:
         if cursor.weekday() in payload.days_of_week:
             # Build the datetime for this occurrence
             occurrence_start = datetime(
-                cursor.year, cursor.month, cursor.day,
-                payload.starts_at.hour, payload.starts_at.minute, payload.starts_at.second
+                cursor.year,
+                cursor.month,
+                cursor.day,
+                payload.starts_at.hour,
+                payload.starts_at.minute,
+                payload.starts_at.second,
             )
             occurrence_end = occurrence_start + duration
             sc = ScheduledClass(
@@ -94,6 +105,7 @@ def schedule_recurring_classes(
 
 
 # ---- Collection ----
+
 
 @router.get("", response_model=List[ScheduledClassResponse])
 def list_classes(
@@ -137,6 +149,7 @@ def schedule_single_class(
 
 # ---- Individual class routes ----
 
+
 @router.get("/{class_id}", response_model=ScheduledClassResponse)
 def get_class(
     class_id: int,
@@ -179,8 +192,6 @@ def cancel_class(
     db: Session = Depends(get_db),
     current_user=Depends(require_manager),
 ):
-    from app.models.membership import Membership
-    from app.models.membership_type import MembershipType
     from app.services.booking_service import get_active_membership, refund_credit
 
     sc = db.query(ScheduledClass).filter(ScheduledClass.id == class_id).first()
@@ -208,11 +219,7 @@ def cancel_class(
             refund_credit(db, membership, True)
 
     # Decline all waitlist entries
-    waitlist_entries = (
-        db.query(Waitlist)
-        .filter(Waitlist.scheduled_class_id == class_id)
-        .all()
-    )
+    waitlist_entries = db.query(Waitlist).filter(Waitlist.scheduled_class_id == class_id).all()
     for entry in waitlist_entries:
         entry.status = "declined"
         entry.updated_at = now
@@ -242,13 +249,15 @@ def get_roster(
     result = []
     for booking in bookings:
         client = db.query(Client).filter(Client.id == booking.client_id).first()
-        result.append({
-            "booking_id": booking.id,
-            "client_id": booking.client_id,
-            "full_name": client.full_name if client else None,
-            "email": client.email if client else None,
-            "status": booking.status,
-        })
+        result.append(
+            {
+                "booking_id": booking.id,
+                "client_id": booking.client_id,
+                "full_name": client.full_name if client else None,
+                "email": client.email if client else None,
+                "status": booking.status,
+            }
+        )
     return result
 
 

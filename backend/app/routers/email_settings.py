@@ -4,12 +4,15 @@ GET  /api/v1/studio/email        → SMTP settings (password masked)
 PUT  /api/v1/studio/email        → save SMTP settings
 POST /api/v1/studio/email/test   → send test email to current manager
 """
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+
 from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from app.database import get_db
+from sqlalchemy.orm import Session
+
 from app.auth import require_manager
+from app.database import get_db
 from app.models.studio_settings import StudioSettings
 from app.models.user import User
 
@@ -109,6 +112,7 @@ async def send_test_email(
 ):
     """Send a test email to the currently authenticated manager."""
     from app.services.email_service import send_test_email as _send_test
+
     s = _get_or_create_settings(db)
     studio_name = s.studio_name or "Agon Studio"
     try:
@@ -121,6 +125,11 @@ async def send_test_email(
     except Exception as e:
         raise HTTPException(
             status_code=502,
-            detail={"error": {"code": "SMTP_SEND_FAILED", "message": f"Failed to send test email: {str(e)}"}},
+            detail={
+                "error": {
+                    "code": "SMTP_SEND_FAILED",
+                    "message": f"Failed to send test email: {str(e)}",
+                }
+            },
         )
     return {"message": f"Test email sent to {current_user.email}"}

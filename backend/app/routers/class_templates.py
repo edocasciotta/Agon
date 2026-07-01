@@ -1,13 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.orm import Session
 from typing import List
-from app.database import get_db
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
+
 from app.auth import get_current_user, require_manager
+from app.database import get_db
 from app.models.class_template import ClassTemplate
 from app.schemas.class_template import (
     ClassTemplateCreate,
-    ClassTemplateUpdate,
     ClassTemplateResponse,
+    ClassTemplateUpdate,
 )
 
 router = APIRouter(prefix="/api/v1/class-templates", tags=["class-templates"])
@@ -21,7 +23,7 @@ def list_templates(
 ):
     query = db.query(ClassTemplate)
     if not include_inactive:
-        query = query.filter(ClassTemplate.is_active == True)
+        query = query.filter(ClassTemplate.is_active.is_(True))
     return query.all()
 
 

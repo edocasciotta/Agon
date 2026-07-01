@@ -7,6 +7,7 @@ import { PageHeader } from '../components/PageHeader'
 import { EmptyState } from '../components/EmptyState'
 import type { ApiError } from '../api/client'
 import type { MembershipType } from '../types'
+import { membershipTypeSchema } from '../lib/formSchemas'
 
 export function MembershipsPage() {
   const { t } = useTranslation()
@@ -46,8 +47,9 @@ export function MembershipsPage() {
   })
 
   const handleCreate = () => {
-    if (!formData.name.trim()) {
-      setCreateError(t('memberships.nameRequired'))
+    const zodResult = membershipTypeSchema.safeParse(formData)
+    if (!zodResult.success) {
+      setCreateError(zodResult.error.errors[0].message)
       return
     }
     createTypeMutation.mutate({

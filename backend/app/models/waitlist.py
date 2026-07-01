@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.sql import func
+
 from app.database import Base
 
 
@@ -10,7 +11,9 @@ class Waitlist(Base):
     client_id = Column(Integer, ForeignKey("clients.id"), nullable=False)
     scheduled_class_id = Column(Integer, ForeignKey("scheduled_classes.id"), nullable=False)
     position = Column(Integer, nullable=False)
-    status = Column(String, nullable=False, default="waiting")  # waiting|offered|confirmed|expired|declined
+    status = Column(
+        String, nullable=False, default="waiting"
+    )  # waiting|offered|confirmed|expired|declined
     offered_at = Column(DateTime)
     offer_expires_at = Column(DateTime)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)

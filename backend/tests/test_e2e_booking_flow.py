@@ -20,7 +20,6 @@ Flow covered:
 """
 
 import datetime
-import pytest
 
 
 def test_full_booking_flow(
@@ -71,9 +70,9 @@ def test_full_booking_flow(
     assert class_resp.status_code == 201, f"Step 2 – schedule class failed: {class_resp.json()}"
     class_data = class_resp.json()
     scheduled_class_id = class_data["id"]
-    assert class_data["status"] == "scheduled", (
-        f"Step 2 – class status is not 'scheduled': {class_data['status']}"
-    )
+    assert (
+        class_data["status"] == "scheduled"
+    ), f"Step 2 – class status is not 'scheduled': {class_data['status']}"
 
     # -----------------------------------------------------------------------
     # Step 3 — Membership already active (provided by `client_membership` fixture)
@@ -85,13 +84,11 @@ def test_full_booking_flow(
         f"/api/v1/memberships/{client_membership.id}",
         headers=manager_auth_headers,
     )
-    assert initial_credits_resp.status_code == 200, (
-        f"Step 3 – read membership failed: {initial_credits_resp.json()}"
-    )
+    assert (
+        initial_credits_resp.status_code == 200
+    ), f"Step 3 – read membership failed: {initial_credits_resp.json()}"
     initial_credits = initial_credits_resp.json()["credits_remaining"]
-    assert initial_credits == 5, (
-        f"Step 3 – expected 5 initial credits, got {initial_credits}"
-    )
+    assert initial_credits == 5, f"Step 3 – expected 5 initial credits, got {initial_credits}"
 
     # -----------------------------------------------------------------------
     # Step 4 — Client books the class via API
@@ -104,12 +101,12 @@ def test_full_booking_flow(
     assert booking_resp.status_code == 201, f"Step 4 – create booking failed: {booking_resp.json()}"
     booking_data = booking_resp.json()
     booking_id = booking_data["id"]
-    assert booking_data["status"] == "confirmed", (
-        f"Step 4 – booking status is not 'confirmed': {booking_data['status']}"
-    )
-    assert booking_data["credit_deducted"] is True, (
-        "Step 4 – credit_deducted should be True when a membership is active"
-    )
+    assert (
+        booking_data["status"] == "confirmed"
+    ), f"Step 4 – booking status is not 'confirmed': {booking_data['status']}"
+    assert (
+        booking_data["credit_deducted"] is True
+    ), "Step 4 – credit_deducted should be True when a membership is active"
 
     # -----------------------------------------------------------------------
     # Step 5 — Client reads the booking to confirm it exists
@@ -118,12 +115,12 @@ def test_full_booking_flow(
         f"/api/v1/bookings/{booking_id}",
         headers=client_auth_headers,
     )
-    assert get_booking_resp.status_code == 200, (
-        f"Step 5 – get booking failed: {get_booking_resp.json()}"
-    )
-    assert get_booking_resp.json()["id"] == booking_id, (
-        f"Step 5 – returned booking id mismatch: {get_booking_resp.json()['id']} != {booking_id}"
-    )
+    assert (
+        get_booking_resp.status_code == 200
+    ), f"Step 5 – get booking failed: {get_booking_resp.json()}"
+    assert (
+        get_booking_resp.json()["id"] == booking_id
+    ), f"Step 5 – returned booking id mismatch: {get_booking_resp.json()['id']} != {booking_id}"
 
     # -----------------------------------------------------------------------
     # Step 6 — Verify that one credit was deducted after booking
@@ -132,9 +129,9 @@ def test_full_booking_flow(
         f"/api/v1/memberships/{client_membership.id}",
         headers=manager_auth_headers,
     )
-    assert after_booking_credits_resp.status_code == 200, (
-        f"Step 6 – read membership after booking failed: {after_booking_credits_resp.json()}"
-    )
+    assert (
+        after_booking_credits_resp.status_code == 200
+    ), f"Step 6 – read membership after booking failed: {after_booking_credits_resp.json()}"
     credits_after_booking = after_booking_credits_resp.json()["credits_remaining"]
     assert credits_after_booking == initial_credits - 1, (
         f"Step 6 – expected credits_remaining={initial_credits - 1}, "
@@ -148,9 +145,8 @@ def test_full_booking_flow(
     # check-in window, so this request must succeed.
     # -----------------------------------------------------------------------
     from app.models.client import Client as ClientModel
-    client_obj = db_session.query(ClientModel).filter_by(
-        email=registered_client["email"]
-    ).first()
+
+    client_obj = db_session.query(ClientModel).filter_by(email=registered_client["email"]).first()
     assert client_obj is not None, "Step 7 – client not found in DB"
 
     checkin_resp = client.post(
@@ -162,16 +158,14 @@ def test_full_booking_flow(
         },
         headers=manager_auth_headers,
     )
-    assert checkin_resp.status_code == 201, (
-        f"Step 7 – check-in failed: {checkin_resp.json()}"
-    )
+    assert checkin_resp.status_code == 201, f"Step 7 – check-in failed: {checkin_resp.json()}"
     checkin_data = checkin_resp.json()
-    assert checkin_data["method"] == "manual", (
-        f"Step 7 – check-in method is not 'manual': {checkin_data['method']}"
-    )
-    assert checkin_data["booking_id"] == booking_id, (
-        f"Step 7 – check-in booking_id mismatch: {checkin_data['booking_id']} != {booking_id}"
-    )
+    assert (
+        checkin_data["method"] == "manual"
+    ), f"Step 7 – check-in method is not 'manual': {checkin_data['method']}"
+    assert (
+        checkin_data["booking_id"] == booking_id
+    ), f"Step 7 – check-in booking_id mismatch: {checkin_data['booking_id']} != {booking_id}"
 
     # -----------------------------------------------------------------------
     # Step 8 — Manager lists check-ins for the class; the client must appear
@@ -180,15 +174,15 @@ def test_full_booking_flow(
         f"/api/v1/checkins/class/{scheduled_class_id}",
         headers=manager_auth_headers,
     )
-    assert list_checkins_resp.status_code == 200, (
-        f"Step 8 – list checkins failed: {list_checkins_resp.json()}"
-    )
+    assert (
+        list_checkins_resp.status_code == 200
+    ), f"Step 8 – list checkins failed: {list_checkins_resp.json()}"
     checkins_list = list_checkins_resp.json()
     assert isinstance(checkins_list, list), "Step 8 – expected a list of check-ins"
     assert len(checkins_list) >= 1, "Step 8 – no check-ins found for the class"
-    assert any(c["booking_id"] == booking_id for c in checkins_list), (
-        f"Step 8 – the expected booking_id={booking_id} is not in the check-ins list: {checkins_list}"
-    )
+    assert any(
+        c["booking_id"] == booking_id for c in checkins_list
+    ), f"Step 8 – the expected booking_id={booking_id} is not in the check-ins list: {checkins_list}"
 
     # -----------------------------------------------------------------------
     # Step 9 — Client cancels the booking via API
@@ -197,13 +191,11 @@ def test_full_booking_flow(
         f"/api/v1/bookings/{booking_id}",
         headers=client_auth_headers,
     )
-    assert cancel_resp.status_code == 200, (
-        f"Step 9 – cancel booking failed: {cancel_resp.json()}"
-    )
+    assert cancel_resp.status_code == 200, f"Step 9 – cancel booking failed: {cancel_resp.json()}"
     cancel_data = cancel_resp.json()
-    assert cancel_data["status"] == "cancelled", (
-        f"Step 9 – booking status after cancel is not 'cancelled': {cancel_data['status']}"
-    )
+    assert (
+        cancel_data["status"] == "cancelled"
+    ), f"Step 9 – booking status after cancel is not 'cancelled': {cancel_data['status']}"
 
     # -----------------------------------------------------------------------
     # Step 10 — Verify the credit was refunded after cancellation
@@ -217,9 +209,9 @@ def test_full_booking_flow(
         f"/api/v1/memberships/{client_membership.id}",
         headers=manager_auth_headers,
     )
-    assert after_cancel_credits_resp.status_code == 200, (
-        f"Step 10 – read membership after cancel failed: {after_cancel_credits_resp.json()}"
-    )
+    assert (
+        after_cancel_credits_resp.status_code == 200
+    ), f"Step 10 – read membership after cancel failed: {after_cancel_credits_resp.json()}"
     credits_after_cancel = after_cancel_credits_resp.json()["credits_remaining"]
     assert credits_after_cancel == initial_credits, (
         f"Step 10 – expected credits_remaining={initial_credits} after refund, "
