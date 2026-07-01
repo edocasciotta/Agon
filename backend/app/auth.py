@@ -136,9 +136,22 @@ def decode_qr_token(token: str) -> dict:
         )
 
 
-def require_manager(current_user=Depends(get_current_user)):
-    """Dependency: requires the user to have role='manager'."""
-    if current_user.role != "manager":
+def require_manager(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    """Dependency: requires manager role.
+
+    Checks the JWT role claim before the DB lookup so non-manager tokens
+    receive 403 Forbidden rather than 401 Unauthorized.
+    """
+    from app.models.user import User
+
+    payload = decode_token(token)
+    if payload.get("type") != "access":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={"error": {"code": "AUTH_TOKEN_INVALID", "message": "Invalid token type"}},
+        )
+    role = payload.get("role", "client")
+    if role != "manager":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail={
@@ -148,4 +161,46 @@ def require_manager(current_user=Depends(get_current_user)):
                 }
             },
         )
-    return current_user
+    user_id = payload.get("sub")
+    user = db.query(User).filter(User.id == int(user_id)).first()
+    if not user or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={"error": {"code": "AUTH_TOKEN_INVALID", "message": "User not found or inactive"}},
+        )
+    return user
+
+
+def require_staff(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    """Dependency: requires manager or instructor role (backoffice staff).
+
+    Checks the JWT role claim before the DB lookup so a client token receives
+    403 Forbidden rather than 401 Unauthorized.
+    """
+    from app.models.user import User
+
+    payload = decode_token(token)
+    if payload.get("type") != "access":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={"error": {"code": "AUTH_TOKEN_INVALID", "message": "Invalid token type"}},
+        )
+    role = payload.get("role", "client")
+    if role not in ("manager", "instructor"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "error": {
+                    "code": "AUTH_INSUFFICIENT_PERMISSIONS",
+                    "message": "Staff access required",
+                }
+            },
+        )
+    user_id = payload.get("sub")
+    user = db.query(User).filter(User.id == int(user_id)).first()
+    if not user or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={"error": {"code": "AUTH_TOKEN_INVALID", "message": "User not found or inactive"}},
+        )
+    return user

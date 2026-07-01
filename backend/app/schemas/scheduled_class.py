@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class ScheduledClassCreate(BaseModel):
@@ -10,8 +10,22 @@ class ScheduledClassCreate(BaseModel):
     location_id: Optional[int] = 1
     starts_at: datetime
     ends_at: datetime
-    capacity: int
+    capacity: int = Field(gt=0)
     notes: Optional[str] = None
+
+    @field_validator("starts_at")
+    @classmethod
+    def starts_at_must_be_future(cls, v: datetime) -> datetime:
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
+        if v.replace(tzinfo=None) <= now:
+            raise ValueError("starts_at must be in the future")
+        return v
+
+    @model_validator(mode="after")
+    def ends_at_after_starts_at(self) -> "ScheduledClassCreate":
+        if self.ends_at.replace(tzinfo=None) <= self.starts_at.replace(tzinfo=None):
+            raise ValueError("ends_at must be after starts_at")
+        return self
 
 
 class RecurringClassCreate(BaseModel):
@@ -20,7 +34,7 @@ class RecurringClassCreate(BaseModel):
     location_id: Optional[int] = 1
     starts_at: datetime  # first occurrence datetime
     ends_at: datetime  # first occurrence end datetime
-    capacity: int
+    capacity: int = Field(gt=0)
     notes: Optional[str] = None
     days_of_week: List[int]  # 0=Monday ... 6=Sunday
     recurrence_end_date: Optional[datetime] = None  # None = 1 year from start

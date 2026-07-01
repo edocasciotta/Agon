@@ -5,7 +5,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from app.auth import get_current_client, get_current_user, require_manager
+from app.auth import get_current_client, get_current_user, require_manager, require_staff
 from app.database import get_db
 from app.models.booking import Booking
 from app.models.client import Client
@@ -73,7 +73,7 @@ def list_clients(
     search: Optional[str] = Query(None),
     active_only: bool = Query(False),
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user=Depends(require_staff),
 ):
     query = db.query(Client)
     if active_only:
@@ -168,7 +168,7 @@ async def create_client(
 def get_client(
     client_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user=Depends(require_staff),
 ):
     client = db.query(Client).filter(Client.id == client_id).first()
     if not client:
@@ -227,7 +227,7 @@ def anonymize_client(
 def get_client_bookings(
     client_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user=Depends(require_staff),
 ):
     client = db.query(Client).filter(Client.id == client_id).first()
     if not client:

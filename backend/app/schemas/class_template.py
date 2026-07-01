@@ -1,14 +1,14 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ClassTemplateCreate(BaseModel):
     name: str
     description: Optional[str] = None
-    duration_minutes: int = 60
-    default_capacity: int = 20
+    duration_minutes: int = Field(default=60, gt=0)
+    default_capacity: int = Field(default=20, gt=0)
     default_instructor_id: Optional[int] = None
     color: str = "#4F46E5"
 
