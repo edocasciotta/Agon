@@ -62,7 +62,8 @@
     "scheduling": "Pianificazione...",
     "scheduleClass": "Pianifica lezione",
     "scheduleClasses": "Pianifica lezioni",
-    "selectClassType": "Seleziona un tipo di lezione"
+    "selectClassType": "Seleziona un tipo di lezione",
+    "paginationInfo": "{{from}}–{{to}} di {{total}}"
   },
   "lang": {
     "en": "EN",
@@ -300,7 +301,9 @@
     "create": "Crea",
     "cancel": "Annulla",
     "emptyDescTypes": "Crea un piano di abbonamento da offrire ai tuoi clienti.",
-    "currencyPlaceholder": "EUR"
+    "currencyPlaceholder": "EUR",
+    "pricePlaceholder": "es. 49.99",
+    "creditsPlaceholder": "es. 10"
   },
   "reports": {
     "title": "Report",
@@ -366,7 +369,8 @@
     "sendTestEmail": "Invia email di test",
     "testEmailSent": "Email di test inviata!",
     "testEmailFailed": "Impossibile inviare l’email di test",
-    "saveBeforeTest": "Salva le impostazioni prima di inviare un'email di test"
+    "saveBeforeTest": "Salva le impostazioni prima di inviare un'email di test",
+    "smtpHostPlaceholder": "es. smtp.gmail.com"
   },
   "scheduleModal": {
     "title": "Pianifica lezione",
@@ -440,7 +444,9 @@
     "emptyDescTemplates": "Crea un template email per comunicare con i tuoi clienti.",
     "emptyDescSmartLists": "Crea una smart list per segmentare i tuoi clienti.",
     "noTemplates": "Nessun template email",
-    "noSmartLists": "Nessuna smart list"
+    "noSmartLists": "Nessuna smart list",
+    "bodyPlaceholder": "es. Ciao {{client_name}}, la tua prenotazione è confermata",
+    "daysPlaceholder": "es. 30"
   },
   "establishments": {
     "title": "Sedi",
@@ -492,6 +498,7 @@
     "removeConfirm": "Rimuovere definitivamente questo istruttore?",
     "removeDesc": "Verrà eliminato anche il suo account di accesso. Questa azione non può essere annullata.",
     "hasClasses": "Impossibile rimuovere: questo istruttore ha classi programmate.",
-    "fullNamePlaceholder": "es. Sara Bianchi"
+    "fullNamePlaceholder": "es. Sara Bianchi",
+    "emailPlaceholder": "es. jane@studio.com"
   }
 }

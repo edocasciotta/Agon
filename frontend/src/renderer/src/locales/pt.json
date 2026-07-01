@@ -62,7 +62,8 @@
     "scheduling": "Agendando...",
     "scheduleClass": "Agendar aula",
     "scheduleClasses": "Agendar aulas",
-    "selectClassType": "Selecionar tipo de aula"
+    "selectClassType": "Selecionar tipo de aula",
+    "paginationInfo": "{{from}}–{{to}} de {{total}}"
   },
   "lang": {
     "en": "EN",
@@ -292,7 +293,9 @@
     "create": "Criar",
     "cancel": "Cancelar",
     "emptyDescTypes": "Crie um plano de associação para oferecer aos seus clientes.",
-    "currencyPlaceholder": "EUR"
+    "currencyPlaceholder": "EUR",
+    "pricePlaceholder": "ex. 49.99",
+    "creditsPlaceholder": "ex. 10"
   },
   "reports": {
     "title": "Relatórios",
@@ -358,7 +361,8 @@
     "sendTestEmail": "Enviar e-mail de teste",
     "testEmailSent": "E-mail de teste enviado!",
     "testEmailFailed": "Falha ao enviar e-mail de teste",
-    "saveBeforeTest": "Guarda as definições antes de enviar um e-mail de teste"
+    "saveBeforeTest": "Guarda as definições antes de enviar um e-mail de teste",
+    "smtpHostPlaceholder": "ex. smtp.gmail.com"
   },
   "scheduleModal": {
     "title": "Agendar aula",
@@ -432,7 +436,9 @@
     "emptyDescTemplates": "Crie um modelo de e-mail para comunicar com os seus clientes.",
     "emptyDescSmartLists": "Crie uma lista inteligente para segmentar os seus clientes.",
     "noTemplates": "Sem modelos de e-mail",
-    "noSmartLists": "Sem listas inteligentes"
+    "noSmartLists": "Sem listas inteligentes",
+    "bodyPlaceholder": "ex. Olá {{client_name}}, sua reserva está confirmada",
+    "daysPlaceholder": "ex. 30"
   },
   "establishments": {
     "title": "Estabelecimentos",
@@ -484,7 +490,8 @@
     "removeConfirm": "Remover permanentemente este instrutor?",
     "removeDesc": "A conta de acesso também será excluída. Esta ação não pode ser desfeita.",
     "hasClasses": "Não é possível remover: este instrutor tem aulas agendadas.",
-    "fullNamePlaceholder": "ex. Ana Silva"
+    "fullNamePlaceholder": "ex. Ana Silva",
+    "emailPlaceholder": "ex. jane@studio.com"
   },
   "editModal": {
     "title": "Edit Class",

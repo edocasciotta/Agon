@@ -62,7 +62,8 @@
     "scheduling": "Scheduling...",
     "scheduleClass": "Schedule Class",
     "scheduleClasses": "Schedule Classes",
-    "selectClassType": "Select a Class Type"
+    "selectClassType": "Select a Class Type",
+    "paginationInfo": "{{from}}–{{to}} of {{total}}"
   },
   "lang": {
     "en": "EN",
@@ -300,7 +301,9 @@
     "create": "Create",
     "cancel": "Cancel",
     "emptyDescTypes": "Create a membership plan to offer to your clients.",
-    "currencyPlaceholder": "USD"
+    "currencyPlaceholder": "USD",
+    "pricePlaceholder": "e.g. 49.99",
+    "creditsPlaceholder": "e.g. 10"
   },
   "reports": {
     "title": "Reports",
@@ -366,7 +369,8 @@
     "sendTestEmail": "Send Test Email",
     "testEmailSent": "Test email sent!",
     "testEmailFailed": "Failed to send test email",
-    "saveBeforeTest": "Save settings before sending a test email"
+    "saveBeforeTest": "Save settings before sending a test email",
+    "smtpHostPlaceholder": "e.g. smtp.gmail.com"
   },
   "scheduleModal": {
     "title": "Schedule Class",
@@ -440,7 +444,9 @@
     "emptyDescTemplates": "Create an email template to communicate with your clients.",
     "emptyDescSmartLists": "Create a smart list to segment and target your clients.",
     "noTemplates": "No email templates yet",
-    "noSmartLists": "No smart lists yet"
+    "noSmartLists": "No smart lists yet",
+    "bodyPlaceholder": "e.g. Hello {{client_name}}, your booking is confirmed",
+    "daysPlaceholder": "e.g. 30"
   },
   "establishments": {
     "title": "Establishments",
@@ -492,6 +498,7 @@
     "empty": "No instructors yet",
     "emptyDesc": "Add your first instructor to start scheduling classes.",
     "classesCount": "{{n}} classes this week",
-    "fullNamePlaceholder": "e.g. Jane Smith"
+    "fullNamePlaceholder": "e.g. Jane Smith",
+    "emailPlaceholder": "e.g. jane@studio.com"
   }
 }

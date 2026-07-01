@@ -6,8 +6,11 @@ import { instructorsApi } from '../api/instructors'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { PageHeader } from '../components/PageHeader'
 import { EmptyState } from '../components/EmptyState'
+import { Pagination } from '../components/Pagination'
 import type { ClassTemplate } from '../types'
 import type { ApiError } from '../api/client'
+
+const PAGE_SIZE = 12
 
 interface ClassTypeFormData {
   name: string
@@ -30,10 +33,12 @@ const DEFAULT_FORM: ClassTypeFormData = {
 export function ClassTypesPage() {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
-  const [showForm, setShowForm] = useState(false)
+  const [showModal, setShowModal] = useState(false)
   const [editingTemplate, setEditingTemplate] = useState<ClassTemplate | null>(null)
   const [formData, setFormData] = useState<ClassTypeFormData>(DEFAULT_FORM)
   const [formError, setFormError] = useState<string | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<ClassTemplate | null>(null)
+  const [page, setPage] = useState(1)
 
   const { data: templates, isLoading } = useQuery({
     queryKey: ['class-templates'],
@@ -49,7 +54,7 @@ export function ClassTypesPage() {
     mutationFn: (data: ClassTemplateCreate) => classTemplatesApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['class-templates'] })
-      handleCloseForm()
+      handleCloseModal()
     },
     onError: (err: ApiError) => {
       setFormError(err.message ?? t('classTypes.failedCreate'))
@@ -61,7 +66,7 @@ export function ClassTypesPage() {
       classTemplatesApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['class-templates'] })
-      handleCloseForm()
+      handleCloseModal()
     },
     onError: (err: ApiError) => {
       setFormError(err.message ?? t('classTypes.failedUpdate'))
@@ -72,6 +77,7 @@ export function ClassTypesPage() {
     mutationFn: (id: number) => classTemplatesApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['class-templates'] })
+      setConfirmDelete(null)
     },
   })
 
@@ -79,7 +85,7 @@ export function ClassTypesPage() {
     setEditingTemplate(null)
     setFormData(DEFAULT_FORM)
     setFormError(null)
-    setShowForm(true)
+    setShowModal(true)
   }
 
   const handleOpenEdit = (template: ClassTemplate) => {
@@ -95,20 +101,14 @@ export function ClassTypesPage() {
         : '',
     })
     setFormError(null)
-    setShowForm(true)
+    setShowModal(true)
   }
 
-  const handleCloseForm = () => {
-    setShowForm(false)
+  const handleCloseModal = () => {
+    setShowModal(false)
     setEditingTemplate(null)
     setFormData(DEFAULT_FORM)
     setFormError(null)
-  }
-
-  const handleDelete = (template: ClassTemplate) => {
-    if (window.confirm(t('classTypes.deleteConfirm'))) {
-      deleteMutation.mutate(template.id)
-    }
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -136,6 +136,7 @@ export function ClassTypesPage() {
   }
 
   const isPending = createMutation.isPending || updateMutation.isPending
+  const paged = (templates ?? []).slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   return (
     <div>
@@ -153,147 +154,9 @@ export function ClassTypesPage() {
         }
       />
 
-      {/* Inline form panel */}
-      {showForm && (
-        <div className="mb-6 bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h2 className="text-base font-semibold text-gray-900 mb-4">
-            {editingTemplate ? t('classTypes.editClassType') : t('classTypes.newClassType')}
-          </h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              {/* Name */}
-              <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('classTypes.name')} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder={t('classTypes.namePlaceholder')}
-                />
-              </div>
-
-              {/* Description */}
-              <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('classTypes.description')}
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-                  placeholder={t('classTypes.descriptionPlaceholder')}
-                />
-              </div>
-
-              {/* Duration */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('classTypes.durationMin')} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  value={formData.duration_minutes}
-                  onChange={(e) =>
-                    setFormData({ ...formData, duration_minutes: Number(e.target.value) })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-              {/* Default capacity */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('classTypes.defaultCapacity')} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  value={formData.default_capacity}
-                  onChange={(e) =>
-                    setFormData({ ...formData, default_capacity: Number(e.target.value) })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-              {/* Color */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('classTypes.color')} <span className="text-red-500">*</span>
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={formData.color}
-                    onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                    className="h-9 w-16 cursor-pointer rounded border border-gray-300 p-0.5"
-                  />
-                  <span className="text-sm text-gray-500 font-mono">{formData.color}</span>
-                </div>
-              </div>
-
-              {/* Default instructor */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('classTypes.defaultInstructor')}
-                </label>
-                <select
-                  value={formData.default_instructor_id}
-                  onChange={(e) =>
-                    setFormData({ ...formData, default_instructor_id: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="">{t('classTypes.noDefaultInstructor')}</option>
-                  {instructors.map((inst) => (
-                    <option key={inst.id} value={inst.id}>
-                      {inst.full_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {formError && (
-              <div className="rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-700">
-                {formError}
-              </div>
-            )}
-
-            <div className="flex gap-2 pt-1">
-              <button
-                type="submit"
-                disabled={isPending}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
-              >
-                {isPending
-                  ? t('classTypes.saving')
-                  : editingTemplate
-                    ? t('classTypes.updateClassType')
-                    : t('classTypes.saveClassType')}
-              </button>
-              <button
-                type="button"
-                onClick={handleCloseForm}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
-              >
-                {t('common.cancel')}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* Loading */}
       {isLoading && <LoadingSpinner />}
 
-      {/* Empty state */}
-      {!isLoading && (!templates || templates.length === 0) && !showForm && (
+      {!isLoading && (!templates || templates.length === 0) && (
         <EmptyState
           icon={
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
@@ -307,50 +170,210 @@ export function ClassTypesPage() {
         />
       )}
 
-      {/* Cards grid */}
       {!isLoading && templates && templates.length > 0 && (
-        <div className="grid grid-cols-3 gap-4">
-          {templates.map((template) => (
-            <div
-              key={template.id}
-              className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm flex"
-            >
-              {/* Colored left border */}
+        <>
+          <div className="grid grid-cols-3 gap-4">
+            {paged.map((template) => (
               <div
-                className="w-1.5 flex-shrink-0"
-                style={{ backgroundColor: template.color }}
-              />
-              <div className="flex-1 p-4">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-semibold text-gray-900 text-sm">{template.name}</h3>
-                  <div
-                    className="w-3 h-3 rounded-full flex-shrink-0 ml-2 mt-0.5"
-                    style={{ backgroundColor: template.color }}
-                  />
-                </div>
-                <p className="text-xs text-gray-500 mb-1">{template.duration_minutes} {t('classTypes.minLabel')}</p>
-                <p className="text-xs text-gray-500 mb-2">{t('classTypes.maxLabel')} {template.default_capacity}</p>
-                {template.description && (
-                  <p className="text-xs text-gray-400 truncate mb-3">{template.description}</p>
-                )}
-                <div className="flex gap-2 mt-auto">
-                  <button
-                    onClick={() => handleOpenEdit(template)}
-                    className="px-3 py-1 text-xs font-medium text-indigo-600 bg-indigo-50 rounded hover:bg-indigo-100 transition-colors"
-                  >
-                    {t('common.edit')}
-                  </button>
-                  <button
-                    onClick={() => handleDelete(template)}
-                    disabled={deleteMutation.isPending}
-                    className="px-3 py-1 text-xs font-medium text-red-600 bg-red-50 rounded hover:bg-red-100 transition-colors disabled:opacity-50"
-                  >
-                    {t('common.delete')}
-                  </button>
+                key={template.id}
+                className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm flex"
+              >
+                <div
+                  className="w-1.5 flex-shrink-0"
+                  style={{ backgroundColor: template.color }}
+                />
+                <div className="flex-1 p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-semibold text-gray-900 text-sm">{template.name}</h3>
+                    <div
+                      className="w-3 h-3 rounded-full flex-shrink-0 ml-2 mt-0.5"
+                      style={{ backgroundColor: template.color }}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mb-1">{template.duration_minutes} {t('classTypes.minLabel')}</p>
+                  <p className="text-xs text-gray-500 mb-2">{t('classTypes.maxLabel')} {template.default_capacity}</p>
+                  {template.description && (
+                    <p className="text-xs text-gray-400 truncate mb-3">{template.description}</p>
+                  )}
+                  <div className="flex gap-2 mt-auto">
+                    <button
+                      onClick={() => handleOpenEdit(template)}
+                      className="px-3 py-1 text-xs font-medium text-indigo-600 bg-indigo-50 rounded hover:bg-indigo-100 transition-colors"
+                    >
+                      {t('common.edit')}
+                    </button>
+                    <button
+                      onClick={() => setConfirmDelete(template)}
+                      disabled={deleteMutation.isPending}
+                      className="px-3 py-1 text-xs font-medium text-red-600 bg-red-50 rounded hover:bg-red-100 transition-colors disabled:opacity-50"
+                    >
+                      {t('common.delete')}
+                    </button>
+                  </div>
                 </div>
               </div>
+            ))}
+          </div>
+          <Pagination page={page} pageSize={PAGE_SIZE} total={templates.length} onPage={setPage} />
+        </>
+      )}
+
+      {/* Create / Edit modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={handleCloseModal}>
+          <div className="bg-white rounded-xl p-6 max-w-lg w-full mx-4 shadow-lg" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-base font-semibold text-gray-900 mb-4">
+              {editingTemplate ? t('classTypes.editClassType') : t('classTypes.newClassType')}
+            </h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {t('classTypes.name')} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder={t('classTypes.namePlaceholder')}
+                  />
+                </div>
+
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {t('classTypes.description')}
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    rows={2}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                    placeholder={t('classTypes.descriptionPlaceholder')}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {t('classTypes.durationMin')} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={formData.duration_minutes}
+                    onChange={(e) =>
+                      setFormData({ ...formData, duration_minutes: Number(e.target.value) })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {t('classTypes.defaultCapacity')} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={formData.default_capacity}
+                    onChange={(e) =>
+                      setFormData({ ...formData, default_capacity: Number(e.target.value) })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {t('classTypes.color')} <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={formData.color}
+                      onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                      className="h-9 w-16 cursor-pointer rounded border border-gray-300 p-0.5"
+                    />
+                    <span className="text-sm text-gray-500 font-mono">{formData.color}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {t('classTypes.defaultInstructor')}
+                  </label>
+                  <select
+                    value={formData.default_instructor_id}
+                    onChange={(e) =>
+                      setFormData({ ...formData, default_instructor_id: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <option value="">{t('classTypes.noDefaultInstructor')}</option>
+                    {instructors.map((inst) => (
+                      <option key={inst.id} value={inst.id}>
+                        {inst.full_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {formError && (
+                <div className="rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+                  {formError}
+                </div>
+              )}
+
+              <div className="flex gap-2 justify-end pt-1">
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  type="submit"
+                  disabled={isPending}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                >
+                  {isPending
+                    ? t('classTypes.saving')
+                    : editingTemplate
+                      ? t('classTypes.updateClassType')
+                      : t('classTypes.saveClassType')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete confirmation */}
+      {confirmDelete && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfirmDelete(null)}>
+          <div className="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-lg" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-sm font-semibold text-gray-900 mb-2">
+              {t('classTypes.deleteConfirm')}
+            </h3>
+            <p className="text-sm text-gray-500 mb-5">{confirmDelete.name}</p>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={() => deleteMutation.mutate(confirmDelete.id)}
+                disabled={deleteMutation.isPending}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50 transition-colors"
+              >
+                {deleteMutation.isPending ? t('common.saving') : t('common.delete')}
+              </button>
             </div>
-          ))}
+          </div>
         </div>
       )}
     </div>

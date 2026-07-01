@@ -62,7 +62,8 @@
     "scheduling": "Planlanıyor...",
     "scheduleClass": "Ders planla",
     "scheduleClasses": "Dersler planla",
-    "selectClassType": "Ders türü seçin"
+    "selectClassType": "Ders türü seçin",
+    "paginationInfo": "{{total}} öğeden {{from}}–{{to}}"
   },
   "lang": {
     "en": "EN",
@@ -291,7 +292,9 @@
     "creating": "Oluşturuluyor...",
     "create": "Oluştur",
     "cancel": "İptal",
-    "emptyDescTypes": "Müşterilerine sunmak için bir üyelik planı oluştur."
+    "emptyDescTypes": "Müşterilerine sunmak için bir üyelik planı oluştur.",
+    "pricePlaceholder": "örn. 49.99",
+    "creditsPlaceholder": "örn. 10"
   },
   "reports": {
     "title": "Raporlar",
@@ -357,7 +360,8 @@
     "sendTestEmail": "Test e-postası gönder",
     "testEmailSent": "Test e-postası gönderildi!",
     "testEmailFailed": "Test e-postası gönderilemedi",
-    "saveBeforeTest": "Test e-postası göndermeden önce ayarları kaydet"
+    "saveBeforeTest": "Test e-postası göndermeden önce ayarları kaydet",
+    "smtpHostPlaceholder": "örn. smtp.gmail.com"
   },
   "scheduleModal": {
     "title": "Ders planla",
@@ -431,7 +435,9 @@
     "emptyDescTemplates": "Müşterilerinle iletişim kurmak için bir e-posta şablonu oluştur.",
     "emptyDescSmartLists": "Müşterilerini segmentlemek için akıllı liste oluştur.",
     "noTemplates": "E-posta şablonu yok",
-    "noSmartLists": "Akıllı liste yok"
+    "noSmartLists": "Akıllı liste yok",
+    "bodyPlaceholder": "örn. Merhaba {{client_name}}, rezervasyonunuz onaylandı",
+    "daysPlaceholder": "örn. 30"
   },
   "establishments": {
     "title": "Şubeler",
@@ -480,7 +486,8 @@
     "remove": "Kaldır",
     "removeConfirm": "Bu eğitmeni kalıcı olarak kaldır?",
     "removeDesc": "Giriş hesabı da silinecek. Bu işlem geri alınamaz.",
-    "hasClasses": "Kaldırılamıyor: bu eğitmenin planlanmış dersleri var."
+    "hasClasses": "Kaldırılamıyor: bu eğitmenin planlanmış dersleri var.",
+    "emailPlaceholder": "örn. jane@studio.com"
   },
   "editModal": {
     "title": "Edit Class",

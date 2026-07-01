@@ -7,6 +7,9 @@ import { locationsApi, type Location, type LocationCreate } from '../api/locatio
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { PageHeader } from '../components/PageHeader'
 import { EmptyState } from '../components/EmptyState'
+import { Pagination } from '../components/Pagination'
+
+const PAGE_SIZE = 12
 
 // ── Styled input forwarded ref for PhoneInput ────────────────────────────────
 const BareInput = forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
@@ -106,13 +109,14 @@ const DEFAULT_FORM: FormData = { name: '', address: '', phone: '' }
 export function EstablishmentsPage() {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
-  const [showForm, setShowForm] = useState(false)
+  const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState<Location | null>(null)
   const [formData, setFormData] = useState<FormData>(DEFAULT_FORM)
   const [formError, setFormError] = useState<string | null>(null)
   const [confirmDeactivate, setConfirmDeactivate] = useState<Location | null>(null)
   const [confirmRemove, setConfirmRemove] = useState<Location | null>(null)
   const [removeError, setRemoveError] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
 
   const { data: locations = [], isLoading } = useQuery({
     queryKey: ['locations'],
@@ -123,9 +127,7 @@ export function EstablishmentsPage() {
     mutationFn: (data: LocationCreate) => locationsApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['locations'] })
-      setShowForm(false)
-      setFormData(DEFAULT_FORM)
-      setFormError(null)
+      closeModal()
     },
     onError: () => setFormError(t('establishments.saveError')),
   })
@@ -135,9 +137,7 @@ export function EstablishmentsPage() {
       locationsApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['locations'] })
-      setEditing(null)
-      setFormData(DEFAULT_FORM)
-      setFormError(null)
+      closeModal()
     },
     onError: () => setFormError(t('establishments.saveError')),
   })
@@ -167,10 +167,24 @@ export function EstablishmentsPage() {
     },
   })
 
+  const openCreate = () => {
+    setEditing(null)
+    setFormData(DEFAULT_FORM)
+    setFormError(null)
+    setShowModal(true)
+  }
+
   const openEdit = (loc: Location) => {
     setEditing(loc)
     setFormData({ name: loc.name, address: loc.address ?? '', phone: loc.phone ?? '' })
-    setShowForm(true)
+    setFormError(null)
+    setShowModal(true)
+  }
+
+  const closeModal = () => {
+    setShowModal(false)
+    setEditing(null)
+    setFormData(DEFAULT_FORM)
     setFormError(null)
   }
 
@@ -192,14 +206,8 @@ export function EstablishmentsPage() {
     }
   }
 
-  const handleCancel = () => {
-    setShowForm(false)
-    setEditing(null)
-    setFormData(DEFAULT_FORM)
-    setFormError(null)
-  }
-
   const isPending = createMutation.isPending || updateMutation.isPending
+  const paged = locations.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   return (
     <div>
@@ -207,9 +215,9 @@ export function EstablishmentsPage() {
         title={t('establishments.title')}
         subtitle={t('establishments.subtitle')}
         action={
-          !showForm && locations.length > 0 ? (
+          locations.length > 0 ? (
             <button
-              onClick={() => { setShowForm(true); setEditing(null); setFormData(DEFAULT_FORM) }}
+              onClick={openCreate}
               className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors"
             >
               {t('establishments.add')}
@@ -218,88 +226,11 @@ export function EstablishmentsPage() {
         }
       />
 
-      {/* Form */}
-      {showForm && (
-        <div className="mb-6 bg-white border border-gray-200 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-gray-900 mb-4">
-            {editing ? t('establishments.editTitle') : t('establishments.addTitle')}
-          </h3>
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {/* Name */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                {t('establishments.name')} *
-              </label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData((f) => ({ ...f, name: e.target.value }))}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder={t('establishments.namePlaceholder')}
-              />
-            </div>
-
-            {/* Address with Nominatim autocomplete */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                {t('establishments.address')}
-              </label>
-              <AddressAutocomplete
-                value={formData.address}
-                onChange={(v) => setFormData((f) => ({ ...f, address: v }))}
-                placeholder={t('establishments.addressPlaceholder')}
-              />
-            </div>
-
-            {/* Phone with country prefix */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                {t('establishments.phone')}
-              </label>
-              <div className="flex items-center border border-gray-300 rounded-md px-2 py-1.5 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-shadow">
-                <PhoneInput
-                  value={formData.phone || undefined}
-                  onChange={(v) => setFormData((f) => ({ ...f, phone: v ?? '' }))}
-                  defaultCountry="IT"
-                  international
-                  inputComponent={BareInput}
-                  className="w-full flex items-center gap-1"
-                />
-              </div>
-            </div>
-
-            {formError && (
-              <div className="sm:col-span-3 text-sm text-red-600 bg-red-50 rounded-md px-3 py-2 border border-red-100">
-                {formError}
-              </div>
-            )}
-
-            <div className="sm:col-span-3 flex gap-2 justify-end">
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
-              >
-                {t('common.cancel')}
-              </button>
-              <button
-                type="submit"
-                disabled={isPending}
-                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 transition-colors"
-              >
-                {isPending ? t('common.saving') : t('common.save')}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* List */}
       {isLoading ? (
         <div className="flex items-center justify-center h-48">
           <LoadingSpinner size="lg" />
         </div>
-      ) : locations.length === 0 && !showForm ? (
+      ) : locations.length === 0 ? (
         <EmptyState
           icon={
             <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -309,57 +240,135 @@ export function EstablishmentsPage() {
           title={t('establishments.empty')}
           description={t('establishments.emptyDesc')}
           actionLabel={t('establishments.add')}
-          onAction={() => setShowForm(true)}
+          onAction={openCreate}
         />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {locations.map((loc) => (
-            <div
-              key={loc.id}
-              className={`bg-white border rounded-xl p-4 flex flex-col gap-2 ${
-                loc.is_active ? 'border-gray-200' : 'border-gray-100 opacity-50'
-              }`}
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-900">{loc.name}</h4>
-                  {loc.address && (
-                    <p className="text-xs text-gray-500 mt-0.5">{loc.address}</p>
-                  )}
-                  {loc.phone && (
-                    <p className="text-xs text-gray-500">{loc.phone}</p>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {paged.map((loc) => (
+              <div
+                key={loc.id}
+                className={`bg-white border rounded-xl p-4 flex flex-col gap-2 ${
+                  loc.is_active ? 'border-gray-200' : 'border-gray-100 opacity-50'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-900">{loc.name}</h4>
+                    {loc.address && (
+                      <p className="text-xs text-gray-500 mt-0.5">{loc.address}</p>
+                    )}
+                    {loc.phone && (
+                      <p className="text-xs text-gray-500">{loc.phone}</p>
+                    )}
+                  </div>
+                  {!loc.is_active && (
+                    <span className="flex-shrink-0 text-[10px] font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+                      {t('establishments.inactive')}
+                    </span>
                   )}
                 </div>
-                {!loc.is_active && (
-                  <span className="flex-shrink-0 text-[10px] font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                    {t('establishments.inactive')}
-                  </span>
-                )}
-              </div>
-              <div className="flex gap-2 mt-1">
-                <button
-                  onClick={() => openEdit(loc)}
-                  className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
-                >
-                  {t('common.edit')}
-                </button>
-                {loc.is_active && (
+                <div className="flex gap-2 mt-1">
                   <button
-                    onClick={() => setConfirmDeactivate(loc)}
-                    className="text-xs text-amber-600 hover:text-amber-800 font-medium"
+                    onClick={() => openEdit(loc)}
+                    className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
                   >
-                    {t('establishments.deactivate')}
+                    {t('common.edit')}
                   </button>
-                )}
+                  {loc.is_active && (
+                    <button
+                      onClick={() => setConfirmDeactivate(loc)}
+                      className="text-xs text-amber-600 hover:text-amber-800 font-medium"
+                    >
+                      {t('establishments.deactivate')}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => { setConfirmRemove(loc); setRemoveError(null) }}
+                    className="text-xs text-red-500 hover:text-red-700 font-medium"
+                  >
+                    {t('establishments.remove')}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <Pagination page={page} pageSize={PAGE_SIZE} total={locations.length} onPage={setPage} />
+        </>
+      )}
+
+      {/* Create / Edit modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={closeModal}>
+          <div className="bg-white rounded-xl p-6 max-w-lg w-full mx-4 shadow-lg" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-sm font-semibold text-gray-900 mb-4">
+              {editing ? t('establishments.editTitle') : t('establishments.addTitle')}
+            </h3>
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  {t('establishments.name')} *
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData((f) => ({ ...f, name: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder={t('establishments.namePlaceholder')}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  {t('establishments.address')}
+                </label>
+                <AddressAutocomplete
+                  value={formData.address}
+                  onChange={(v) => setFormData((f) => ({ ...f, address: v }))}
+                  placeholder={t('establishments.addressPlaceholder')}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  {t('establishments.phone')}
+                </label>
+                <div className="flex items-center border border-gray-300 rounded-md px-2 py-1.5 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-shadow">
+                  <PhoneInput
+                    value={formData.phone || undefined}
+                    onChange={(v) => setFormData((f) => ({ ...f, phone: v ?? '' }))}
+                    defaultCountry="IT"
+                    international
+                    inputComponent={BareInput}
+                    className="w-full flex items-center gap-1"
+                  />
+                </div>
+              </div>
+
+              {formError && (
+                <div className="sm:col-span-3 text-sm text-red-600 bg-red-50 rounded-md px-3 py-2 border border-red-100">
+                  {formError}
+                </div>
+              )}
+
+              <div className="sm:col-span-3 flex gap-2 justify-end">
                 <button
-                  onClick={() => { setConfirmRemove(loc); setRemoveError(null) }}
-                  className="text-xs text-red-500 hover:text-red-700 font-medium"
+                  type="button"
+                  onClick={closeModal}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
                 >
-                  {t('establishments.remove')}
+                  {t('common.cancel')}
+                </button>
+                <button
+                  type="submit"
+                  disabled={isPending}
+                  className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                >
+                  {isPending ? t('common.saving') : t('common.save')}
                 </button>
               </div>
-            </div>
-          ))}
+            </form>
+          </div>
         </div>
       )}
 
@@ -381,7 +390,7 @@ export function EstablishmentsPage() {
               <button
                 onClick={() => deactivateMutation.mutate(confirmDeactivate.id)}
                 disabled={deactivateMutation.isPending}
-                className="px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-md hover:bg-amber-700 disabled:opacity-50 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50 transition-colors"
               >
                 {deactivateMutation.isPending ? t('common.saving') : t('establishments.deactivate')}
               </button>

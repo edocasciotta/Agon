@@ -7,6 +7,9 @@ import { classesApi } from '../api/classes'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { PageHeader } from '../components/PageHeader'
 import { EmptyState } from '../components/EmptyState'
+import { Pagination } from '../components/Pagination'
+
+const PAGE_SIZE = 12
 
 interface FormData {
   full_name: string
@@ -39,7 +42,7 @@ const AVATAR_COLORS = ['#4F46E5', '#0F6E56', '#BA7517', '#993556', '#185FA5', '#
 export function InstructorsPage() {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
-  const [showForm, setShowForm] = useState(false)
+  const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState<Instructor | null>(null)
   const [formData, setFormData] = useState<FormData>(DEFAULT_FORM)
   const [formErrors, setFormErrors] = useState<Partial<FormData>>({})
@@ -47,6 +50,7 @@ export function InstructorsPage() {
   const [confirmDeactivate, setConfirmDeactivate] = useState<Instructor | null>(null)
   const [confirmRemove, setConfirmRemove] = useState<Instructor | null>(null)
   const [removeError, setRemoveError] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
 
   const now = new Date()
   const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd')
@@ -62,7 +66,6 @@ export function InstructorsPage() {
     queryFn: () => classesApi.list({ start_date: weekStart, end_date: weekEnd }),
   })
 
-  // Count classes per instructor this week
   const classesPerInstructor: Record<number, number> = {}
   for (const cls of weekClasses) {
     if (cls.instructor_id) {
@@ -74,7 +77,7 @@ export function InstructorsPage() {
     mutationFn: (data: InstructorCreate) => instructorsApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['instructors'] })
-      closeForm()
+      closeModal()
     },
     onError: (err: any) => {
       const code = err?.response?.data?.detail?.error?.code
@@ -91,7 +94,7 @@ export function InstructorsPage() {
       instructorsApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['instructors'] })
-      closeForm()
+      closeModal()
     },
     onError: () => setApiError(t('instructors.saveError')),
   })
@@ -121,16 +124,24 @@ export function InstructorsPage() {
     },
   })
 
+  const openCreate = () => {
+    setEditing(null)
+    setFormData(DEFAULT_FORM)
+    setFormErrors({})
+    setApiError(null)
+    setShowModal(true)
+  }
+
   const openEdit = (inst: Instructor) => {
     setEditing(inst)
     setFormData({ full_name: inst.full_name, email: inst.email, password: '', bio: inst.bio ?? '' })
     setFormErrors({})
     setApiError(null)
-    setShowForm(true)
+    setShowModal(true)
   }
 
-  const closeForm = () => {
-    setShowForm(false)
+  const closeModal = () => {
+    setShowModal(false)
     setEditing(null)
     setFormData(DEFAULT_FORM)
     setFormErrors({})
@@ -171,15 +182,17 @@ export function InstructorsPage() {
 
   const isPending = createMutation.isPending || updateMutation.isPending
 
+  const paged = instructors.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
   return (
     <div>
       <PageHeader
         title={t('instructors.title')}
         subtitle={t('instructors.subtitle')}
         action={
-          !showForm && instructors.length > 0 ? (
+          instructors.length > 0 ? (
             <button
-              onClick={() => { setShowForm(true); setEditing(null); setFormData(DEFAULT_FORM) }}
+              onClick={openCreate}
               className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors"
             >
               {t('instructors.add')}
@@ -188,118 +201,11 @@ export function InstructorsPage() {
         }
       />
 
-      {/* Form */}
-      {showForm && (
-        <div className="mb-6 bg-white border border-gray-200 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-gray-900 mb-4">
-            {editing ? t('instructors.editTitle') : t('instructors.addTitle')}
-          </h3>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Name */}
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  {t('instructors.name')} *
-                </label>
-                <input
-                  type="text"
-                  value={formData.full_name}
-                  onChange={(e) => setFormData((f) => ({ ...f, full_name: e.target.value }))}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder={t('instructors.fullNamePlaceholder')}
-                />
-                {formErrors.full_name && (
-                  <p className="text-xs text-red-500 mt-1">{formErrors.full_name}</p>
-                )}
-              </div>
-
-              {/* Email — only on create */}
-              {!editing && (
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    {t('instructors.email')} *
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData((f) => ({ ...f, email: e.target.value }))}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="sara@studio.it"
-                  />
-                  {formErrors.email && (
-                    <p className="text-xs text-red-500 mt-1">{formErrors.email}</p>
-                  )}
-                </div>
-              )}
-
-              {/* Password — only on create */}
-              {!editing && (
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    {t('instructors.password')} *
-                  </label>
-                  <input
-                    type="password"
-                    value={formData.password}
-                    onChange={(e) => setFormData((f) => ({ ...f, password: e.target.value }))}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="••••••••"
-                  />
-                  {formErrors.password ? (
-                    <p className="text-xs text-red-500 mt-1">{formErrors.password}</p>
-                  ) : (
-                    <p className="text-xs text-gray-400 mt-1">{t('instructors.passwordHint')}</p>
-                  )}
-                </div>
-              )}
-
-              {/* Bio */}
-              <div className={!editing ? 'sm:col-span-2' : 'sm:col-span-2'}>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  {t('instructors.bio')}
-                </label>
-                <textarea
-                  value={formData.bio}
-                  onChange={(e) => setFormData((f) => ({ ...f, bio: e.target.value }))}
-                  rows={2}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-                  placeholder={t('instructors.bioPlaceholder')}
-                />
-              </div>
-            </div>
-
-            {apiError && (
-              <div className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2 border border-red-100">
-                {apiError}
-              </div>
-            )}
-
-            <div className="flex gap-2 justify-end pt-1">
-              <button
-                type="button"
-                onClick={closeForm}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
-              >
-                {t('common.cancel')}
-              </button>
-              <button
-                type="submit"
-                disabled={isPending}
-                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 transition-colors"
-              >
-                {isPending ? t('common.saving') : t('common.save')}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* List */}
       {isLoading ? (
         <div className="flex items-center justify-center h-48">
           <LoadingSpinner size="lg" />
         </div>
-      ) : instructors.length === 0 && !showForm ? (
+      ) : instructors.length === 0 ? (
         <EmptyState
           icon={
             <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -309,70 +215,173 @@ export function InstructorsPage() {
           title={t('instructors.empty')}
           description={t('instructors.emptyDesc')}
           actionLabel={t('instructors.add')}
-          onAction={() => setShowForm(true)}
+          onAction={openCreate}
         />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {instructors.map((inst, idx) => {
-            const color = AVATAR_COLORS[idx % AVATAR_COLORS.length]
-            const weekCount = classesPerInstructor[inst.id] ?? 0
-            return (
-              <div
-                key={inst.id}
-                className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col gap-3"
-              >
-                {/* Header */}
-                <div className="flex items-center gap-3">
-                  <InitialsAvatar name={inst.full_name} color={color} />
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 truncate">{inst.full_name}</p>
-                    <p className="text-xs text-gray-500 truncate">{inst.email}</p>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {paged.map((inst, idx) => {
+              const color = AVATAR_COLORS[(instructors.indexOf(inst)) % AVATAR_COLORS.length]
+              const weekCount = classesPerInstructor[inst.id] ?? 0
+              return (
+                <div
+                  key={inst.id}
+                  className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col gap-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <InitialsAvatar name={inst.full_name} color={color} />
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 truncate">{inst.full_name}</p>
+                      <p className="text-xs text-gray-500 truncate">{inst.email}</p>
+                    </div>
+                  </div>
+
+                  {inst.bio && (
+                    <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{inst.bio}</p>
+                  )}
+
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="text-[11px] font-medium px-2 py-0.5 rounded-full"
+                      style={{ background: `${color}18`, color }}
+                    >
+                      {t('instructors.classesCount').replace('{{n}}', String(weekCount))}
+                    </span>
+                  </div>
+
+                  <div className="flex gap-3 border-t border-gray-100 pt-2">
+                    <button
+                      onClick={() => openEdit(inst)}
+                      className="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
+                    >
+                      {t('common.edit')}
+                    </button>
+                    <button
+                      onClick={() => setConfirmDeactivate(inst)}
+                      className="text-xs font-medium text-amber-600 hover:text-amber-800 transition-colors"
+                    >
+                      {t('instructors.deactivate')}
+                    </button>
+                    <button
+                      onClick={() => { setConfirmRemove(inst); setRemoveError(null) }}
+                      className="text-xs font-medium text-red-500 hover:text-red-700 transition-colors"
+                    >
+                      {t('instructors.remove')}
+                    </button>
                   </div>
                 </div>
+              )
+            })}
+          </div>
+          <Pagination page={page} pageSize={PAGE_SIZE} total={instructors.length} onPage={setPage} />
+        </>
+      )}
 
-                {/* Bio */}
-                {inst.bio && (
-                  <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{inst.bio}</p>
+      {/* Create / Edit modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={closeModal}>
+          <div className="bg-white rounded-xl p-6 max-w-lg w-full mx-4 shadow-lg" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-sm font-semibold text-gray-900 mb-4">
+              {editing ? t('instructors.editTitle') : t('instructors.addTitle')}
+            </h3>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    {t('instructors.name')} *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.full_name}
+                    onChange={(e) => setFormData((f) => ({ ...f, full_name: e.target.value }))}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder={t('instructors.fullNamePlaceholder')}
+                  />
+                  {formErrors.full_name && (
+                    <p className="text-xs text-red-500 mt-1">{formErrors.full_name}</p>
+                  )}
+                </div>
+
+                {!editing && (
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      {t('instructors.email')} *
+                    </label>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData((f) => ({ ...f, email: e.target.value }))}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      placeholder={t('instructors.emailPlaceholder')}
+                    />
+                    {formErrors.email && (
+                      <p className="text-xs text-red-500 mt-1">{formErrors.email}</p>
+                    )}
+                  </div>
                 )}
 
-                {/* Week pill */}
-                <div className="flex items-center gap-2">
-                  <span
-                    className="text-[11px] font-medium px-2 py-0.5 rounded-full"
-                    style={{ background: `${color}18`, color }}
-                  >
-                    {t('instructors.classesCount').replace('{{n}}', String(weekCount))}
-                  </span>
-                </div>
+                {!editing && (
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      {t('instructors.password')} *
+                    </label>
+                    <input
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) => setFormData((f) => ({ ...f, password: e.target.value }))}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      placeholder="••••••••"
+                    />
+                    {formErrors.password ? (
+                      <p className="text-xs text-red-500 mt-1">{formErrors.password}</p>
+                    ) : (
+                      <p className="text-xs text-gray-400 mt-1">{t('instructors.passwordHint')}</p>
+                    )}
+                  </div>
+                )}
 
-                {/* Actions */}
-                <div className="flex gap-3 border-t border-gray-100 pt-2">
-                  <button
-                    onClick={() => openEdit(inst)}
-                    className="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
-                  >
-                    {t('common.edit')}
-                  </button>
-                  <button
-                    onClick={() => setConfirmDeactivate(inst)}
-                    className="text-xs font-medium text-amber-600 hover:text-amber-800 transition-colors"
-                  >
-                    {t('instructors.deactivate')}
-                  </button>
-                  <button
-                    onClick={() => { setConfirmRemove(inst); setRemoveError(null) }}
-                    className="text-xs font-medium text-red-500 hover:text-red-700 transition-colors"
-                  >
-                    {t('instructors.remove')}
-                  </button>
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    {t('instructors.bio')}
+                  </label>
+                  <textarea
+                    value={formData.bio}
+                    onChange={(e) => setFormData((f) => ({ ...f, bio: e.target.value }))}
+                    rows={2}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                    placeholder={t('instructors.bioPlaceholder')}
+                  />
                 </div>
               </div>
-            )
-          })}
+
+              {apiError && (
+                <div className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2 border border-red-100">
+                  {apiError}
+                </div>
+              )}
+
+              <div className="flex gap-2 justify-end pt-1">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  type="submit"
+                  disabled={isPending}
+                  className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                >
+                  {isPending ? t('common.saving') : t('common.save')}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
-      {/* Remove confirmation dialog */}
+      {/* Remove confirmation */}
       {confirmRemove && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfirmRemove(null)}>
           <div className="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-lg" onClick={(e) => e.stopPropagation()}>
@@ -405,16 +414,14 @@ export function InstructorsPage() {
         </div>
       )}
 
-      {/* Deactivate confirmation dialog */}
+      {/* Deactivate confirmation */}
       {confirmDeactivate && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfirmDeactivate(null)}>
           <div className="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-lg" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-sm font-semibold text-gray-900 mb-2">
               {t('instructors.deactivateConfirm')}
             </h3>
-            <p className="text-sm text-gray-500 mb-5">
-              {confirmDeactivate.full_name}
-            </p>
+            <p className="text-sm text-gray-500 mb-5">{confirmDeactivate.full_name}</p>
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => setConfirmDeactivate(null)}

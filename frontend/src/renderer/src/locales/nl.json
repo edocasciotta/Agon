@@ -62,7 +62,8 @@
     "scheduling": "Plannen...",
     "scheduleClass": "Les plannen",
     "scheduleClasses": "Lessen plannen",
-    "selectClassType": "Selecteer lestype"
+    "selectClassType": "Selecteer lestype",
+    "paginationInfo": "{{from}}–{{to}} van {{total}}"
   },
   "lang": {
     "en": "EN",
@@ -292,7 +293,9 @@
     "create": "Aanmaken",
     "cancel": "Annuleren",
     "emptyDescTypes": "Maak een lidmaatschapsplan aan voor je klanten.",
-    "currencyPlaceholder": "EUR"
+    "currencyPlaceholder": "EUR",
+    "pricePlaceholder": "bijv. 49.99",
+    "creditsPlaceholder": "bijv. 10"
   },
   "reports": {
     "title": "Rapporten",
@@ -358,7 +361,8 @@
     "sendTestEmail": "Test-e-mail verzenden",
     "testEmailSent": "Test-e-mail verzonden!",
     "testEmailFailed": "Test-e-mail verzenden mislukt",
-    "saveBeforeTest": "Sla instellingen op vóór het verzenden van een test-e-mail"
+    "saveBeforeTest": "Sla instellingen op vóór het verzenden van een test-e-mail",
+    "smtpHostPlaceholder": "bijv. smtp.gmail.com"
   },
   "scheduleModal": {
     "title": "Les plannen",
@@ -432,7 +436,9 @@
     "emptyDescTemplates": "Maak een e-mailsjabloon om te communiceren met je klanten.",
     "emptyDescSmartLists": "Maak een slimme lijst om je klanten te segmenteren.",
     "noTemplates": "Geen e-mailsjablonen",
-    "noSmartLists": "Geen slimme lijsten"
+    "noSmartLists": "Geen slimme lijsten",
+    "bodyPlaceholder": "bijv. Hoi {{client_name}}, je boeking is bevestigd",
+    "daysPlaceholder": "bijv. 30"
   },
   "establishments": {
     "title": "Vestigingen",
@@ -484,7 +490,8 @@
     "removeConfirm": "Deze instructeur permanent verwijderen?",
     "removeDesc": "Het bijbehorende account wordt ook verwijderd. Deze actie kan niet ongedaan worden gemaakt.",
     "hasClasses": "Kan niet verwijderen: deze instructeur heeft geplande lessen.",
-    "fullNamePlaceholder": "bijv. Anna de Vries"
+    "fullNamePlaceholder": "bijv. Anna de Vries",
+    "emailPlaceholder": "bijv. jane@studio.com"
   },
   "editModal": {
     "title": "Edit Class",

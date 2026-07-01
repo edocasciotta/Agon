@@ -293,7 +293,7 @@ export function SettingsPage() {
                       type="text"
                       value={emailForm.email_smtp_host ?? ''}
                       onChange={(e) => handleEmailChange('email_smtp_host', e.target.value)}
-                      placeholder="smtp.gmail.com"
+                      placeholder={t('settings.smtpHostPlaceholder')}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                   </Field>

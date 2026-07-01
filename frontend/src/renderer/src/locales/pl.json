@@ -62,7 +62,8 @@
     "scheduling": "Planowanie...",
     "scheduleClass": "Zaplanuj zajęcia",
     "scheduleClasses": "Zaplanuj zajęcia",
-    "selectClassType": "Wybierz typ zajęć"
+    "selectClassType": "Wybierz typ zajęć",
+    "paginationInfo": "{{from}}–{{to}} z {{total}}"
   },
   "lang": {
     "en": "EN",
@@ -291,7 +292,9 @@
     "creating": "Tworzenie...",
     "create": "Utwórz",
     "cancel": "Anuluj",
-    "emptyDescTypes": "Utwórz plan członkostwa dla swoich klientów."
+    "emptyDescTypes": "Utwórz plan członkostwa dla swoich klientów.",
+    "pricePlaceholder": "np. 49.99",
+    "creditsPlaceholder": "np. 10"
   },
   "reports": {
     "title": "Raporty",
@@ -357,7 +360,8 @@
     "sendTestEmail": "Wyślij testowy e-mail",
     "testEmailSent": "Testowy e-mail wysłany!",
     "testEmailFailed": "Nie udało się wysłać testowego e-maila",
-    "saveBeforeTest": "Zapisz ustawienia przed wysłaniem testowego e-maila"
+    "saveBeforeTest": "Zapisz ustawienia przed wysłaniem testowego e-maila",
+    "smtpHostPlaceholder": "np. smtp.gmail.com"
   },
   "scheduleModal": {
     "title": "Zaplanuj zajęcia",
@@ -431,7 +435,9 @@
     "emptyDescTemplates": "Utwórz szablon e-mail, aby komunikować się z klientami.",
     "emptyDescSmartLists": "Utwórz inteligentną listę, aby segmentować swoich klientów.",
     "noTemplates": "Brak szablonów e-mail",
-    "noSmartLists": "Brak list inteligentnych"
+    "noSmartLists": "Brak list inteligentnych",
+    "bodyPlaceholder": "np. Cześć {{client_name}}, Twoja rezerwacja została potwierdzona",
+    "daysPlaceholder": "np. 30"
   },
   "establishments": {
     "title": "Oddziały",
@@ -480,7 +486,8 @@
     "remove": "Usuń",
     "removeConfirm": "Trwale usunąć tego instruktora?",
     "removeDesc": "Konto zostanie również usunięte. Tej akcji nie można cofnąć.",
-    "hasClasses": "Nie można usunąć: ten instruktor ma zaplanowane zajęcia."
+    "hasClasses": "Nie można usunąć: ten instruktor ma zaplanowane zajęcia.",
+    "emailPlaceholder": "np. jane@studio.com"
   },
   "editModal": {
     "title": "Edit Class",

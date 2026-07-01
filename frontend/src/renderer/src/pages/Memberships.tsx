@@ -214,7 +214,7 @@ export function MembershipsPage() {
                     value={formData.price}
                     onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="49.99"
+                    placeholder={t('memberships.pricePlaceholder')}
                   />
                 </div>
                 <div className="w-24">
@@ -236,7 +236,7 @@ export function MembershipsPage() {
                     value={formData.credits_included}
                     onChange={(e) => setFormData({ ...formData, credits_included: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="10"
+                    placeholder={t('memberships.creditsPlaceholder')}
                   />
                 </div>
               )}

@@ -62,7 +62,8 @@
     "scheduling": "Planification...",
     "scheduleClass": "Planifier un cours",
     "scheduleClasses": "Planifier des cours",
-    "selectClassType": "Sélectionner un type de cours"
+    "selectClassType": "Sélectionner un type de cours",
+    "paginationInfo": "{{from}}–{{to}} sur {{total}}"
   },
   "lang": {
     "en": "EN",
@@ -292,7 +293,9 @@
     "create": "Créer",
     "cancel": "Annuler",
     "emptyDescTypes": "Créez un plan d'abonnement à proposer à vos clients.",
-    "currencyPlaceholder": "EUR"
+    "currencyPlaceholder": "EUR",
+    "pricePlaceholder": "ex. 49.99",
+    "creditsPlaceholder": "ex. 10"
   },
   "reports": {
     "title": "Rapports",
@@ -358,7 +361,8 @@
     "sendTestEmail": "Envoyer un e-mail de test",
     "testEmailSent": "E-mail de test envoyé !",
     "testEmailFailed": "Échec de l’envoi de l’e-mail de test",
-    "saveBeforeTest": "Enregistre les paramètres avant d'envoyer un e-mail de test"
+    "saveBeforeTest": "Enregistre les paramètres avant d'envoyer un e-mail de test",
+    "smtpHostPlaceholder": "ex. smtp.gmail.com"
   },
   "scheduleModal": {
     "title": "Planifier un cours",
@@ -432,7 +436,9 @@
     "emptyDescTemplates": "Créez un modèle d'e-mail pour communiquer avec vos clients.",
     "emptyDescSmartLists": "Créez une liste intelligente pour segmenter vos clients.",
     "noTemplates": "Aucun modèle d'e-mail",
-    "noSmartLists": "Aucune liste intelligente"
+    "noSmartLists": "Aucune liste intelligente",
+    "bodyPlaceholder": "ex. Bonjour {{client_name}}, votre réservation est confirmée",
+    "daysPlaceholder": "ex. 30"
   },
   "establishments": {
     "title": "Établissements",
@@ -484,7 +490,8 @@
     "removeConfirm": "Supprimer définitivement cet instructeur ?",
     "removeDesc": "Son compte sera également supprimé. Cette action est irréversible.",
     "hasClasses": "Impossible de supprimer : cet instructeur a des cours planifiés.",
-    "fullNamePlaceholder": "ex. Marie Dupont"
+    "fullNamePlaceholder": "ex. Marie Dupont",
+    "emailPlaceholder": "ex. jane@studio.com"
   },
   "editModal": {
     "title": "Edit Class",

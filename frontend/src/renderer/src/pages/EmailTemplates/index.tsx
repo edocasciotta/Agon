@@ -64,7 +64,7 @@ function TemplateModal({ initial, title, onSave, onClose, saving }: TemplateModa
               value={form.subject}
               onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="e.g. Hello {{client_name}}, your booking is confirmed"
+              placeholder={t('marketing.bodyPlaceholder')}
             />
           </div>
           <div>

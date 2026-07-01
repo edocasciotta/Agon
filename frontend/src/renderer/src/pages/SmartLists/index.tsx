@@ -143,7 +143,7 @@ function SmartListModal({ initial, title, onSave, onClose, saving }: SmartListMo
                       }
                     }}
                     className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="e.g. 30"
+                    placeholder={t('marketing.daysPlaceholder')}
                   />
                 </div>
                 <div>
@@ -163,7 +163,7 @@ function SmartListModal({ initial, title, onSave, onClose, saving }: SmartListMo
                       }
                     }}
                     className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="e.g. 60"
+                    placeholder={t('marketing.daysPlaceholder')}
                   />
                 </div>
               </div>

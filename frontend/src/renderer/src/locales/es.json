@@ -62,7 +62,8 @@
     "scheduling": "Programando...",
     "scheduleClass": "Programar clase",
     "scheduleClasses": "Programar clases",
-    "selectClassType": "Seleccionar tipo de clase"
+    "selectClassType": "Seleccionar tipo de clase",
+    "paginationInfo": "{{from}}–{{to}} de {{total}}"
   },
   "lang": {
     "en": "EN",
@@ -292,7 +293,9 @@
     "create": "Crear",
     "cancel": "Cancelar",
     "emptyDescTypes": "Crea un plan de membresía para ofrecer a tus clientes.",
-    "currencyPlaceholder": "EUR"
+    "currencyPlaceholder": "EUR",
+    "pricePlaceholder": "ej. 49.99",
+    "creditsPlaceholder": "ej. 10"
   },
   "reports": {
     "title": "Informes",
@@ -358,7 +361,8 @@
     "sendTestEmail": "Enviar email de prueba",
     "testEmailSent": "¡Email de prueba enviado!",
     "testEmailFailed": "Error al enviar el email de prueba",
-    "saveBeforeTest": "Guarda los ajustes antes de enviar un correo de prueba"
+    "saveBeforeTest": "Guarda los ajustes antes de enviar un correo de prueba",
+    "smtpHostPlaceholder": "ej. smtp.gmail.com"
   },
   "scheduleModal": {
     "title": "Programar clase",
@@ -432,7 +436,9 @@
     "emptyDescTemplates": "Crea una plantilla de correo para comunicarte con tus clientes.",
     "emptyDescSmartLists": "Crea una lista inteligente para segmentar a tus clientes.",
     "noTemplates": "Sin plantillas de correo",
-    "noSmartLists": "Sin listas inteligentes"
+    "noSmartLists": "Sin listas inteligentes",
+    "bodyPlaceholder": "ej. Hola {{client_name}}, tu reserva está confirmada",
+    "daysPlaceholder": "ej. 30"
   },
   "establishments": {
     "title": "Sedes",
@@ -484,7 +490,8 @@
     "removeConfirm": "¿Eliminar permanentemente este instructor?",
     "removeDesc": "También se eliminará su cuenta de acceso. Esta acción no se puede deshacer.",
     "hasClasses": "No se puede eliminar: este instructor tiene clases programadas.",
-    "fullNamePlaceholder": "ej. María García"
+    "fullNamePlaceholder": "ej. María García",
+    "emailPlaceholder": "ej. jane@studio.com"
   },
   "editModal": {
     "title": "Edit Class",

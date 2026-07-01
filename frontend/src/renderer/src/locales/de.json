@@ -62,7 +62,8 @@
     "scheduling": "Planen...",
     "scheduleClass": "Kurs planen",
     "scheduleClasses": "Kurse planen",
-    "selectClassType": "Kurstyp auswählen"
+    "selectClassType": "Kurstyp auswählen",
+    "paginationInfo": "{{from}}–{{to}} von {{total}}"
   },
   "lang": {
     "en": "EN",
@@ -292,7 +293,9 @@
     "create": "Erstellen",
     "cancel": "Abbrechen",
     "emptyDescTypes": "Erstelle einen Mitgliedschaftsplan für deine Kunden.",
-    "currencyPlaceholder": "EUR"
+    "currencyPlaceholder": "EUR",
+    "pricePlaceholder": "z.B. 49.99",
+    "creditsPlaceholder": "z.B. 10"
   },
   "reports": {
     "title": "Berichte",
@@ -358,7 +361,8 @@
     "sendTestEmail": "Test-E-Mail senden",
     "testEmailSent": "Test-E-Mail gesendet!",
     "testEmailFailed": "Test-E-Mail konnte nicht gesendet werden",
-    "saveBeforeTest": "Speichere die Einstellungen vor dem Senden einer Test-E-Mail"
+    "saveBeforeTest": "Speichere die Einstellungen vor dem Senden einer Test-E-Mail",
+    "smtpHostPlaceholder": "z.B. smtp.gmail.com"
   },
   "scheduleModal": {
     "title": "Kurs planen",
@@ -432,7 +436,9 @@
     "emptyDescTemplates": "Erstelle eine E-Mail-Vorlage, um mit deinen Kunden zu kommunizieren.",
     "emptyDescSmartLists": "Erstelle eine Smart-Liste, um deine Kunden zu segmentieren.",
     "noTemplates": "Keine E-Mail-Vorlagen",
-    "noSmartLists": "Keine Smart-Listen"
+    "noSmartLists": "Keine Smart-Listen",
+    "bodyPlaceholder": "z.B. Hallo {{client_name}}, deine Buchung ist bestätigt",
+    "daysPlaceholder": "z.B. 30"
   },
   "establishments": {
     "title": "Standorte",
@@ -484,7 +490,8 @@
     "removeConfirm": "Diesen Trainer dauerhaft entfernen?",
     "removeDesc": "Dies löscht auch das zugehörige Konto. Diese Aktion kann nicht rückgängig gemacht werden.",
     "hasClasses": "Kann nicht entfernt werden: Dieser Trainer hat geplante Kurse.",
-    "fullNamePlaceholder": "z. B. Anna Müller"
+    "fullNamePlaceholder": "z. B. Anna Müller",
+    "emailPlaceholder": "z.B. jane@studio.com"
   },
   "editModal": {
     "title": "Edit Class",
