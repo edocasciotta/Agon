@@ -6,6 +6,75 @@ Read this file completely before writing any code.
 
 ---
 
+## Quality Gates — Non-Negotiable Standards
+
+These rules are derived from the Expert Review of the Repository. Every single line of code you produce must satisfy all of them. A future expert review will check every item below. If you skip any rule, the project fails the review.
+
+### TypeScript — strict mode, no escape hatches
+- **Never** use `any`. Use `unknown` and narrow, or define a proper type.
+- **Never** use `// @ts-ignore` or `// @ts-expect-error` without a documented reason.
+- Run `npm run build` (which includes `tsc --noEmit`) before reporting a task complete. Zero TS errors required.
+
+### Code style — apply before every commit
+- ESLint must pass: `npm run lint` — zero errors.
+- Prettier must be applied: `npm run format`.
+- Both commands are configured in the repo root.
+
+### Token storage — security critical
+- `accessToken` must **never** be in `localStorage`.
+- Use `useAuthStore` (Zustand) with `createJSONStorage(() => sessionStorage)`.
+- The `partialize` option must exclude `accessToken` from any persisted slice.
+- The `api/client.ts` interceptor reads `useAuthStore.getState().accessToken` — never `localStorage.getItem(...)`.
+
+### Global 401 interceptor
+- On 401 response, call `useAuthStore.getState().logout()` then redirect to `/`.
+- This is already implemented in `src/renderer/src/api/client.ts`. Do not add per-endpoint 401 handling — it creates duplicate logic.
+
+### Form validation — Zod before every API call
+- Every form (create/edit modals, onboarding steps) must validate with a Zod schema **before** calling the API.
+- Show inline field errors without a round-trip. Never surface a 422 from the server as the first validation feedback.
+- Import pattern: `import { z } from 'zod'` + `useForm` or manual `schema.safeParse(data)`.
+
+### State management — correct layer for each concern
+- **Server state** → React Query (`useQuery`, `useMutation`). Never `useEffect` for data fetching.
+- **UI/auth state** → Zustand.
+- `queryClient.invalidateQueries` after every successful mutation that changes data.
+
+### i18n — zero hardcoded strings
+- **Every** user-facing string must use `t('namespace.key')` via `useTranslation()`.
+- **Every** `placeholder`, `aria-label`, `title`, `alt` attribute must also use `t(...)`.
+- When adding a new key, add it to **all 7 locale files**: `en.json`, `it.json`, `fr.json`, `de.json`, `es.json`, `pt.json`, `nl.json`.
+- Placeholder example values must be culturally appropriate per locale (not Italian names in English placeholders).
+- Supported languages: **EN, IT, FR, DE, ES, PT, NL** — 7 only. Do not add PL or TR.
+
+### Electron security
+- `sandbox: true` in `webPreferences` — always, without exception.
+- The preload script uses only `contextBridge` and `ipcRenderer`. No direct Node.js API calls from the renderer.
+- The main window is shown only after `http://127.0.0.1:8000/health` returns 200.
+
+### CORS (backend-side, verify when touching electron/main or api/client)
+- The backend must never use `allow_origins=["*"]` with `allow_credentials=True`.
+- Allowed origins are enumerated explicitly: `http://localhost:5173`, `http://localhost:4173`, `app://.`, `file://`.
+
+### UX conventions (enforced from user feedback — not optional)
+- Every modal closes on backdrop click: `onClick={closeHandler}` on the backdrop, `e.stopPropagation()` on content.
+- Confirmation dialogs for destructive actions use a **red** button (`bg-red-600`), never amber.
+- No Add button shown simultaneously in `PageHeader` and `EmptyState` — see the empty-state CTA rule.
+- Calendar: no right-side panel; click event → edit modal directly.
+- No hardcoded placeholder text. All placeholders via `t(...)`.
+
+### Testing — no shortcuts
+- Every new component: at minimum one Vitest test (renders without crash, correct interaction).
+- New complete flows (login → action → result): add a Playwright spec in `tests/e2e/`.
+- Mock API calls via `page.route()` in Playwright — no real backend needed.
+- **Never** use `--passWithNoTests`.
+- Run `npm test -- --run` before reporting a task complete. Zero failures required.
+
+### CHANGELOG
+- Add new features to the `[Unreleased]` section of `CHANGELOG.md` at the repo root.
+
+---
+
 ## GAME Framework
 
 ### Goal

@@ -107,6 +107,49 @@ Acceptance criteria:
 
 ---
 
+## Expert Review Compliance — Acceptance Criteria for Every Task
+
+Before accepting output from any sub-agent, verify all of the following. If any item fails, reject the output and re-delegate with the specific failure as a constraint.
+
+### Backend output checklist
+- [ ] `black .` and `isort .` applied (no formatting diff)
+- [ ] `ruff check .` passes with zero errors
+- [ ] `pytest -q` passes with zero failures — test count did not decrease
+- [ ] Every new `HTTPException` uses `{"error": {"code": "...", "message": "..."}}` format
+- [ ] No `class Config:` in any Pydantic schema — must be `model_config = ConfigDict(...)`
+- [ ] No `datetime.utcnow()` — must be `utcnow()` from `app.utils`
+- [ ] No `db.commit()` inside `app/services/` — only in routers
+- [ ] Every new client-facing endpoint has an IDOR test in `test_authorization.py`
+- [ ] Every new table has composite indexes and an Alembic migration
+- [ ] No PII in log statements
+
+### Frontend output checklist
+- [ ] `npm run build` succeeds (zero TypeScript errors)
+- [ ] `npm test -- --run` passes with zero failures
+- [ ] `npm run lint` passes with zero errors
+- [ ] No `localStorage` for tokens — uses Zustand store
+- [ ] No `useEffect` for data fetching — uses React Query
+- [ ] All new user-facing strings use `t('namespace.key')` — present in all 7 locale files
+- [ ] Every new form validates with Zod before API call
+- [ ] Electron `sandbox: true` unchanged
+
+### Mobile output checklist
+- [ ] `npm run typecheck` passes with zero errors
+- [ ] `npm test -- --watchAll=false` passes with zero failures
+- [ ] No `AsyncStorage` for tokens — uses Expo SecureStore
+- [ ] Every new data screen renders `<OfflineBanner />`
+- [ ] Every new store has Jest tests
+
+### Documentation output checklist
+- [ ] `npm run build` inside `docs-site/` passes with zero errors
+- [ ] Every new endpoint has a Docusaurus page
+- [ ] `CHANGELOG.md` [Unreleased] section updated
+- [ ] No synonym for glossary terms (see `docs-site/docs/glossary.md`)
+- [ ] `ARCHITECTURE.md` updated if architecture changed
+- [ ] `OPERATIONS.md` updated if ops-relevant change
+
+---
+
 ## Build Order
 
 Follow this sequence. Do not start a phase until the previous one is complete and all tests pass.
@@ -211,6 +254,7 @@ Every time a new Claude Code session starts:
 - [ ] Run `pytest` to verify current test status
 - [ ] Identify the next task from the build order
 - [ ] Delegate to the appropriate sub-agent
+- [ ] After every sub-agent task: run the Expert Review Compliance checklist above before accepting output
 
 ---
 

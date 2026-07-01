@@ -6,6 +6,65 @@ Read this file completely before writing any code.
 
 ---
 
+## Quality Gates — Non-Negotiable Standards
+
+These rules are derived from the Expert Review of the Repository. Every single line of code you produce must satisfy all of them. A future expert review will check every item below. If you skip any rule, the project fails the review.
+
+### TypeScript — strict mode
+- **Never** use `any`. Define proper types.
+- **Never** suppress TS errors with `// @ts-ignore` without a documented reason.
+- Run `npm run typecheck` before reporting a task complete. Zero errors required.
+
+### Code style — apply before every commit
+- ESLint must pass: `npm run lint` — zero errors.
+- Prettier must be applied: `npm run format`.
+
+### Token storage — security critical
+- **Never** use `AsyncStorage` for tokens or sensitive data.
+- **Always** use `Expo SecureStore` for the access token and the studio URL.
+- Keys: `agon_access_token`, `agon_studio_url` (defined in `src/api/client.ts`).
+
+### Offline-first — mandatory for every data screen
+Every screen that fetches data must:
+1. Use React Query with `staleTime: 5 * 60 * 1000` and `gcTime: 24 * 60 * 60 * 1000` (already set globally in `app/_layout.tsx`).
+2. Import and render `<OfflineBanner />` from `src/components/OfflineBanner.tsx` — it auto-hides when online.
+3. Never block navigation when offline — show cached data with the banner.
+
+Write operations that fail offline must be enqueued via `usePendingQueue` from `src/store/pendingQueue.ts`. The `NetworkWatcher` in `_layout.tsx` drains the queue automatically on reconnect.
+
+### Deep linking — notification taps
+Notification payloads must include a `data.url` field using the `agon://` scheme:
+- `agon://bookings/{id}` — booking confirmed / class reminder
+- `agon://classes/{id}` — class detail
+- `agon://waitlist/{id}` — waitlist promotion
+
+The `DeepLinkHandler` in `_layout.tsx` already routes these — just ensure the backend sends the right `url` in push notification data.
+
+### Network status detection
+- The `useNetworkStatus()` hook in `src/hooks/useNetworkStatus.ts` polls `/health` every 30 s and updates `connectivityStore`.
+- Do not add a second polling mechanism. Use this hook at the root layout — it is already wired in `_layout.tsx`.
+
+### State management — correct layer
+- **Server state** → React Query (`useQuery`, `useMutation`).
+- **UI/auth/connectivity state** → Zustand stores in `src/store/`.
+- **Never** `useEffect` for data fetching.
+
+### Testing — no shortcuts
+- Every new store: at minimum 3–5 Jest tests covering initial state, all actions, and edge cases.
+- Every new screen: at minimum one test (renders without crash + key interaction).
+- **Never** use `--passWithNoTests` in any test script. It is explicitly removed from `package.json`.
+- Run `npm test -- --watchAll=false` before reporting a task complete. Zero failures required.
+
+### Push notifications — permission and token
+- Request notification permission after login (not at cold start).
+- Send the Expo push token to the backend via `clientsApi.updatePushToken(token)` immediately after obtaining it.
+- Handle `Notifications.addNotificationResponseReceivedListener` in `_layout.tsx` (already wired) — do not add a second listener.
+
+### CHANGELOG
+- Add new features to the `[Unreleased]` section of `CHANGELOG.md` at the repo root.
+
+---
+
 ## GAME Framework
 
 ### Goal

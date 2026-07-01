@@ -6,6 +6,86 @@ Read this file completely before writing any code.
 
 ---
 
+## Quality Gates — Non-Negotiable Standards
+
+These rules are derived from the Expert Review of the Repository. Every single line of code you produce must satisfy all of them. A future expert review will check every item below. If you skip any rule, the project fails the review.
+
+### Code style — apply before every commit
+- Run `black .` and `isort .` on all Python files you touch. No commit without them.
+- Run `ruff check .` and fix all errors before committing.
+- Line length: 100. Configured in `pyproject.toml`.
+
+### Pydantic v2 — always
+- **Never** `class Config: from_attributes = True`. Always:
+  ```python
+  model_config = ConfigDict(from_attributes=True)
+  ```
+- **Never** `class Config: orm_mode = True`. That is Pydantic v1 syntax.
+- Import: `from pydantic import BaseModel, ConfigDict`.
+
+### Error responses — 100% conformance
+Every `HTTPException` in every router must use this exact shape — no exceptions:
+```python
+raise HTTPException(
+    status_code=4xx,
+    detail={"error": {"code": "SCREAMING_SNAKE", "message": "Human-readable.", "details": {...}}}
+)
+```
+Use the helper `raise_api_error(code, message, status_code, details=None)` from `app/utils.py`.
+FastAPI wraps `detail` in `{"detail": ...}` — tests must access `resp.json()["detail"]["error"]["code"]`.
+
+### Datetime — always UTC-naive
+- **Never** `datetime.utcnow()` (deprecated Python 3.12+).
+- **Always** `utcnow()` from `app.utils` for any timestamp stored in or compared against the DB.
+- `datetime.now(timezone.utc)` is allowed ONLY in `app/auth.py` for JWT `exp` claims.
+- SQLite stores UTC-naive values. Never compare with timezone-aware datetimes.
+
+### Transaction semantics — enforced without exception
+- `db.commit()` belongs in the **router layer only**. Never inside `app/services/`.
+- Service functions receive a `db` session, operate on it, but never commit.
+- The router commits once, after all operations succeed.
+
+### Authorization — IDOR prevention
+- `require_manager`: check JWT `role` claim **before** DB lookup → 403 if wrong role, 401 if user not found.
+- `require_staff`: same pattern.
+- **Never** route through `get_current_user` for staff-only endpoints — client tokens exist in the `users` table and would return 200 instead of 403.
+- Every endpoint that returns client data must verify the requesting user can access that specific client. A client can only see their own records.
+- Every new client-facing endpoint needs an IDOR test in `test_authorization.py`.
+
+### Rate limiting — sensitive endpoints
+- `POST /api/v1/auth/login`, `POST /api/v1/auth/refresh`: rate-limited.
+- `POST /api/v1/bookings`: `@limiter.limit("10/minute")` keyed on `client_id` from JWT.
+- Any new endpoint where abuse could cause harm: add a limit.
+
+### Security — PII and secrets
+- **Never** write email addresses, phone numbers, or full names to logs. Use the PII filter from `app/logging_config.py`.
+- **Never** hardcode secrets. If a default is needed, generate it via `secrets.token_hex(32)`.
+- **Never** commit `.env` files. They are in `.gitignore`.
+- Stripe webhook handlers must check idempotency (`provider_payment_id` uniqueness) before writing.
+
+### Database — every new table
+- Every new table with FK columns needs composite indexes on columns used in `WHERE` + `status` filters.
+- Every database change needs an Alembic migration in the same commit. Run `alembic upgrade head` to verify.
+- `PRAGMA foreign_keys=ON`, `PRAGMA journal_mode=WAL`, `PRAGMA synchronous=NORMAL` are set in `database.py` — never bypass them.
+
+### LLM calls (litellm)
+- All `completion()` calls must be wrapped in `try/except`.
+- Catch content-filtering errors: `if "content filtering" in str(e).lower() or "blocked" in str(e).lower()`.
+- Provide a graceful fallback — never surface a raw litellm exception to the user.
+- **Never** reference `settings.LLM_BASE_URL` — removed in the Gemini migration.
+
+### Testing — no shortcuts
+- Every new endpoint: at minimum one happy-path test **and** one test per documented error code.
+- Every new client-facing endpoint: one IDOR test in `test_authorization.py`.
+- **Never** remove or skip existing tests. If behaviour changes, update the test.
+- **Never** use `--passWithNoTests` or `pytest --ignore`.
+- Run `pytest -q` before reporting a task complete. It must show zero failures.
+
+### File writes — atomic
+- Any write to a config or state file (e.g. `.env`) must be atomic: write to a temp file, then `os.replace(tmp, target)`.
+
+---
+
 ## GAME Framework
 
 ### Goal

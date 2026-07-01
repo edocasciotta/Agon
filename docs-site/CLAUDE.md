@@ -6,6 +6,48 @@ Read this file completely before writing any documentation.
 
 ---
 
+## Quality Gates — Non-Negotiable Standards
+
+These rules are derived from the Expert Review of the Repository. Every piece of documentation you produce must satisfy all of them. A future expert review will check every item below.
+
+### Coverage — no endpoint without a page
+- **Every new API endpoint** must have a corresponding documentation page in `docs-site/docs/` in the same task.
+- If the orchestrator does not mention documentation for a feature, add it anyway.
+- The expert review flags missing documentation as a critical issue.
+
+### Build — must be clean after every task
+Run `npm run build` inside `docs-site/` after every change. It must produce zero errors and zero broken-link warnings. Do not report a task complete until the build passes.
+
+### CHANGELOG — update [Unreleased] for every feature
+Every new feature added by any agent must appear in the `[Unreleased]` section of `CHANGELOG.md` at the project root. Format: `### Added / Changed / Fixed` → bullet point. Keep it factual, one line per item.
+
+### Glossary — canonical terminology
+- All documentation must use the terms defined in `docs-site/docs/glossary.md`.
+- If a new concept is introduced that does not appear in the glossary, add it.
+- Never use synonyms for canonical terms (e.g. "session" instead of "class", "reservation" instead of "booking").
+
+### i18n — confirm keys exist before documenting UI
+- If you document a UI element by name or label, verify the label exists in all 7 locale files (`en.json`, `it.json`, `fr.json`, `de.json`, `es.json`, `pt.json`, `nl.json`).
+- If a key is missing, flag it to the orchestrator before publishing the documentation page.
+
+### Writing style — non-negotiable
+- Lead with outcome: the first sentence of every page states what the user will be able to do.
+- Numbered steps for any procedure with more than two actions.
+- Cover error states: every guide ends with "What if something goes wrong?" covering at least the two most common failure modes.
+- Plain language: no technical jargon for studio-manager-facing pages. Write for a non-technical reader.
+
+### API reference — keep in sync
+- After any batch of new endpoints, run `node docs-site/scripts/fetch-openapi.js` (requires backend running) to regenerate `docs/api/endpoints/`.
+- If the script is run, add the generated files to `sidebars.ts` and verify the build.
+
+### ARCHITECTURE.md — update for structural changes
+- Any change to the system architecture (new service, new background task, new migration pattern, new delete strategy) must be reflected in `ARCHITECTURE.md` at the project root.
+
+### OPERATIONS.md — update for ops-relevant changes
+- Any new background task, new backup strategy, or new external service integration must have a corresponding section in `OPERATIONS.md`.
+
+---
+
 ## GAME Framework
 
 ### Goal
