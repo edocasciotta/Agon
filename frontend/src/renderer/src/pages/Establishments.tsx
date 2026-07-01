@@ -235,7 +235,7 @@ export function EstablishmentsPage() {
                 value={formData.name}
                 onChange={(e) => setFormData((f) => ({ ...f, name: e.target.value }))}
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Studio Centro"
+                placeholder={t('establishments.namePlaceholder')}
               />
             </div>
 
@@ -247,7 +247,7 @@ export function EstablishmentsPage() {
               <AddressAutocomplete
                 value={formData.address}
                 onChange={(v) => setFormData((f) => ({ ...f, address: v }))}
-                placeholder="Via Roma 1, Milano"
+                placeholder={t('establishments.addressPlaceholder')}
               />
             </div>
 
@@ -365,8 +365,8 @@ export function EstablishmentsPage() {
 
       {/* Deactivate confirmation */}
       {confirmDeactivate && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-lg">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfirmDeactivate(null)}>
+          <div className="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-lg" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-sm font-semibold text-gray-900 mb-2">
               {t('establishments.deactivateConfirm')}
             </h3>
@@ -392,8 +392,8 @@ export function EstablishmentsPage() {
 
       {/* Remove confirmation */}
       {confirmRemove && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-lg">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfirmRemove(null)}>
+          <div className="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-lg" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-sm font-semibold text-gray-900 mb-2">
               {t('establishments.removeConfirm')}
             </h3>

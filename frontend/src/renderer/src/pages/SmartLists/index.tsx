@@ -45,8 +45,8 @@ function SmartListModal({ initial, title, onSave, onClose, saving }: SmartListMo
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-xl p-6 flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-xl p-6 flex flex-col gap-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>

@@ -153,6 +153,10 @@
     "cancelClass": "Cancelar clase",
     "cancelling": "Cancelando...",
     "cancelError": "Error al cancelar la clase. Por favor, inténtalo de nuevo.",
+    "cancelConfirmTitle": "¿Cancelar esta clase?",
+    "cancelConfirmBody": "Esta acción es irreversible. Todas las reservas serán canceladas y los créditos reembolsados.",
+    "cancelConfirmYes": "Sí, cancelar clase",
+    "cancelConfirmNo": "Mantener clase",
     "closePanel": "Cerrar",
     "instructor": "Instructor",
     "spots": "plazas",
@@ -161,7 +165,10 @@
     "allInstructors": "Todos los instructores",
     "allClassTypes": "Todos los tipos",
     "clearFilters": "Borrar filtros",
-    "editClass": "Edit"
+    "editClass": "Edit",
+    "zoom15m": "15 min",
+    "zoom30m": "30 min",
+    "zoom1h": "1 hora"
   },
   "classTypes": {
     "title": "Tipos de clase",
@@ -284,7 +291,8 @@
     "creating": "Creando...",
     "create": "Crear",
     "cancel": "Cancelar",
-    "emptyDescTypes": "Crea un plan de membresía para ofrecer a tus clientes."
+    "emptyDescTypes": "Crea un plan de membresía para ofrecer a tus clientes.",
+    "currencyPlaceholder": "EUR"
   },
   "reports": {
     "title": "Informes",
@@ -445,7 +453,9 @@
     "remove": "Eliminar",
     "removeConfirm": "¿Eliminar permanentemente este establecimiento?",
     "removeDesc": "Esta acción no se puede deshacer.",
-    "hasClasses": "No se puede eliminar: este establecimiento tiene clases programadas."
+    "hasClasses": "No se puede eliminar: este establecimiento tiene clases programadas.",
+    "namePlaceholder": "ej. Estudio Principal",
+    "addressPlaceholder": "Calle Mayor 1, Madrid"
   },
   "instructors": {
     "title": "Instructores",
@@ -473,7 +483,8 @@
     "remove": "Eliminar",
     "removeConfirm": "¿Eliminar permanentemente este instructor?",
     "removeDesc": "También se eliminará su cuenta de acceso. Esta acción no se puede deshacer.",
-    "hasClasses": "No se puede eliminar: este instructor tiene clases programadas."
+    "hasClasses": "No se puede eliminar: este instructor tiene clases programadas.",
+    "fullNamePlaceholder": "ej. María García"
   },
   "editModal": {
     "title": "Edit Class",

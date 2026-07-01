@@ -153,6 +153,10 @@
     "cancelClass": "Dersi iptal et",
     "cancelling": "İptal ediliyor...",
     "cancelError": "Ders iptal edilemedi. Lütfen tekrar deneyin.",
+    "cancelConfirmTitle": "Bu dersi iptal et?",
+    "cancelConfirmBody": "Bu işlem geri alınamaz. Tüm rezervasyonlar iptal edilecek ve krediler iade edilecektir.",
+    "cancelConfirmYes": "Evet, dersi iptal et",
+    "cancelConfirmNo": "Dersi koru",
     "closePanel": "Kapat",
     "instructor": "Eğitmen",
     "spots": "yer",
@@ -161,7 +165,10 @@
     "allInstructors": "Tüm Eğitmenler",
     "allClassTypes": "Tüm Ders Türleri",
     "clearFilters": "Filtreleri Temizle",
-    "editClass": "Edit"
+    "editClass": "Edit",
+    "zoom15m": "15 dk",
+    "zoom30m": "30 dk",
+    "zoom1h": "1 saat"
   },
   "classTypes": {
     "title": "Ders türleri",

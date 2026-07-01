@@ -8,14 +8,23 @@ import { locationsApi } from '../api/locations'
 import { classTemplatesApi } from '../api/classTemplates'
 import type { ScheduledClass, ClassTemplate } from '../types'
 
+function addMinutes(dateStr: string, timeStr: string, minutes: number): string {
+  const [h, m] = timeStr.split(':').map(Number)
+  const total = h * 60 + m + minutes
+  const endH = Math.floor(total / 60) % 24
+  const endM = total % 60
+  return `${dateStr}T${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}:00`
+}
+
 interface EditClassModalProps {
   isOpen: boolean
   onClose: () => void
   onSuccess: () => void
   editClass: ScheduledClass
+  onCancelClass?: () => void
 }
 
-export function EditClassModal({ isOpen, onClose, onSuccess, editClass }: EditClassModalProps) {
+export function EditClassModal({ isOpen, onClose, onSuccess, editClass, onCancelClass }: EditClassModalProps) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [apiError, setApiError] = useState<string | null>(null)
@@ -103,8 +112,7 @@ export function EditClassModal({ isOpen, onClose, onSuccess, editClass }: EditCl
     if (!validate()) return
 
     const starts_at = `${form.date}T${form.start_time}:00`
-    const endMs = new Date(starts_at).getTime() + form.duration_minutes * 60 * 1000
-    const ends_at = new Date(endMs).toISOString().slice(0, 19)
+    const ends_at = addMinutes(form.date, form.start_time, form.duration_minutes)
 
     updateMutation.mutate({
       instructor_id: form.instructor_id ? Number(form.instructor_id) : undefined,
@@ -119,8 +127,8 @@ export function EditClassModal({ isOpen, onClose, onSuccess, editClass }: EditCl
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 overflow-y-auto max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" onClick={onClose}>
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 overflow-y-auto max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">{t('editModal.title')}</h2>
@@ -244,21 +252,36 @@ export function EditClassModal({ isOpen, onClose, onSuccess, editClass }: EditCl
             </div>
 
             {/* Submit */}
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
-              >
-                {t('editModal.cancel')}
-              </button>
-              <button
-                type="submit"
-                disabled={updateMutation.isPending}
-                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 transition-colors"
-              >
-                {updateMutation.isPending ? t('editModal.saving') : t('editModal.saveChanges')}
-              </button>
+            <div className="flex items-center justify-between gap-2 pt-2">
+              {/* Cancel class — destructive, bottom left */}
+              {onCancelClass && editClass.status === 'scheduled' && (
+                <button
+                  type="button"
+                  onClick={onCancelClass}
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-700 border border-red-200 rounded-md hover:bg-red-50 transition-colors"
+                >
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                  </svg>
+                  {t('calendar.cancelClass')}
+                </button>
+              )}
+              <div className="flex gap-2 ml-auto">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                >
+                  {t('editModal.cancel')}
+                </button>
+                <button
+                  type="submit"
+                  disabled={updateMutation.isPending}
+                  className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                >
+                  {updateMutation.isPending ? t('editModal.saving') : t('editModal.saveChanges')}
+                </button>
+              </div>
             </div>
           </form>
         </div>

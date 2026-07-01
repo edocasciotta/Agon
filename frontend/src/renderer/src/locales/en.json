@@ -154,6 +154,10 @@
     "cancelClass": "Cancel Class",
     "cancelling": "Cancelling...",
     "cancelError": "Failed to cancel class. Please try again.",
+    "cancelConfirmTitle": "Cancel this class?",
+    "cancelConfirmBody": "This action is irreversible. All bookings will be cancelled and credits refunded.",
+    "cancelConfirmYes": "Yes, cancel class",
+    "cancelConfirmNo": "Keep class",
     "closePanel": "Close",
     "instructor": "Instructor",
     "spots": "spots",
@@ -161,7 +165,10 @@
     "allLocations": "All Locations",
     "allInstructors": "All Instructors",
     "allClassTypes": "All Class Types",
-    "clearFilters": "Clear filters"
+    "clearFilters": "Clear filters",
+    "zoom15m": "15 min",
+    "zoom30m": "30 min",
+    "zoom1h": "1 hour"
   },
   "editModal": {
     "title": "Edit Class",
@@ -292,7 +299,8 @@
     "creating": "Creating...",
     "create": "Create",
     "cancel": "Cancel",
-    "emptyDescTypes": "Create a membership plan to offer to your clients."
+    "emptyDescTypes": "Create a membership plan to offer to your clients.",
+    "currencyPlaceholder": "USD"
   },
   "reports": {
     "title": "Reports",
@@ -453,7 +461,9 @@
     "saveError": "Failed to save. Please try again.",
     "nameRequired": "Name is required.",
     "empty": "No establishments yet",
-    "emptyDesc": "Add your first studio location to get started."
+    "emptyDesc": "Add your first studio location to get started.",
+    "namePlaceholder": "e.g. Main Studio",
+    "addressPlaceholder": "1 Oxford Street, London"
   },
   "instructors": {
     "title": "Instructors",
@@ -481,6 +491,7 @@
     "passwordRequired": "Password is required (min 8 characters).",
     "empty": "No instructors yet",
     "emptyDesc": "Add your first instructor to start scheduling classes.",
-    "classesCount": "{{n}} classes this week"
+    "classesCount": "{{n}} classes this week",
+    "fullNamePlaceholder": "e.g. Jane Smith"
   }
 }

@@ -153,6 +153,10 @@
     "cancelClass": "Kurs absagen",
     "cancelling": "Absagen...",
     "cancelError": "Kurs konnte nicht abgesagt werden. Bitte versuchen Sie es erneut.",
+    "cancelConfirmTitle": "Diesen Kurs absagen?",
+    "cancelConfirmBody": "Diese Aktion ist unwiderruflich. Alle Buchungen werden storniert und Credits erstattet.",
+    "cancelConfirmYes": "Ja, Kurs absagen",
+    "cancelConfirmNo": "Kurs behalten",
     "closePanel": "Schließen",
     "instructor": "Kursleiter",
     "spots": "Plätze",
@@ -161,7 +165,10 @@
     "allInstructors": "Alle Kursleiter",
     "allClassTypes": "Alle Kurstypen",
     "clearFilters": "Filter zurücksetzen",
-    "editClass": "Edit"
+    "editClass": "Edit",
+    "zoom15m": "15 Min",
+    "zoom30m": "30 Min",
+    "zoom1h": "1 Std"
   },
   "classTypes": {
     "title": "Kurstypen",
@@ -284,7 +291,8 @@
     "creating": "Erstellen...",
     "create": "Erstellen",
     "cancel": "Abbrechen",
-    "emptyDescTypes": "Erstelle einen Mitgliedschaftsplan für deine Kunden."
+    "emptyDescTypes": "Erstelle einen Mitgliedschaftsplan für deine Kunden.",
+    "currencyPlaceholder": "EUR"
   },
   "reports": {
     "title": "Berichte",
@@ -445,7 +453,9 @@
     "remove": "Entfernen",
     "removeConfirm": "Diesen Standort dauerhaft entfernen?",
     "removeDesc": "Diese Aktion kann nicht rückgängig gemacht werden.",
-    "hasClasses": "Kann nicht entfernt werden: Dieser Standort hat geplante Kurse."
+    "hasClasses": "Kann nicht entfernt werden: Dieser Standort hat geplante Kurse.",
+    "namePlaceholder": "z. B. Hauptstudio",
+    "addressPlaceholder": "Hauptstraße 1, Berlin"
   },
   "instructors": {
     "title": "Kursleiter",
@@ -473,7 +483,8 @@
     "remove": "Entfernen",
     "removeConfirm": "Diesen Trainer dauerhaft entfernen?",
     "removeDesc": "Dies löscht auch das zugehörige Konto. Diese Aktion kann nicht rückgängig gemacht werden.",
-    "hasClasses": "Kann nicht entfernt werden: Dieser Trainer hat geplante Kurse."
+    "hasClasses": "Kann nicht entfernt werden: Dieser Trainer hat geplante Kurse.",
+    "fullNamePlaceholder": "z. B. Anna Müller"
   },
   "editModal": {
     "title": "Edit Class",

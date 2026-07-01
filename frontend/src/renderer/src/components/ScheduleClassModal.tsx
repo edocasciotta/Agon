@@ -17,6 +17,14 @@ interface ScheduleClassModalProps {
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
+function addMinutes(dateStr: string, timeStr: string, minutes: number): string {
+  const [h, m] = timeStr.split(':').map(Number)
+  const total = h * 60 + m + minutes
+  const endH = Math.floor(total / 60) % 24
+  const endM = total % 60
+  return `${dateStr}T${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}:00`
+}
+
 export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: ScheduleClassModalProps) {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<'single' | 'recurring'>('single')
@@ -169,8 +177,7 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
     if (!validateSingle()) return
 
     const starts_at = `${singleForm.date}T${singleForm.start_time}:00`
-    const endMs = new Date(starts_at).getTime() + singleForm.duration_minutes * 60 * 1000
-    const ends_at = new Date(endMs).toISOString().slice(0, 19)
+    const ends_at = addMinutes(singleForm.date, singleForm.start_time, singleForm.duration_minutes)
 
     singleMutation.mutate({
       template_id: Number(singleForm.template_id),
@@ -189,6 +196,7 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
     if (!validateRecurring()) return
 
     const first_starts_at = `${recurringForm.first_date}T${recurringForm.start_time}:00`
+    // ends_at is not sent for recurring; backend uses duration_minutes
 
     recurringMutation.mutate({
       template_id: Number(recurringForm.template_id),
@@ -215,8 +223,8 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 overflow-y-auto max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" onClick={onClose}>
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 overflow-y-auto max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">{t('scheduleModal.title')}</h2>

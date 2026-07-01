@@ -7,9 +7,6 @@ import de from './locales/de.json'
 import es from './locales/es.json'
 import pt from './locales/pt.json'
 import nl from './locales/nl.json'
-import pl from './locales/pl.json'
-import tr from './locales/tr.json'
-
 i18n.use(initReactI18next).init({
   resources: {
     en: { translation: en },
@@ -19,8 +16,6 @@ i18n.use(initReactI18next).init({
     es: { translation: es },
     pt: { translation: pt },
     nl: { translation: nl },
-    pl: { translation: pl },
-    tr: { translation: tr },
   },
   lng: 'en',
   fallbackLng: 'en',

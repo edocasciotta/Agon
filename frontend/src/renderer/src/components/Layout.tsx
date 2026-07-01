@@ -31,8 +31,6 @@ const LANGUAGES = [
   { code: 'es', label: 'Español', flag: '🇪🇸' },
   { code: 'pt', label: 'Português', flag: '🇵🇹' },
   { code: 'nl', label: 'Nederlands', flag: '🇳🇱' },
-  { code: 'pl', label: 'Polski', flag: '🇵🇱' },
-  { code: 'tr', label: 'Türkçe', flag: '🇹🇷' },
 ]
 
 export function Layout() {

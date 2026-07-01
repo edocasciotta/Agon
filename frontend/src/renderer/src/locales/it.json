@@ -154,6 +154,10 @@
     "cancelClass": "Cancella lezione",
     "cancelling": "Cancellazione...",
     "cancelError": "Impossibile cancellare la lezione. Riprova.",
+    "cancelConfirmTitle": "Annullare questa classe?",
+    "cancelConfirmBody": "Questa azione è irreversibile. Tutte le prenotazioni verranno annullate e i crediti rimborsati.",
+    "cancelConfirmYes": "Sì, annulla classe",
+    "cancelConfirmNo": "Mantieni classe",
     "closePanel": "Chiudi",
     "instructor": "Istruttore",
     "spots": "posti",
@@ -161,7 +165,10 @@
     "allLocations": "Tutte le sedi",
     "allInstructors": "Tutti gli istruttori",
     "allClassTypes": "Tutti i tipi",
-    "clearFilters": "Rimuovi filtri"
+    "clearFilters": "Rimuovi filtri",
+    "zoom15m": "15 min",
+    "zoom30m": "30 min",
+    "zoom1h": "1 ora"
   },
   "editModal": {
     "title": "Modifica lezione",
@@ -292,7 +299,8 @@
     "creating": "Creazione...",
     "create": "Crea",
     "cancel": "Annulla",
-    "emptyDescTypes": "Crea un piano di abbonamento da offrire ai tuoi clienti."
+    "emptyDescTypes": "Crea un piano di abbonamento da offrire ai tuoi clienti.",
+    "currencyPlaceholder": "EUR"
   },
   "reports": {
     "title": "Report",
@@ -453,7 +461,9 @@
     "remove": "Rimuovi",
     "removeConfirm": "Rimuovere definitivamente questo stabilimento?",
     "removeDesc": "Questa azione non può essere annullata.",
-    "hasClasses": "Impossibile rimuovere: questo stabilimento ha classi programmate."
+    "hasClasses": "Impossibile rimuovere: questo stabilimento ha classi programmate.",
+    "namePlaceholder": "es. Studio Centrale",
+    "addressPlaceholder": "Via Roma 1, Milano"
   },
   "instructors": {
     "title": "Istruttori",
@@ -481,6 +491,7 @@
     "remove": "Rimuovi",
     "removeConfirm": "Rimuovere definitivamente questo istruttore?",
     "removeDesc": "Verrà eliminato anche il suo account di accesso. Questa azione non può essere annullata.",
-    "hasClasses": "Impossibile rimuovere: questo istruttore ha classi programmate."
+    "hasClasses": "Impossibile rimuovere: questo istruttore ha classi programmate.",
+    "fullNamePlaceholder": "es. Sara Bianchi"
   }
 }

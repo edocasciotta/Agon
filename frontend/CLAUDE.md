@@ -291,6 +291,28 @@ Follow this order within each phase assigned by the orchestrator:
 
 ---
 
+## UX Conventions (enforced by user)
+
+These rules were established through iterative feedback and must be followed in all new work.
+
+### Modals
+- **Every modal must close when clicking outside it.** Pattern: `onClick={closeHandler}` on the backdrop (`fixed inset-0`) div, `onClick={(e) => e.stopPropagation()}` on the inner content div.
+- Confirmation dialogs for destructive actions (cancel class, delete, remove) must use a **red** confirm button (`bg-red-600`), not amber/yellow.
+- When a confirmation dialog opens on top of another modal, the underlying modal must **remain visible** so the user can return to it if they change their mind.
+
+### i18n
+- **No hardcoded placeholder text in components.** All `placeholder` values must use `t('namespace.key')`.
+- Placeholder text (example names, addresses, etc.) must be **culturally appropriate** for each locale — an English UI should not show Italian example names like "Sara Bianchi".
+- **Supported languages: EN, IT, FR, DE, ES, PT, NL** (7 languages). Polish (pl) and Turkish (tr) have been removed. Do not add them back.
+- When adding a new i18n key, always add it to all 7 locale files.
+
+### Calendar
+- **No right-side detail panel** — clicking a calendar event opens the edit modal directly.
+- The edit modal includes a "Cancel Class" button (bottom left, red border) that opens a confirm dialog while keeping the edit modal open underneath.
+- Event height is always proportional to duration (no minimum enforced for visual consistency).
+- Zoom controls (15m / 30m / 1h) are in the calendar header; default is 1h.
+- Hover tooltip is a custom React card (fixed position, white with shadow), never a native browser `title` attribute.
+
 ## When You Finish a Task
 
 1. Run `npm run test` and confirm all tests pass

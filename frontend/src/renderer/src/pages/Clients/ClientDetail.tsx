@@ -288,8 +288,8 @@ export function ClientDetail() {
 
       {/* Assign Membership Modal */}
       {showAssignModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50" onClick={() => { setShowAssignModal(false); setAssignError(null) }}>
+          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('clientDetail.assignMembershipTitle')}</h2>
             <div className="space-y-4">
               <div>

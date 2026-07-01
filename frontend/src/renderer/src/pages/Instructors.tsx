@@ -206,7 +206,7 @@ export function InstructorsPage() {
                   value={formData.full_name}
                   onChange={(e) => setFormData((f) => ({ ...f, full_name: e.target.value }))}
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="Sara Bianchi"
+                  placeholder={t('instructors.fullNamePlaceholder')}
                 />
                 {formErrors.full_name && (
                   <p className="text-xs text-red-500 mt-1">{formErrors.full_name}</p>
@@ -374,8 +374,8 @@ export function InstructorsPage() {
 
       {/* Remove confirmation dialog */}
       {confirmRemove && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-lg">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfirmRemove(null)}>
+          <div className="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-lg" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-sm font-semibold text-gray-900 mb-2">
               {t('instructors.removeConfirm')}
             </h3>
@@ -407,8 +407,8 @@ export function InstructorsPage() {
 
       {/* Deactivate confirmation dialog */}
       {confirmDeactivate && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-lg">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfirmDeactivate(null)}>
+          <div className="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-lg" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-sm font-semibold text-gray-900 mb-2">
               {t('instructors.deactivateConfirm')}
             </h3>

@@ -38,8 +38,8 @@ function TemplateModal({ initial, title, onSave, onClose, saving }: TemplateModa
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6 flex flex-col gap-4">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6 flex flex-col gap-4" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
@@ -260,8 +260,8 @@ export function EmailTemplatesPage() {
       )}
 
       {deleteTarget && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setDeleteTarget(null)}>
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
             <p className="text-gray-800 mb-4">{t('marketing.deleteConfirm')}</p>
             <div className="flex justify-end gap-2">
               <button

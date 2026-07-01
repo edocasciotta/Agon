@@ -153,6 +153,10 @@
     "cancelClass": "Annuler le cours",
     "cancelling": "Annulation...",
     "cancelError": "Échec de l'annulation du cours. Veuillez réessayer.",
+    "cancelConfirmTitle": "Annuler ce cours?",
+    "cancelConfirmBody": "Cette action est irréversible. Toutes les réservations seront annulées et les crédits remboursés.",
+    "cancelConfirmYes": "Oui, annuler le cours",
+    "cancelConfirmNo": "Conserver le cours",
     "closePanel": "Fermer",
     "instructor": "Instructeur",
     "spots": "places",
@@ -161,7 +165,10 @@
     "allInstructors": "Tous les instructeurs",
     "allClassTypes": "Tous les types",
     "clearFilters": "Effacer les filtres",
-    "editClass": "Edit"
+    "editClass": "Edit",
+    "zoom15m": "15 min",
+    "zoom30m": "30 min",
+    "zoom1h": "1 heure"
   },
   "classTypes": {
     "title": "Types de cours",
@@ -284,7 +291,8 @@
     "creating": "Création...",
     "create": "Créer",
     "cancel": "Annuler",
-    "emptyDescTypes": "Créez un plan d'abonnement à proposer à vos clients."
+    "emptyDescTypes": "Créez un plan d'abonnement à proposer à vos clients.",
+    "currencyPlaceholder": "EUR"
   },
   "reports": {
     "title": "Rapports",
@@ -445,7 +453,9 @@
     "remove": "Supprimer",
     "removeConfirm": "Supprimer définitivement cet établissement ?",
     "removeDesc": "Cette action est irréversible.",
-    "hasClasses": "Impossible de supprimer : cet établissement a des cours planifiés."
+    "hasClasses": "Impossible de supprimer : cet établissement a des cours planifiés.",
+    "namePlaceholder": "ex. Studio Principal",
+    "addressPlaceholder": "1 Rue de la Paix, Paris"
   },
   "instructors": {
     "title": "Instructeurs",
@@ -473,7 +483,8 @@
     "remove": "Supprimer",
     "removeConfirm": "Supprimer définitivement cet instructeur ?",
     "removeDesc": "Son compte sera également supprimé. Cette action est irréversible.",
-    "hasClasses": "Impossible de supprimer : cet instructeur a des cours planifiés."
+    "hasClasses": "Impossible de supprimer : cet instructeur a des cours planifiés.",
+    "fullNamePlaceholder": "ex. Marie Dupont"
   },
   "editModal": {
     "title": "Edit Class",

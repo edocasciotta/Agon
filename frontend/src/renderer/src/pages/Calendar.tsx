@@ -24,8 +24,21 @@ import type { ScheduledClass, ClassTemplate } from '../types'
 // Grid configuration
 const GRID_START = 7   // 7:00
 const GRID_END = 21    // 21:00
-const ROW_H = 56       // px per hour
 const HOURS = Array.from({ length: GRID_END - GRID_START }, (_, i) => i + GRID_START)
+
+type ZoomLevel = '1h' | '30m' | '15m'
+const ZOOM_ROW_H: Record<ZoomLevel, number> = { '1h': 56, '30m': 112, '15m': 224 }
+const ZOOM_SUBLINES: Record<ZoomLevel, number[]> = {
+  '1h': [],
+  '30m': [30],
+  '15m': [15, 30, 45],
+}
+
+interface TooltipState {
+  cls: ScheduledClass
+  x: number
+  y: number
+}
 
 function hexToRgb(hex: string) {
   const r = parseInt(hex.slice(1, 3), 16)
@@ -34,21 +47,25 @@ function hexToRgb(hex: string) {
   return `${r}, ${g}, ${b}`
 }
 
-function getEventTop(startsAt: string): number {
+function getEventTop(startsAt: string, rowH: number): number {
   const d = new Date(startsAt)
   const mins = d.getHours() * 60 + d.getMinutes()
-  return ((mins - GRID_START * 60) / 60) * ROW_H
+  return ((mins - GRID_START * 60) / 60) * rowH
 }
 
-function getEventHeight(startsAt: string, endsAt: string): number {
+function getEventHeight(startsAt: string, endsAt: string, rowH: number): number {
   const start = new Date(startsAt)
   const end = new Date(endsAt)
   const durationMins = (end.getTime() - start.getTime()) / 60000
-  return Math.max((durationMins / 60) * ROW_H, 24)
+  return Math.max((durationMins / 60) * rowH, 2)
 }
 
 function formatHour(h: number): string {
   return `${String(h).padStart(2, '0')}:00`
+}
+
+function formatSubHour(h: number, m: number): string {
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
 }
 
 export function CalendarPage() {
@@ -57,11 +74,15 @@ export function CalendarPage() {
   const gridRef = useRef<HTMLDivElement>(null)
 
   const [weekBase, setWeekBase] = useState(new Date())
-  const [selectedClass, setSelectedClass] = useState<ScheduledClass | null>(null)
-  const [actionError, setActionError] = useState<string | null>(null)
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false)
   const [scheduleDefaultDate, setScheduleDefaultDate] = useState<Date | undefined>()
   const [editModalClass, setEditModalClass] = useState<ScheduledClass | null>(null)
+  const [cancelConfirmId, setCancelConfirmId] = useState<number | null>(null)
+  const [zoom, setZoom] = useState<ZoomLevel>('1h')
+  const [tooltip, setTooltip] = useState<TooltipState | null>(null)
+
+  const rowH = ZOOM_ROW_H[zoom]
+  const subLines = ZOOM_SUBLINES[zoom]
 
   // Active filters
   const [filterLocation, setFilterLocation] = useState<number | null>(null)
@@ -105,27 +126,22 @@ export function CalendarPage() {
   const instructorMap: Record<number, string> = {}
   if (instructors) for (const ins of instructors) instructorMap[ins.id] = ins.full_name
 
-  // Scroll grid to 8:00 on mount
+  const locationMap: Record<number, string> = {}
+  if (locations) for (const loc of locations) locationMap[loc.id] = loc.name
+
+  // Scroll grid to 8:00 on mount and when zoom changes
   useEffect(() => {
     if (gridRef.current) {
-      gridRef.current.scrollTop = ROW_H
+      gridRef.current.scrollTop = rowH
     }
-  }, [])
+  }, [rowH])
 
   const cancelMutation = useMutation({
     mutationFn: (id: number) => classesApi.cancel(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['classes'] })
-      setSelectedClass(null)
-      setActionError(null)
     },
-    onError: () => setActionError(t('calendar.cancelError')),
   })
-
-  const handleSelectClass = (cls: ScheduledClass) => {
-    setSelectedClass(cls)
-    setActionError(null)
-  }
 
   const handleSlotClick = (day: Date, hour: number) => {
     const d = new Date(day)
@@ -185,6 +201,24 @@ export function CalendarPage() {
               >
                 ›
               </button>
+
+              {/* Zoom controls */}
+              <div className="flex items-center border border-gray-200 rounded-md overflow-hidden ml-2">
+                {(['15m', '30m', '1h'] as ZoomLevel[]).map((z) => (
+                  <button
+                    key={z}
+                    onClick={() => setZoom(z)}
+                    className={`px-2.5 py-1 text-xs font-medium transition-colors ${
+                      zoom === z
+                        ? 'bg-indigo-600 text-white'
+                        : 'text-gray-500 hover:bg-gray-100'
+                    }`}
+                    title={t(`calendar.zoom${z}`)}
+                  >
+                    {z}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Filter bar */}
@@ -260,16 +294,26 @@ export function CalendarPage() {
 
             {/* Scrollable time grid */}
             <div ref={gridRef} className="flex-1 overflow-y-auto">
-              <div className="flex" style={{ height: `${HOURS.length * ROW_H}px`, minHeight: `${HOURS.length * ROW_H}px` }}>
+              <div className="flex" style={{ height: `${HOURS.length * rowH}px`, minHeight: `${HOURS.length * rowH}px` }}>
                 {/* Time labels */}
                 <div className="w-11 flex-shrink-0 relative">
                   {HOURS.map((h) => (
-                    <div
-                      key={h}
-                      className="absolute w-full text-right pr-2"
-                      style={{ top: `${(h - GRID_START) * ROW_H - 8}px` }}
-                    >
-                      <span className="text-[10px] text-gray-400">{formatHour(h)}</span>
+                    <div key={h}>
+                      <div
+                        className="absolute w-full text-right pr-2"
+                        style={{ top: `${(h - GRID_START) * rowH - 8}px` }}
+                      >
+                        <span className="text-[10px] text-gray-400">{formatHour(h)}</span>
+                      </div>
+                      {subLines.map((m) => (
+                        <div
+                          key={`${h}-${m}`}
+                          className="absolute w-full text-right pr-2"
+                          style={{ top: `${(h - GRID_START) * rowH + (m / 60) * rowH - 7}px` }}
+                        >
+                          <span className="text-[9px] text-gray-300">{formatSubHour(h, m)}</span>
+                        </div>
+                      ))}
                     </div>
                   ))}
                 </div>
@@ -284,14 +328,22 @@ export function CalendarPage() {
                       key={day.toISOString()}
                       className="flex-1 relative border-l border-gray-100 first:border-l-0"
                     >
-                      {/* Hour lines */}
+                      {/* Hour lines + sub-lines */}
                       {HOURS.map((h) => (
-                        <div
-                          key={h}
-                          className="absolute left-0 right-0 border-t border-gray-100 cursor-pointer hover:bg-indigo-50/30 transition-colors"
-                          style={{ top: `${(h - GRID_START) * ROW_H}px`, height: `${ROW_H}px` }}
-                          onClick={() => handleSlotClick(day, h)}
-                        />
+                        <div key={h}>
+                          <div
+                            className="absolute left-0 right-0 border-t border-gray-100 cursor-pointer hover:bg-indigo-50/30 transition-colors"
+                            style={{ top: `${(h - GRID_START) * rowH}px`, height: `${rowH}px` }}
+                            onClick={() => handleSlotClick(day, h)}
+                          />
+                          {subLines.map((m) => (
+                            <div
+                              key={`${h}-${m}`}
+                              className="absolute left-0 right-0 border-t border-gray-50 pointer-events-none"
+                              style={{ top: `${(h - GRID_START) * rowH + (m / 60) * rowH}px` }}
+                            />
+                          ))}
+                        </div>
                       ))}
 
                       {/* Events */}
@@ -299,14 +351,18 @@ export function CalendarPage() {
                         const tpl = templateMap[cls.template_id]
                         const color = tpl?.color ?? '#4F46E5'
                         const rgb = hexToRgb(color)
-                        const isSelected = selectedClass?.id === cls.id
-                        const top = getEventTop(cls.starts_at)
-                        const height = getEventHeight(cls.starts_at, cls.ends_at)
+                        const top = getEventTop(cls.starts_at, rowH)
+                        const height = getEventHeight(cls.starts_at, cls.ends_at, rowH)
+                        const label = tpl?.name ?? `#${cls.id}`
+                        const showText = height >= 16
+                        const showSecondary = height >= 32
 
                         return (
                           <button
                             key={cls.id}
-                            onClick={(e) => { e.stopPropagation(); handleSelectClass(cls) }}
+                            onClick={(e) => { e.stopPropagation(); setEditModalClass(cls); setTooltip(null) }}
+                            onMouseEnter={(e) => setTooltip({ cls, x: e.clientX, y: e.clientY })}
+                            onMouseLeave={() => setTooltip(null)}
                             className="absolute left-1 right-1 rounded-md text-left transition-all overflow-hidden"
                             style={{
                               top: `${top}px`,
@@ -314,23 +370,23 @@ export function CalendarPage() {
                               background: `rgba(${rgb}, 0.12)`,
                               borderLeft: `3px solid ${color}`,
                               color: color,
-                              outline: isSelected ? `2px solid ${color}` : 'none',
-                              outlineOffset: '1px',
                             }}
                           >
-                            <div className="px-1.5 py-1">
-                              <div className="text-[11px] font-semibold leading-tight truncate">
-                                {tpl?.name ?? `#${cls.id}`}
-                              </div>
-                              {height >= 36 && (
-                                <div className="text-[10px] opacity-70 leading-tight truncate">
-                                  {format(new Date(cls.starts_at), 'HH:mm')}
-                                  {cls.instructor_id && instructorMap[cls.instructor_id]
-                                    ? ` · ${instructorMap[cls.instructor_id].split(' ')[0]}`
-                                    : ''}
+                            {showText && (
+                              <div className="px-1.5 py-0.5">
+                                <div className="text-[11px] font-semibold leading-tight truncate">
+                                  {label}
                                 </div>
-                              )}
-                            </div>
+                                {showSecondary && (
+                                  <div className="text-[10px] opacity-70 leading-tight truncate">
+                                    {format(new Date(cls.starts_at), 'HH:mm')}
+                                    {cls.instructor_id && instructorMap[cls.instructor_id]
+                                      ? ` · ${instructorMap[cls.instructor_id].split(' ')[0]}`
+                                      : ''}
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </button>
                         )
                       })}
@@ -341,119 +397,70 @@ export function CalendarPage() {
             </div>
           </div>
 
-          {/* ── Detail panel ── */}
-          {selectedClass && (() => {
-            const tpl = templateMap[selectedClass.template_id]
-            const color = tpl?.color ?? '#4F46E5'
-            const rgb = hexToRgb(color)
-            const instructorName = selectedClass.instructor_id
-              ? instructorMap[selectedClass.instructor_id]
-              : null
-            const locationName = locations?.find((l) => l.id === selectedClass.location_id)?.name
-
-            return (
-              <div className="w-60 flex-shrink-0 border border-gray-200 rounded-xl bg-white flex flex-col overflow-hidden">
-                {/* Color bar */}
-                <div className="h-1 w-full" style={{ background: color }} />
-
-                {/* Header */}
-                <div className="px-4 pt-3 pb-3 border-b border-gray-100">
-                  <div className="text-[10px] uppercase tracking-wider text-gray-400 mb-0.5">
-                    {t('calendar.statusLabel')}:{' '}
-                    <span
-                      className="font-semibold"
-                      style={{ color }}
-                    >
-                      {selectedClass.status}
-                    </span>
-                  </div>
-                  <h3 className="text-base font-semibold text-gray-900 leading-tight">
-                    {tpl?.name ?? `#${selectedClass.id}`}
-                  </h3>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    {format(new Date(selectedClass.starts_at), 'EEE d MMM · HH:mm')}
-                    {' – '}
-                    {format(new Date(selectedClass.ends_at), 'HH:mm')}
-                  </p>
-                </div>
-
-                {/* Info rows */}
-                <div className="px-4 py-3 flex flex-col gap-2.5 flex-1">
-                  {instructorName && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                      <span>{instructorName}</span>
-                    </div>
-                  )}
-                  {locationName && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      <span>{locationName}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    <span>
-                      {t('calendar.capacityLabel')}: {selectedClass.capacity}
-                    </span>
-                  </div>
-                  {selectedClass.notes && (
-                    <div className="text-xs text-gray-500 bg-gray-50 rounded-md px-2 py-1.5">
-                      {selectedClass.notes}
-                    </div>
-                  )}
-
-                  {actionError && (
-                    <div className="text-xs text-red-600 bg-red-50 rounded-md px-2 py-2 border border-red-100">
-                      {actionError}
-                    </div>
-                  )}
-                </div>
-
-                {/* Actions */}
-                <div className="px-3 pb-3 flex flex-col gap-2">
-                  {selectedClass.status === 'scheduled' && (
-                    <>
-                      <button
-                        onClick={() => { setEditModalClass(selectedClass); setSelectedClass(null); setActionError(null) }}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-indigo-200 text-indigo-700 hover:bg-indigo-50 transition-colors"
-                      >
-                        <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                        {t('calendar.editClass')}
-                      </button>
-                      <button
-                        onClick={() => cancelMutation.mutate(selectedClass.id)}
-                        disabled={cancelMutation.isPending}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-amber-200 text-amber-700 hover:bg-amber-50 disabled:opacity-50 transition-colors"
-                      >
-                        <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                        </svg>
-                        {cancelMutation.isPending ? t('calendar.cancelling') : t('calendar.cancelClass')}
-                      </button>
-                    </>
-                  )}
-                  <button
-                    onClick={() => { setSelectedClass(null); setActionError(null) }}
-                    className="w-full px-3 py-1.5 rounded-lg text-xs text-gray-500 hover:bg-gray-100 transition-colors"
-                  >
-                    {t('calendar.closePanel')}
-                  </button>
-                </div>
-              </div>
-            )
-          })()}
         </div>
       )}
+
+      {/* ── Hover tooltip ── */}
+      {tooltip && (() => {
+        const cls = tooltip.cls
+        const tpl = templateMap[cls.template_id]
+        const color = tpl?.color ?? '#4F46E5'
+        const instructorName = cls.instructor_id ? instructorMap[cls.instructor_id] : null
+        const locationName = cls.location_id ? locationMap[cls.location_id] : null
+
+        // Keep tooltip inside viewport horizontally
+        const tipW = 200
+        const x = tooltip.x + 12 + tipW > window.innerWidth
+          ? tooltip.x - tipW - 8
+          : tooltip.x + 12
+
+        return (
+          <div
+            className="fixed z-50 pointer-events-none"
+            style={{ left: x, top: tooltip.y - 8 }}
+          >
+            <div
+              className="bg-white rounded-lg shadow-lg border border-gray-200 p-3 w-50 text-xs"
+              style={{ width: tipW, borderLeft: `3px solid ${color}` }}
+            >
+              <div className="font-semibold text-gray-900 mb-1.5" style={{ color }}>
+                {tpl?.name ?? `#${cls.id}`}
+              </div>
+              <div className="space-y-1 text-gray-600">
+                <div className="flex items-center gap-1.5">
+                  <svg className="w-3 h-3 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {format(new Date(cls.starts_at), 'HH:mm')} – {format(new Date(cls.ends_at), 'HH:mm')}
+                </div>
+                {instructorName && (
+                  <div className="flex items-center gap-1.5">
+                    <svg className="w-3 h-3 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    {instructorName}
+                  </div>
+                )}
+                {locationName && (
+                  <div className="flex items-center gap-1.5">
+                    <svg className="w-3 h-3 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    {locationName}
+                  </div>
+                )}
+                <div className="flex items-center gap-1.5">
+                  <svg className="w-3 h-3 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  {t('calendar.capacityLabel')}: {cls.capacity}
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       <ScheduleClassModal
         isOpen={scheduleModalOpen}
@@ -468,7 +475,41 @@ export function CalendarPage() {
           onClose={() => setEditModalClass(null)}
           onSuccess={() => queryClient.invalidateQueries({ queryKey: ['classes'] })}
           editClass={editModalClass}
+          onCancelClass={() => setCancelConfirmId(editModalClass.id)}
         />
+      )}
+
+      {/* Cancel confirmation modal */}
+      {cancelConfirmId !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" onClick={() => setCancelConfirmId(null)}>
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-sm mx-4 p-6" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-base font-semibold text-gray-900 mb-2">
+              {t('calendar.cancelConfirmTitle')}
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              {t('calendar.cancelConfirmBody')}
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setCancelConfirmId(null)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+              >
+                {t('calendar.cancelConfirmNo')}
+              </button>
+              <button
+                onClick={() => {
+                  cancelMutation.mutate(cancelConfirmId)
+                  setCancelConfirmId(null)
+                  setEditModalClass(null)
+                }}
+                disabled={cancelMutation.isPending}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50 transition-colors"
+              >
+                {t('calendar.cancelConfirmYes')}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

@@ -153,6 +153,10 @@
     "cancelClass": "Les annuleren",
     "cancelling": "Annuleren...",
     "cancelError": "Les annuleren mislukt. Probeer het opnieuw.",
+    "cancelConfirmTitle": "Deze les annuleren?",
+    "cancelConfirmBody": "Deze actie is onomkeerbaar. Alle boekingen worden geannuleerd en tegoeden teruggestort.",
+    "cancelConfirmYes": "Ja, les annuleren",
+    "cancelConfirmNo": "Les behouden",
     "closePanel": "Sluiten",
     "instructor": "Instructeur",
     "spots": "plaatsen",
@@ -161,7 +165,10 @@
     "allInstructors": "Alle instructeurs",
     "allClassTypes": "Alle lestypen",
     "clearFilters": "Filters wissen",
-    "editClass": "Edit"
+    "editClass": "Edit",
+    "zoom15m": "15 min",
+    "zoom30m": "30 min",
+    "zoom1h": "1 uur"
   },
   "classTypes": {
     "title": "Lestypen",
@@ -284,7 +291,8 @@
     "creating": "Aanmaken...",
     "create": "Aanmaken",
     "cancel": "Annuleren",
-    "emptyDescTypes": "Maak een lidmaatschapsplan aan voor je klanten."
+    "emptyDescTypes": "Maak een lidmaatschapsplan aan voor je klanten.",
+    "currencyPlaceholder": "EUR"
   },
   "reports": {
     "title": "Rapporten",
@@ -445,7 +453,9 @@
     "remove": "Verwijderen",
     "removeConfirm": "Deze vestiging permanent verwijderen?",
     "removeDesc": "Deze actie kan niet ongedaan worden gemaakt.",
-    "hasClasses": "Kan niet verwijderen: deze vestiging heeft geplande lessen."
+    "hasClasses": "Kan niet verwijderen: deze vestiging heeft geplande lessen.",
+    "namePlaceholder": "bijv. Hoofdstudio",
+    "addressPlaceholder": "Damrak 1, Amsterdam"
   },
   "instructors": {
     "title": "Instructeurs",
@@ -473,7 +483,8 @@
     "remove": "Verwijderen",
     "removeConfirm": "Deze instructeur permanent verwijderen?",
     "removeDesc": "Het bijbehorende account wordt ook verwijderd. Deze actie kan niet ongedaan worden gemaakt.",
-    "hasClasses": "Kan niet verwijderen: deze instructeur heeft geplande lessen."
+    "hasClasses": "Kan niet verwijderen: deze instructeur heeft geplande lessen.",
+    "fullNamePlaceholder": "bijv. Anna de Vries"
   },
   "editModal": {
     "title": "Edit Class",

@@ -153,6 +153,10 @@
     "cancelClass": "Cancelar aula",
     "cancelling": "Cancelando...",
     "cancelError": "Falha ao cancelar a aula. Por favor, tente novamente.",
+    "cancelConfirmTitle": "Cancelar esta aula?",
+    "cancelConfirmBody": "Esta ação é irreversível. Todas as reservas serão canceladas e os créditos reembolsados.",
+    "cancelConfirmYes": "Sim, cancelar aula",
+    "cancelConfirmNo": "Manter aula",
     "closePanel": "Fechar",
     "instructor": "Instrutor",
     "spots": "vagas",
@@ -161,7 +165,10 @@
     "allInstructors": "Todos os instrutores",
     "allClassTypes": "Todos os tipos",
     "clearFilters": "Limpar filtros",
-    "editClass": "Edit"
+    "editClass": "Edit",
+    "zoom15m": "15 min",
+    "zoom30m": "30 min",
+    "zoom1h": "1 hora"
   },
   "classTypes": {
     "title": "Tipos de aula",
@@ -284,7 +291,8 @@
     "creating": "Criando...",
     "create": "Criar",
     "cancel": "Cancelar",
-    "emptyDescTypes": "Crie um plano de associação para oferecer aos seus clientes."
+    "emptyDescTypes": "Crie um plano de associação para oferecer aos seus clientes.",
+    "currencyPlaceholder": "EUR"
   },
   "reports": {
     "title": "Relatórios",
@@ -445,7 +453,9 @@
     "remove": "Remover",
     "removeConfirm": "Remover permanentemente este estabelecimento?",
     "removeDesc": "Esta ação não pode ser desfeita.",
-    "hasClasses": "Não é possível remover: este estabelecimento tem aulas agendadas."
+    "hasClasses": "Não é possível remover: este estabelecimento tem aulas agendadas.",
+    "namePlaceholder": "ex. Estúdio Principal",
+    "addressPlaceholder": "Rua Augusta 1, Lisboa"
   },
   "instructors": {
     "title": "Instrutores",
@@ -473,7 +483,8 @@
     "remove": "Remover",
     "removeConfirm": "Remover permanentemente este instrutor?",
     "removeDesc": "A conta de acesso também será excluída. Esta ação não pode ser desfeita.",
-    "hasClasses": "Não é possível remover: este instrutor tem aulas agendadas."
+    "hasClasses": "Não é possível remover: este instrutor tem aulas agendadas.",
+    "fullNamePlaceholder": "ex. Ana Silva"
   },
   "editModal": {
     "title": "Edit Class",
