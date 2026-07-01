@@ -1,4 +1,5 @@
 import axios, { type AxiosError } from 'axios'
+import { useAuthStore } from '../store/authStore'
 
 export interface ApiError {
   code: string
@@ -12,7 +13,7 @@ export const apiClient = axios.create({
 
 // Attach JWT token
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('agon_access_token')
+  const token = useAuthStore.getState().accessToken
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
@@ -24,9 +25,8 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError<{ detail: { error: ApiError } }>) => {
     if (error.response?.status === 401 && !error.config?.url?.includes('/auth/login')) {
-      localStorage.removeItem('agon_access_token')
-      localStorage.removeItem('agon_refresh_token')
-      window.location.href = '/login'
+      useAuthStore.getState().logout()
+      window.location.href = '/'
     }
     const apiError: ApiError = error.response?.data?.detail?.error ?? {
       code: 'SERVER_ERROR',

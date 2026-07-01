@@ -13,6 +13,9 @@ engine = create_engine(
 def set_sqlite_pragma(dbapi_connection, connection_record):
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.execute("PRAGMA journal_mode=WAL")
+    # NORMAL is safe with WAL and reduces fsync calls significantly
+    cursor.execute("PRAGMA synchronous=NORMAL")
     cursor.close()
 
 

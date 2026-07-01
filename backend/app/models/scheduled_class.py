@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, ForeignKey, Index, Integer, String
 from sqlalchemy.sql import func
 
 from app.database import Base
@@ -18,3 +18,6 @@ class ScheduledClass(Base):
     notes = Column(String)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
+    __table_args__ = (
+        Index("idx_class_starts_at_location_status", "starts_at", "location_id", "status"),
+    )

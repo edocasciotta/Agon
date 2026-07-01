@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, Integer, String, UniqueConstraint
 from sqlalchemy.sql import func
 
 from app.database import Base
@@ -16,4 +16,8 @@ class Booking(Base):
     credit_deducted = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
-    __table_args__ = (UniqueConstraint("client_id", "scheduled_class_id"),)
+    __table_args__ = (
+        UniqueConstraint("client_id", "scheduled_class_id"),
+        Index("idx_booking_class_status", "scheduled_class_id", "status"),
+        Index("idx_booking_client_status", "client_id", "status"),
+    )
