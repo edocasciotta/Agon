@@ -21,9 +21,7 @@ export function Login() {
     setLoading(true)
     try {
       const tokens = await authApi.login(email, password)
-      localStorage.setItem('agon_access_token', tokens.access_token)
-      localStorage.setItem('agon_refresh_token', tokens.refresh_token)
-      const user = await authApi.me()
+      const user = await authApi.me(tokens.access_token)
       setAuth(tokens.access_token, user)
       navigate('/dashboard', { replace: true })
     } catch (err) {
