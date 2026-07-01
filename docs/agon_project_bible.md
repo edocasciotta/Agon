@@ -107,7 +107,7 @@ The tunnel provider is abstracted in the codebase. Cloudflare Tunnel is the defa
 
 Every database record includes a `location_id` field from day one. This is forward-thinking: when multi-location support is added in a later release, there will be no need to rewrite the schema.
 
-The SQLite database is encrypted at rest. All traffic between client apps and the studio server uses HTTPS.
+The SQLite database is **not** encrypted at rest in V1. Encryption at rest via SQLCipher is planned for V2. All traffic between client apps and the studio server uses HTTPS.
 
 Nightly automatic backups save a copy of the database locally, keeping 30 days of history. Cloud backup to Google Drive or Dropbox is available as an opt-in step during onboarding — strongly recommended, never forced.
 

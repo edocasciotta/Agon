@@ -5,15 +5,70 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { spawn, ChildProcess } from 'child_process'
 
 let backendProcess: ChildProcess | null = null
+let isQuitting = false
+let restartAttempts = 0
+let backendReady = false
+const MAX_RESTART_ATTEMPTS = 3
+
+app.on('before-quit', () => {
+  isQuitting = true
+})
 
 function startBackend(): void {
+  console.log('[Electron] Starting backend process...')
+  let portConflict = false
+
   const backendPath = join(__dirname, '../../../backend')
   backendProcess = spawn('python3', ['-m', 'uvicorn', 'main:app', '--port', '8000', '--host', '127.0.0.1'], {
     cwd: backendPath,
     stdio: 'pipe'
   })
+
   backendProcess.stdout?.on('data', (data) => console.log('[Backend]', data.toString()))
-  backendProcess.stderr?.on('data', (data) => console.error('[Backend]', data.toString()))
+
+  backendProcess.stderr?.on('data', (data) => {
+    const text = data.toString()
+    console.error('[Backend]', text)
+    if (
+      text.toLowerCase().includes('address already in use') ||
+      text.toLowerCase().includes('error while attempting to bind')
+    ) {
+      portConflict = true
+    }
+  })
+
+  backendProcess.on('exit', (code) => {
+    console.log(`[Electron] Backend process exited with code ${code}`)
+
+    if (isQuitting) return
+
+    if (portConflict) {
+      dialog.showErrorBox(
+        'Agon — Port Conflict',
+        'Port 8000 is already in use. Please close the application using that port and restart Agon.'
+      )
+      app.quit()
+      return
+    }
+
+    if (backendReady && code !== 0) {
+      if (restartAttempts < MAX_RESTART_ATTEMPTS) {
+        restartAttempts++
+        const delayMs = Math.pow(2, restartAttempts - 1) * 1000 // 1s, 2s, 4s
+        console.log(`[Electron] Restarting backend (attempt ${restartAttempts}/${MAX_RESTART_ATTEMPTS})...`)
+        setTimeout(() => {
+          startBackend()
+        }, delayMs)
+      } else {
+        console.log('[Electron] Backend failed to restart after 3 attempts')
+        dialog.showErrorBox(
+          'Agon — Backend Error',
+          'The backend service has crashed repeatedly. Please restart Agon.'
+        )
+        app.quit()
+      }
+    }
+  })
 }
 
 function waitForBackend(maxWaitMs = 30000): Promise<void> {
@@ -23,6 +78,9 @@ function waitForBackend(maxWaitMs = 30000): Promise<void> {
       http
         .get('http://127.0.0.1:8000/health', (res) => {
           if (res.statusCode === 200) {
+            backendReady = true
+            restartAttempts = 0
+            console.log('[Electron] Backend ready')
             resolve()
           } else if (Date.now() - start < maxWaitMs) {
             setTimeout(attempt, 500)

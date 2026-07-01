@@ -868,7 +868,7 @@ SERVER_ERROR
 All passwords are hashed using bcrypt with a cost factor of 12. Plain text passwords are never stored or logged.
 
 ### 12.2 Database Encryption
-The SQLite database is encrypted using SQLCipher. The encryption key is derived from a secret generated at first installation and stored in the OS keychain (Windows Credential Manager, macOS Keychain, Linux Secret Service).
+The SQLite database is not encrypted at rest in V1. Encryption at rest via SQLCipher (with key stored in OS keychain) is planned for V2.
 
 ### 12.3 HTTPS
 All external traffic (between mobile app and studio server) passes through the Cloudflare Tunnel, which enforces HTTPS. Local traffic (between Electron and FastAPI on localhost) is HTTP — this is acceptable since it never leaves the machine.
