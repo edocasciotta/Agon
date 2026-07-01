@@ -7,7 +7,7 @@ ehthumbs.db
 Thumbs.db
 
 # Claude Code settings (local only)
-.claude/settings.local.json
+.claude/
 
 # Python virtualenvs
 backend/.venv/
@@ -32,6 +32,8 @@ backend/.env
 
 # Databases
 backend/agon.db
+backend/agon.db-shm
+backend/agon.db-wal
 backend/test_agon.db
 
 # Misc
