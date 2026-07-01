@@ -40,7 +40,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Run tests
-        run: npm test -- --run
+        run: npm test
 
   mobile-tests:
     name: Mobile Tests
@@ -58,4 +58,4 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Run tests
-        run: npm test -- --run
+        run: npm test -- --watchAll=false
