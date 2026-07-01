@@ -133,7 +133,30 @@ Agon never stores card numbers. Stripe handles all PCI-DSS scope.
 
 ---
 
-## 7. Monitoring Checklist
+## 7. Auto-Update
+
+> **Status:** auto-update is planned for V1.1. The current V1.0 release requires manual update (download and run the new installer as described in section 1).
+
+### Intended auto-update flow (V1.1)
+
+1. The Electron main process uses [`electron-updater`](https://www.electron.build/auto-update) to check for a new release on app startup.
+2. If a new version is available, the user sees a banner: *"A new version of Agon is available. Click to install and restart."*
+3. The installer is downloaded in the background (delta update for macOS/Windows).
+4. On user confirmation, the app quits, installs the update, and relaunches.
+5. On first launch after the update, Alembic migrations run automatically (`alembic upgrade head` is called by the FastAPI startup event). The user sees a brief "Migrating database…" message.
+
+### For developers (V1.1 implementation checklist)
+
+- [ ] Add `electron-updater` to `frontend/package.json`
+- [ ] Create `frontend/src/main/updater.ts` that calls `autoUpdater.checkForUpdatesAndNotify()` on app ready
+- [ ] Configure `electron-builder.yml` with `publish: { provider: "github", owner: "your-org", repo: "agon" }`
+- [ ] Sign builds (macOS: Developer ID certificate; Windows: code signing certificate)
+- [ ] Create a GitHub release with the built installer as an asset for the first auto-update test
+- [ ] Test: install old version → publish new release → verify update dialog appears within 24 h
+
+---
+
+## 8. Monitoring Checklist
 
 Run these checks weekly or after any update:
 

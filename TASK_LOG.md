@@ -506,18 +506,64 @@ Commits: `566547f` (E1/E2/E4/E5) · `bfb5278` (E3/E6)
 
 ---
 
-## Next Task
+---
 
-**Phase G — Documentation**
+## Improvement Plan — Phase G: Documentation (2026-07-01)
 
-- G2: OPERATIONS.md (runbook)
-- G3: ROADMAP.md
-- G4: CODE_OF_CONDUCT.md
-- G5: Auto-generate API reference (OpenAPI → MDX script)
-- G6: Glossary page in Docusaurus
-- G7: CHANGELOG.md
-*(G1 = ARCHITECTURE.md already completed in Phase D)*
+Commit: `78c8d39`
+
+- **G2 — OPERATIONS.md**: backup/restore, update, Cloudflare Tunnel, Stripe config, monitoring checklist, auto-update roadmap (section 7)
+- **G3 — ROADMAP.md**: V1.0 (current) → V1.1 → V2.0 → V3.0 product evolution
+- **G4 — CODE_OF_CONDUCT.md**: Contributor Covenant v2.1 full text
+- **G5 — docs-site/scripts/fetch-openapi.js**: generates per-tag Markdown pages from live `/openapi.json`
+- **G6 — docs-site/docs/glossary.md**: 15 canonical terms, added to Docusaurus sidebar
+- **G7 — CHANGELOG.md**: V1.0 full feature list + unreleased improvements in Keep a Changelog format
+- **H1 (partial) — CONTRIBUTING.md**: "Becoming a Co-Maintainer" section (criteria, responsibilities, process)
+- Docs site builds clean (EN + IT)
 
 ---
 
-*Last updated: 2026-07-01 — Phase F (developer experience) complete.*
+## Improvement Plan — Phase H: Long-term Sustainability (2026-07-01)
+
+### H1 — Co-maintainer documentation ✅
+Added "Becoming a Co-Maintainer" section to CONTRIBUTING.md (criteria, responsibilities, trial period process).
+
+### H2 — Mobile offline-first with React Query
+- `mobile/src/hooks/useNetworkStatus.ts`: polls studio `/health` every 30 s, updates `connectivityStore`
+- `mobile/src/components/OfflineBanner.tsx`: yellow banner shown when `isOnline === false`, includes last-seen timestamp
+- `mobile/src/store/pendingQueue.ts`: Zustand FIFO queue for `CREATE_BOOKING` / `CANCEL_BOOKING` operations
+- `mobile/app/_layout.tsx`: `NetworkWatcher` drains pending queue on reconnect; `DeepLinkHandler` handles deep links
+- `mobile/__tests__/store/pendingQueue.test.ts`: 6 tests (FIFO, CRUD, clear)
+- Mobile: **21 tests passing**
+
+### H3 — Mobile deep linking for notification taps
+- `app.json` already had `"scheme": "agon"` ✅
+- `DeepLinkHandler` in `_layout.tsx`: maps `agon://bookings/N` → `/bookings/N`, `agon://classes/N` → `/class/N`, `agon://waitlist/N` → `/bookings/waitlist/N`
+- Handles both cold-start (`Linking.getInitialURL()`) and foreground notification taps (`Notifications.addNotificationResponseReceivedListener`)
+
+### H4 — Electron auto-update documentation
+- `OPERATIONS.md` section 7: explains planned V1.1 auto-update flow (electron-updater, GitHub releases, Alembic migration on relaunch)
+- Implementation checklist for V1.1 contributors
+- Note: auto-update code itself is V1.1 scope (no electron-updater dependency in V1.0)
+
+### H5 — Storybook *(deferred to V1.1)*
+High effort, lower priority. Not blocked by anything else.
+
+---
+
+## Next Task
+
+**All 8 improvement plan phases complete (A–H).**
+
+Final state:
+- Backend: **212 tests**
+- Mobile: **21 tests**
+- Frontend: TypeScript clean, 35 Vitest tests, Playwright e2e scaffold
+- Docs site: build clean (EN + IT), glossary, ERD, OpenAPI script
+- Root: ARCHITECTURE.md, OPERATIONS.md, ROADMAP.md, CHANGELOG.md, CODE_OF_CONDUCT.md, CONTRIBUTING.md, Makefile, setup.sh/.ps1, .editorconfig, .devcontainer, PR template
+
+Next work should be user-driven (new features, V1.1 items from ROADMAP.md, or bug fixes).
+
+---
+
+*Last updated: 2026-07-01 — All improvement plan phases (A–H) complete.*
