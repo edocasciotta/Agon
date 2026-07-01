@@ -434,18 +434,90 @@ Backend: 130 tests | Frontend: 15 tests, 0 TS errors
 
 ---
 
-## Next Task
+---
 
-**All phases complete. The Agon V1 platform is fully built.**
+## Improvement Plan — Phase D: Database & Performance (2026-07-01)
 
-Current test counts:
-- Backend: **170 tests**
-- Frontend (desktop): build clean, 35 tests
-- Mobile: 9 tests
-- Docs site: build clean (9 languages)
+Commits: `ff79969` (migration fix + perf test) · `9f971e7` (ARCHITECTURE.md + ERD)
 
-No pending tasks. Next work should be user-driven (new features, bug fixes, or additional language support).
+### D1 — SQLite WAL mode
+Already present in `database.py`. Verified active (`PRAGMA journal_mode=WAL`, `PRAGMA synchronous=NORMAL`). ✅
+
+### D2+D5 — Composite indexes + migration fix
+Migration `086528153a55` had erroneous `op.drop_table('locations')` artifact. Fixed to only create/drop 4 composite indexes: `idx_booking_class_status`, `idx_booking_client_status`, `idx_membership_client_status`, `idx_class_starts_at_location_status`.
+
+Migration test `backend/tests/test_migrations.py`: verifies full upgrade (13 tables) and clean downgrade.
+
+### D3 — Performance tests
+`backend/tests/test_performance.py`: 500 clients, 1000 classes, 2000 bookings. Verifies list_classes, roster, booking creation all < 100 ms. Seed uses `i // 4` index to avoid UNIQUE constraint violations.
+
+### D4 — ARCHITECTURE.md
+Created at project root: system diagram, Mermaid startup sequence, transaction semantics, background task lifecycle, per-entity delete strategy table, GDPR flow.
+
+### D6 — Database ERD
+`docs-site/docs/api/database-schema.md`: 17-table Mermaid ERD + field descriptions + design notes. Added to Docusaurus sidebar.
 
 ---
 
-*Last updated: 2026-06-29 — Email templates, event assignments, Smart Lists.*
+## Improvement Plan — Phase E: Test Strategy (2026-07-01)
+
+Commits: `566547f` (E1/E2/E4/E5) · `bfb5278` (E3/E6)
+
+### E1 — IDOR / Authorization tests (security fix)
+`backend/tests/test_authorization.py` (12 tests). `require_manager`/`require_staff` in `auth.py` rewritten to check JWT role claim before DB lookup (403 for wrong role, 401 for missing user). `GET /clients` restricted to staff only.
+
+### E2 — Backup tests
+`backend/tests/test_backup.py` (6 tests). `app/backup.py` rewritten from stub to real SQLite file-copy implementation.
+
+### E3 — Playwright e2e scaffold
+`frontend/playwright.config.ts` + 4 spec files: `auth.spec.ts`, `clients.spec.ts`, `calendar.spec.ts`, `instructors.spec.ts`. API calls mocked via `page.route()`.
+
+### E4 — Load test
+`backend/tests/test_load.py`: 100 clients booking a capacity-50 class. Verifies exactly 50 confirmed, no overbooking.
+
+### E5 — Input validation tests
+`backend/tests/test_validation.py` (12 tests). Pydantic schemas updated with `Field(gt=0)`, `field_validator`, `model_validator`.
+
+### E6 — Mobile offline store
+`mobile/src/store/connectivityStore.ts` + 6 tests. `mobile/package.json` test script fixed (no `--passWithNoTests`).
+
+**State after Phase E: Backend 212 tests · Mobile 15 tests · Frontend typecheck clean · Docs build clean**
+
+---
+
+---
+
+## Improvement Plan — Phase F: Developer Experience (2026-07-01)
+
+### F1 — setup.sh + setup.ps1
+`setup.sh` (macOS/Linux) and `setup.ps1` (Windows): one-command full-repo setup. Creates Python venv, installs all deps, runs `alembic upgrade head`, installs npm deps for frontend/mobile/docs-site, creates `backend/.env` if missing.
+
+### F2 — Makefile
+`Makefile` at project root with targets: `setup`, `test` (all three suites), `test-backend/frontend/mobile`, `lint`, `format`, `build`, `docs`, `dev` (backend + frontend in parallel), `dev-backend/frontend/mobile/docs`, `clean`.
+
+### F3 — .editorconfig
+`.editorconfig` at project root: 2-space indent for TS/JS/JSON/YAML, 4-space for Python, tabs for Makefile, LF line endings, UTF-8, final newline.
+
+### F4 — PR template
+`.github/pull_request_template.md`: standard checklist covering tests, migrations, i18n keys, secrets, PII logging, TypeScript build, and security review.
+
+### F5 — VS Code Dev Container
+`.devcontainer/devcontainer.json`: Python 3.11 + Node 20 image, `postCreateCommand: bash setup.sh`, port forwarding (8000/5173/3000), VS Code extensions (Python, Ruff, ESLint, Prettier, Tailwind, dotenv).
+
+---
+
+## Next Task
+
+**Phase G — Documentation**
+
+- G2: OPERATIONS.md (runbook)
+- G3: ROADMAP.md
+- G4: CODE_OF_CONDUCT.md
+- G5: Auto-generate API reference (OpenAPI → MDX script)
+- G6: Glossary page in Docusaurus
+- G7: CHANGELOG.md
+*(G1 = ARCHITECTURE.md already completed in Phase D)*
+
+---
+
+*Last updated: 2026-07-01 — Phase F (developer experience) complete.*
