@@ -55,7 +55,8 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'API Reference',
       items: [
-        'api/overview'
+        'api/overview',
+        'api/database-schema'
       ]
     }
   ]
