@@ -71,6 +71,20 @@ def test_list_instructors(client, manager_auth_headers, created_instructor):
     assert any(i["email"] == "instructor@example.com" for i in data)
 
 
+def test_list_instructors_search(client, manager_auth_headers, created_instructor):
+    """GET /instructors?search=name → filtered by full_name or email"""
+    response = client.get("/api/v1/instructors?search=Jane", headers=manager_auth_headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert any(i["email"] == "instructor@example.com" for i in data)
+
+    response = client.get(
+        "/api/v1/instructors?search=nonexistent-name-zzz", headers=manager_auth_headers
+    )
+    assert response.status_code == 200
+    assert response.json() == []
+
+
 def test_get_instructor(client, manager_auth_headers, created_instructor):
     """GET /instructors/{id} → 200"""
     instructor_id = created_instructor["id"]

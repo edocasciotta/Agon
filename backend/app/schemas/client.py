@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel, EmailStr
 
@@ -49,3 +49,10 @@ class ClientListResponse(BaseModel):
     is_active: bool
     created_at: datetime
     model_config = {"from_attributes": True}
+
+
+class ClientListPage(BaseModel):
+    items: List[ClientListResponse]
+    total: int
+    page: int
+    page_size: int

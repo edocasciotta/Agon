@@ -9,8 +9,11 @@ import { LoadingSpinner } from '../../components/LoadingSpinner'
 import { ErrorMessage } from '../../components/ErrorMessage'
 import { PageHeader } from '../../components/PageHeader'
 import { EmptyState } from '../../components/EmptyState'
+import { Pagination } from '../../components/Pagination'
 import type { ApiError } from '../../api/client'
 import { clientSchema } from '../../lib/formSchemas'
+
+const PAGE_SIZE = 20
 
 export function ClientsPage() {
   const { t } = useTranslation()
@@ -18,22 +21,30 @@ export function ClientsPage() {
   const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const [prevSearch, setPrevSearch] = useState(debouncedSearch)
   const [showAddModal, setShowAddModal] = useState(false)
   const [form, setForm] = useState<ClientCreateData>({ full_name: '', email: '', phone: '' })
   const [formError, setFormError] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
   const [warnMsg, setWarnMsg] = useState<string | null>(null)
 
+  if (debouncedSearch !== prevSearch) {
+    setPrevSearch(debouncedSearch)
+    setPage(1)
+  }
+
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 300)
     return () => clearTimeout(timer)
   }, [search])
 
-  const { data: clients, isLoading, error } = useQuery({
-    queryKey: ['clients', debouncedSearch],
-    queryFn: () => clientsApi.list(debouncedSearch || undefined),
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['clients', debouncedSearch, page],
+    queryFn: () => clientsApi.list(debouncedSearch || undefined, page, PAGE_SIZE),
   })
 
+  const clients = data?.items
   const apiError = error as ApiError | null
 
   const createMutation = useMutation({
@@ -82,9 +93,9 @@ export function ClientsPage() {
     <div>
       <PageHeader
         title={t('clients.title')}
-        subtitle={clients && clients.length > 0 ? `${clients.length} ${t('clients.title').toLowerCase()}` : undefined}
+        subtitle={data && data.total > 0 ? `${data.total} ${t('clients.title').toLowerCase()}` : undefined}
         action={
-          clients && clients.length > 0 ? (
+          data && data.total > 0 ? (
             <button
               onClick={() => setShowAddModal(true)}
               className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors"
@@ -95,7 +106,7 @@ export function ClientsPage() {
         }
       />
 
-      {(clients === undefined || clients.length > 0 || debouncedSearch) && (
+      {(data === undefined || data.total > 0 || debouncedSearch) && (
         <div className="mb-4">
           <input
             type="text"
@@ -110,7 +121,7 @@ export function ClientsPage() {
       {isLoading && <LoadingSpinner />}
       {apiError && <ErrorMessage code={apiError.code} message={apiError.message} />}
 
-      {clients && clients.length === 0 && !debouncedSearch && (
+      {data && data.total === 0 && !debouncedSearch && (
         <EmptyState
           icon={
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
@@ -124,7 +135,8 @@ export function ClientsPage() {
         />
       )}
 
-      {clients && (clients.length > 0 || debouncedSearch) && (
+      {clients && data && (data.total > 0 || debouncedSearch) && (
+        <>
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -168,6 +180,8 @@ export function ClientsPage() {
             </tbody>
           </table>
         </div>
+        <Pagination page={page} pageSize={PAGE_SIZE} total={data.total} onPage={setPage} />
+        </>
       )}
 
       {/* Add Client Modal */}

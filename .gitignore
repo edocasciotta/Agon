@@ -44,3 +44,7 @@ htmlcov/
 # Runtime-generated directories
 backend/backups/
 backend/uploads/
+
+# Fine-tuning artifacts (regenerable)
+training/output/
+vendor/

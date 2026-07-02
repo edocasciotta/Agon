@@ -178,7 +178,7 @@ export function Dashboard() {
 
   const { data: instructors } = useQuery({
     queryKey: ['instructors'],
-    queryFn: instructorsApi.list,
+    queryFn: () => instructorsApi.list(),
   })
 
   const { data: locations } = useQuery({
@@ -187,8 +187,8 @@ export function Dashboard() {
   })
 
   const { data: clients, isLoading: clientsLoading } = useQuery({
-    queryKey: ['clients'],
-    queryFn: () => clientsApi.list(),
+    queryKey: ['clients', 'dashboard'],
+    queryFn: () => clientsApi.list(undefined, 1, 100),
   })
 
   const { data: membershipsReport, isLoading: membershipsLoading } = useQuery({
@@ -219,8 +219,8 @@ export function Dashboard() {
   const weekScheduled = (allClasses ?? []).filter((c) => c.status === 'scheduled').length
   const weekCancelled = (allClasses ?? []).filter((c) => c.status === 'cancelled').length
 
-  // New clients this month
-  const newClientsThisMonth = (clients ?? []).filter((c: any) => {
+  // New clients this month (based on the most recent 100 clients)
+  const newClientsThisMonth = (clients?.items ?? []).filter((c: any) => {
     if (!c.created_at) return false
     const d = new Date(c.created_at)
     return d >= startOfMonth(now) && d <= endOfMonth(now)
@@ -249,7 +249,7 @@ export function Dashboard() {
         <KpiCard
           icon={Users}
           label={t('dashboard.totalClients')}
-          value={clients?.length ?? '—'}
+          value={clients?.total ?? '—'}
           sub={newClientsThisMonth > 0 ? t('dashboard.newThisMonth').replace('{{n}}', String(newClientsThisMonth)) : undefined}
           accentClass="bg-blue-400"
           iconBg="#E6F1FB"

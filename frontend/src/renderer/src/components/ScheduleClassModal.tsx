@@ -78,7 +78,7 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
 
   const { data: instructors = [] } = useQuery({
     queryKey: ['instructors'],
-    queryFn: instructorsApi.list,
+    queryFn: () => instructorsApi.list(),
     enabled: isOpen,
   })
 

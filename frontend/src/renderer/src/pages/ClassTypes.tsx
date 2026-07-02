@@ -48,7 +48,7 @@ export function ClassTypesPage() {
 
   const { data: instructors = [] } = useQuery({
     queryKey: ['instructors'],
-    queryFn: instructorsApi.list,
+    queryFn: () => instructorsApi.list(),
   })
 
   const createMutation = useMutation({

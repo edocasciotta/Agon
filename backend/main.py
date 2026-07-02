@@ -5,8 +5,9 @@ from app.database import create_tables
 from app.limiter import limiter
 from app.logging_config import configure_logging
 from app.routers import (
-    auth as auth_router,
+    agent,
 )
+from app.routers import auth as auth_router
 from app.routers import (
     bookings,
     checkins,
@@ -115,6 +116,7 @@ app.include_router(email_templates.router)
 app.include_router(email_events.router)
 app.include_router(smart_lists.router)
 app.include_router(locations.router)
+app.include_router(agent.router)
 
 
 @app.get("/health")

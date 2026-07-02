@@ -9,7 +9,13 @@
     "close": "Fechar suporte",
     "open": "Abrir suporte",
     "greeting": "Olá! Como posso ajudá-lo com o Agon? Pode perguntar-me sobre aulas, clientes, associações, reservas, check-ins, relatórios ou definições.",
-    "emptyHint": "Faça-me uma pergunta sobre o Agon."
+    "emptyHint": "Faça-me uma pergunta sobre o Agon.",
+    "agentModeLabel": "Modo de ações",
+    "agentPlaceholder": "Ex. Crie uma aula na próxima quarta-feira em Milão com Elena, 1 hora...",
+    "actionExecuted": "Ação concluída",
+    "deleteSession": "Excluir sessão",
+    "contextUsed": "{{used}} / {{max}} tokens",
+    "contextNearLimit": "Contexto quase cheio — inicie um novo chat para continuar."
   },
   "nav": {
     "dashboard": "Painel",
@@ -443,6 +449,7 @@
   "establishments": {
     "title": "Estabelecimentos",
     "subtitle": "Gerencie as sedes do seu estúdio",
+    "searchPlaceholder": "Buscar por nome...",
     "add": "+ Adicionar sede",
     "addTitle": "Novo Estabelecimento",
     "editTitle": "Editar Estabelecimento",
@@ -461,11 +468,13 @@
     "removeDesc": "Esta ação não pode ser desfeita.",
     "hasClasses": "Não é possível remover: este estabelecimento tem aulas agendadas.",
     "namePlaceholder": "ex. Estúdio Principal",
-    "addressPlaceholder": "Rua Augusta 1, Lisboa"
+    "addressPlaceholder": "Rua Augusta 1, Lisboa",
+    "noResults": "Nenhum estabelecimento corresponde à sua pesquisa."
   },
   "instructors": {
     "title": "Instrutores",
     "subtitle": "Gerencie seu corpo docente",
+    "searchPlaceholder": "Buscar por nome o email...",
     "add": "+ Adicionar instrutor",
     "addTitle": "Novo Instrutor",
     "editTitle": "Editar Instrutor",
@@ -491,7 +500,8 @@
     "removeDesc": "A conta de acesso também será excluída. Esta ação não pode ser desfeita.",
     "hasClasses": "Não é possível remover: este instrutor tem aulas agendadas.",
     "fullNamePlaceholder": "ex. Ana Silva",
-    "emailPlaceholder": "ex. jane@studio.com"
+    "emailPlaceholder": "ex. jane@studio.com",
+    "noResults": "Nenhum instrutor corresponde à sua pesquisa."
   },
   "editModal": {
     "title": "Edit Class",
