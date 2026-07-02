@@ -1,13 +1,34 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n'
-import { supportApi, type ChatMessage } from '../api/support'
+import type { ChatMessage } from '../api/support'
+import { agentApi, type AgentDraft, type AgentUsage } from '../api/agent'
 import { LoadingSpinner } from './LoadingSpinner'
+import {
+  MessageCircle,
+  X,
+  Trash2,
+  Plus,
+  Send,
+  Bot,
+  CheckCircle2,
+} from 'lucide-react'
+
+interface DisplayMessage extends ChatMessage {
+  actionType?: string
+}
+
+const CONTEXT_WINDOW_TOKENS = 128_000 // llama-3.3-70b-versatile
 
 interface ChatSession {
   id: string
   title: string
-  messages: ChatMessage[]
+  messages: DisplayMessage[]
+  lastUsage: AgentUsage | null
+}
+
+function toApiMessages(messages: DisplayMessage[]): ChatMessage[] {
+  return messages.map((m) => ({ role: m.role, content: m.content }))
 }
 
 const STORAGE_KEY = 'agon-chat-sessions'
@@ -17,7 +38,7 @@ function generateId(): string {
 }
 
 function createEmptySession(): ChatSession {
-  return { id: generateId(), title: 'New Chat', messages: [] }
+  return { id: generateId(), title: 'New Chat', messages: [], lastUsage: null }
 }
 
 function loadSessions(): ChatSession[] {
@@ -45,11 +66,21 @@ export function SupportChat() {
   const { t } = useTranslation()
 
   const [isOpen, setIsOpen] = useState(false)
-  const [sessions, setSessions] = useState<ChatSession[]>(loadSessions)
-  const [activeSessionId, setActiveSessionId] = useState<string>(() => loadSessions()[0].id)
+  const [{ initialSessions, initialActiveId }] = useState(() => {
+    const saved = loadSessions()
+    if (saved[0] && saved[0].messages.length === 0) {
+      return { initialSessions: saved, initialActiveId: saved[0].id }
+    }
+    const fresh = createEmptySession()
+    return { initialSessions: [fresh, ...saved], initialActiveId: fresh.id }
+  })
+  const [sessions, setSessions] = useState<ChatSession[]>(initialSessions)
+  const [activeSessionId, setActiveSessionId] = useState<string>(initialActiveId)
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [agentDraft, setAgentDraft] = useState<AgentDraft | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const activeSession = sessions.find((s) => s.id === activeSessionId) ?? sessions[0]
 
@@ -58,8 +89,9 @@ export function SupportChat() {
   }, [sessions])
 
   useEffect(() => {
-    if (isOpen && messagesEndRef.current?.scrollIntoView) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
+    if (isOpen) {
+      messagesEndRef.current?.scrollIntoView?.({ behavior: 'smooth' })
+      requestAnimationFrame(() => inputRef.current?.focus())
     }
   }, [activeSession?.messages, isOpen])
 
@@ -72,9 +104,11 @@ export function SupportChat() {
     setSessions((prev) => [newSession, ...prev])
     setActiveSessionId(newSession.id)
     setInputValue('')
+    setAgentDraft(null)
   }
 
   const handleDeleteSession = (id: string) => {
+    if (activeSessionId === id) setAgentDraft(null)
     setSessions((prev) => {
       const next = prev.filter((s) => s.id !== id)
       if (next.length === 0) {
@@ -106,10 +140,15 @@ export function SupportChat() {
     setIsLoading(true)
 
     try {
-      const response = await supportApi.chat(updatedMessages, i18n.language)
+      const response = await agentApi.act(toApiMessages(updatedMessages), i18n.language, agentDraft)
+      setAgentDraft(response.action ? null : response.draft)
       updateSession(activeSession.id, (s) => ({
         ...s,
-        messages: [...s.messages, { role: 'assistant', content: response.reply }],
+        lastUsage: response.usage ?? s.lastUsage,
+        messages: [
+          ...s.messages,
+          { role: 'assistant', content: response.reply, actionType: response.action?.type },
+        ],
       }))
     } catch {
       updateSession(activeSession.id, (s) => ({
@@ -121,6 +160,7 @@ export function SupportChat() {
       }))
     } finally {
       setIsLoading(false)
+      requestAnimationFrame(() => inputRef.current?.focus())
     }
   }
 
@@ -134,14 +174,15 @@ export function SupportChat() {
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
       {isOpen && (
-        <div className="mb-3 flex w-[540px] h-[520px] bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
+        <div className="mb-3 flex w-[560px] h-[520px] bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
           {/* Sidebar */}
-          <div className="w-[160px] flex flex-col border-r border-gray-200 bg-gray-50">
-            <div className="p-2 border-b border-gray-200">
+          <div className="w-[164px] flex flex-col border-r border-gray-100 bg-gray-50/60">
+            <div className="p-2.5 border-b border-gray-100">
               <button
                 onClick={handleNewChat}
-                className="w-full px-2 py-1.5 text-xs font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
               >
+                <Plus size={13} strokeWidth={2} />
                 {t('support.newChat')}
               </button>
             </div>
@@ -149,16 +190,21 @@ export function SupportChat() {
               {sessions.map((session) => (
                 <div
                   key={session.id}
-                  className={`group flex items-center gap-1 px-2 py-2 cursor-pointer hover:bg-gray-100 border-b border-gray-100 ${
-                    session.id === activeSessionId ? 'bg-indigo-50' : ''
+                  className={`group flex items-center gap-1.5 px-2.5 py-2 cursor-pointer border-b border-gray-100/60 transition-colors ${
+                    session.id === activeSessionId
+                      ? 'bg-white border-l-2 border-l-indigo-400'
+                      : 'hover:bg-gray-100/60'
                   }`}
-                  onClick={() => setActiveSessionId(session.id)}
+                  onClick={() => {
+                    setActiveSessionId(session.id)
+                    setAgentDraft(null)
+                  }}
                 >
                   <span
                     className={`flex-1 text-xs truncate ${
                       session.id === activeSessionId
-                        ? 'text-indigo-700 font-medium'
-                        : 'text-gray-600'
+                        ? 'text-gray-900 font-medium'
+                        : 'text-gray-500'
                     }`}
                   >
                     {session.title}
@@ -168,10 +214,10 @@ export function SupportChat() {
                       e.stopPropagation()
                       handleDeleteSession(session.id)
                     }}
-                    className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all text-xs leading-none"
-                    aria-label="Delete session"
+                    className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition-all"
+                    aria-label={t('support.deleteSession')}
                   >
-                    🗑
+                    <Trash2 size={12} strokeWidth={1.75} />
                   </button>
                 </div>
               ))}
@@ -181,25 +227,63 @@ export function SupportChat() {
           {/* Chat area */}
           <div className="flex-1 flex flex-col">
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-indigo-600 text-white">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">💬</span>
-                <span className="font-semibold text-sm">{t('support.title')}</span>
+            <div className="border-b border-gray-100">
+              <div className="flex items-center justify-between px-4 py-2.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-indigo-50">
+                    <Bot size={15} strokeWidth={1.75} className="text-indigo-600" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-900">{t('support.title')}</span>
+                </div>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  aria-label={t('support.close')}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                >
+                  <X size={15} strokeWidth={1.75} />
+                </button>
               </div>
-              <button
-                onClick={() => setIsOpen(false)}
-                aria-label={t('support.close')}
-                className="text-indigo-200 hover:text-white transition-colors text-lg leading-none"
-              >
-                ✕
-              </button>
+              {/* Token usage bar */}
+              {activeSession?.lastUsage && (() => {
+                const used = activeSession.lastUsage.prompt_tokens
+                const pct = Math.min((used / CONTEXT_WINDOW_TOKENS) * 100, 100)
+                const color =
+                  pct >= 80 ? 'bg-red-400' : pct >= 50 ? 'bg-amber-400' : 'bg-indigo-400'
+                return (
+                  <div className="px-4 pb-2">
+                    <div className="flex items-center justify-between mb-0.5">
+                      <span className="text-[10px] text-gray-400">
+                        {t('support.contextUsed', {
+                          used: used.toLocaleString(),
+                          max: (CONTEXT_WINDOW_TOKENS / 1000).toFixed(0) + 'K',
+                        })}
+                      </span>
+                      <span className="text-[10px] text-gray-400">{pct.toFixed(0)}%</span>
+                    </div>
+                    <div className="h-1 w-full bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all ${color}`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    {pct >= 80 && (
+                      <p className="text-[10px] text-amber-600 mt-0.5">
+                        {t('support.contextNearLimit')}
+                      </p>
+                    )}
+                  </div>
+                )
+              })()}
             </div>
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {activeSession?.messages.length === 0 && (
-                <div className="flex items-center justify-center h-full">
-                  <p className="text-xs text-gray-400 text-center px-4">
+                <div className="flex flex-col items-center justify-center h-full gap-2">
+                  <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
+                    <MessageCircle size={18} strokeWidth={1.5} className="text-gray-300" />
+                  </div>
+                  <p className="text-xs text-gray-400 text-center px-6 leading-relaxed">
                     {t('support.emptyHint')}
                   </p>
                 </div>
@@ -210,12 +294,20 @@ export function SupportChat() {
                   className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[80%] px-3 py-2 rounded-xl text-sm leading-relaxed ${
+                    className={`max-w-[80%] px-3 py-2 text-sm leading-relaxed ${
                       msg.role === 'user'
-                        ? 'bg-indigo-600 text-white rounded-br-sm'
-                        : 'bg-gray-100 text-gray-800 rounded-bl-sm'
+                        ? 'bg-indigo-600 text-white rounded-xl rounded-br-sm'
+                        : msg.actionType
+                          ? 'bg-emerald-50 text-emerald-900 border border-emerald-100 rounded-xl rounded-bl-sm'
+                          : 'bg-gray-100 text-gray-800 rounded-xl rounded-bl-sm'
                     }`}
                   >
+                    {msg.actionType && (
+                      <div className="flex items-center gap-1 text-xs font-medium text-emerald-600 mb-1">
+                        <CheckCircle2 size={12} strokeWidth={2} />
+                        {t('support.actionExecuted')}
+                      </div>
+                    )}
                     {msg.content}
                   </div>
                 </div>
@@ -231,22 +323,24 @@ export function SupportChat() {
             </div>
 
             {/* Input area */}
-            <div className="px-3 py-3 border-t border-gray-200 flex gap-2">
+            <div className="px-3 py-2.5 border-t border-gray-100 flex gap-2">
               <input
+                ref={inputRef}
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={t('support.placeholder')}
                 disabled={isLoading}
-                className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:opacity-50"
+                className="flex-1 px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-400 focus:border-indigo-400 focus:bg-white disabled:opacity-50 transition-all"
               />
               <button
                 onClick={() => void handleSend()}
                 disabled={!inputValue.trim() || isLoading}
-                className="px-3 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                aria-label={t('support.send')}
+                className="w-9 h-9 flex items-center justify-center bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex-shrink-0"
               >
-                {t('support.send')}
+                <Send size={15} strokeWidth={1.75} />
               </button>
             </div>
           </div>
@@ -257,9 +351,13 @@ export function SupportChat() {
       <button
         onClick={() => setIsOpen((prev) => !prev)}
         aria-label={isOpen ? t('support.close') : t('support.open')}
-        className="w-14 h-14 rounded-full bg-indigo-600 text-white shadow-lg hover:bg-indigo-700 transition-colors flex items-center justify-center text-2xl"
+        className="w-12 h-12 rounded-xl bg-indigo-600 text-white shadow-lg hover:bg-indigo-700 transition-all flex items-center justify-center hover:shadow-xl"
       >
-        {isOpen ? '✕' : '💬'}
+        {isOpen ? (
+          <X size={18} strokeWidth={1.75} />
+        ) : (
+          <MessageCircle size={18} strokeWidth={1.75} />
+        )}
       </button>
     </div>
   )

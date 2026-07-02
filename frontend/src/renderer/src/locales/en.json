@@ -9,7 +9,13 @@
     "close": "Close support chat",
     "open": "Open support chat",
     "greeting": "Hello! How can I help you with Agon today? You can ask me about classes, clients, memberships, bookings, check-ins, reports, or settings.",
-    "emptyHint": "Ask me anything about Agon."
+    "emptyHint": "Ask me anything about Agon.",
+    "agentModeLabel": "Action mode",
+    "agentPlaceholder": "e.g. Create a class next Wednesday at Milano with Elena, 1 hour...",
+    "actionExecuted": "Action completed",
+    "deleteSession": "Delete session",
+    "contextUsed": "{{used}} / {{max}} tokens",
+    "contextNearLimit": "Context almost full — start a new chat to continue."
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -451,6 +457,7 @@
   "establishments": {
     "title": "Establishments",
     "subtitle": "Manage your studio locations",
+    "searchPlaceholder": "Search by name...",
     "add": "+ Add Establishment",
     "addTitle": "New Establishment",
     "editTitle": "Edit Establishment",
@@ -469,11 +476,13 @@
     "empty": "No establishments yet",
     "emptyDesc": "Add your first studio location to get started.",
     "namePlaceholder": "e.g. Main Studio",
-    "addressPlaceholder": "1 Oxford Street, London"
+    "addressPlaceholder": "1 Oxford Street, London",
+    "noResults": "No establishments match your search."
   },
   "instructors": {
     "title": "Instructors",
     "subtitle": "Manage your teaching staff",
+    "searchPlaceholder": "Search by name or email...",
     "add": "+ Add Instructor",
     "addTitle": "New Instructor",
     "editTitle": "Edit Instructor",
@@ -499,6 +508,7 @@
     "emptyDesc": "Add your first instructor to start scheduling classes.",
     "classesCount": "{{n}} classes this week",
     "fullNamePlaceholder": "e.g. Jane Smith",
-    "emailPlaceholder": "e.g. jane@studio.com"
+    "emailPlaceholder": "e.g. jane@studio.com",
+    "noResults": "No instructors match your search."
   }
 }

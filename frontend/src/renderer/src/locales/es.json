@@ -9,7 +9,13 @@
     "close": "Cerrar soporte",
     "open": "Abrir soporte",
     "greeting": "¡Hola! ¿Cómo puedo ayudarte con Agon? Puedes preguntarme sobre clases, clientes, membresías, reservas, check-ins, informes o configuración.",
-    "emptyHint": "Pregúntame algo sobre Agon."
+    "emptyHint": "Pregúntame algo sobre Agon.",
+    "agentModeLabel": "Modo acciones",
+    "agentPlaceholder": "Ej. Crea una clase el próximo miércoles en Milán con Elena, 1 hora...",
+    "actionExecuted": "Acción completada",
+    "deleteSession": "Eliminar sesión",
+    "contextUsed": "{{used}} / {{max}} tokens",
+    "contextNearLimit": "Contexto casi lleno — inicia un nuevo chat para continuar."
   },
   "nav": {
     "dashboard": "Panel",
@@ -443,6 +449,7 @@
   "establishments": {
     "title": "Sedes",
     "subtitle": "Gestiona las sedes de tu estudio",
+    "searchPlaceholder": "Buscar por nombre...",
     "add": "+ Añadir sede",
     "addTitle": "Nueva Sede",
     "editTitle": "Editar Sede",
@@ -461,11 +468,13 @@
     "removeDesc": "Esta acción no se puede deshacer.",
     "hasClasses": "No se puede eliminar: este establecimiento tiene clases programadas.",
     "namePlaceholder": "ej. Estudio Principal",
-    "addressPlaceholder": "Calle Mayor 1, Madrid"
+    "addressPlaceholder": "Calle Mayor 1, Madrid",
+    "noResults": "Ningún establecimiento coincide con tu búsqueda."
   },
   "instructors": {
     "title": "Instructores",
     "subtitle": "Gestiona tu personal docente",
+    "searchPlaceholder": "Buscar por nombre o email...",
     "add": "+ Añadir instructor",
     "addTitle": "Nuevo Instructor",
     "editTitle": "Editar Instructor",
@@ -491,7 +500,8 @@
     "removeDesc": "También se eliminará su cuenta de acceso. Esta acción no se puede deshacer.",
     "hasClasses": "No se puede eliminar: este instructor tiene clases programadas.",
     "fullNamePlaceholder": "ej. María García",
-    "emailPlaceholder": "ej. jane@studio.com"
+    "emailPlaceholder": "ej. jane@studio.com",
+    "noResults": "Ningún instructor coincide con tu búsqueda."
   },
   "editModal": {
     "title": "Edit Class",

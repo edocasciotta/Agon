@@ -9,7 +9,13 @@
     "close": "Ondersteuning sluiten",
     "open": "Ondersteuning openen",
     "greeting": "Hoi! Hoe kan ik u helpen met Agon? U kunt mij vragen stellen over klassen, klanten, lidmaatschappen, boekingen, check-ins, rapporten of instellingen.",
-    "emptyHint": "Stel me een vraag over Agon."
+    "emptyHint": "Stel me een vraag over Agon.",
+    "agentModeLabel": "Actiemodus",
+    "agentPlaceholder": "Bijv. Maak een les aankomende woensdag in Milaan met Elena, 1 uur...",
+    "actionExecuted": "Actie voltooid",
+    "deleteSession": "Sessie verwijderen",
+    "contextUsed": "{{used}} / {{max}} tokens",
+    "contextNearLimit": "Context bijna vol — start een nieuwe chat om door te gaan."
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -443,6 +449,7 @@
   "establishments": {
     "title": "Vestigingen",
     "subtitle": "Beheer je studiolocaties",
+    "searchPlaceholder": "Zoeken op naam...",
     "add": "+ Vestiging toevoegen",
     "addTitle": "Nieuwe vestiging",
     "editTitle": "Vestiging bewerken",
@@ -461,11 +468,13 @@
     "removeDesc": "Deze actie kan niet ongedaan worden gemaakt.",
     "hasClasses": "Kan niet verwijderen: deze vestiging heeft geplande lessen.",
     "namePlaceholder": "bijv. Hoofdstudio",
-    "addressPlaceholder": "Damrak 1, Amsterdam"
+    "addressPlaceholder": "Damrak 1, Amsterdam",
+    "noResults": "Geen vestigingen komen overeen met je zoekopdracht."
   },
   "instructors": {
     "title": "Instructeurs",
     "subtitle": "Beheer je onderwijspersoneel",
+    "searchPlaceholder": "Zoeken op naam of e-mail...",
     "add": "+ Instructeur toevoegen",
     "addTitle": "Nieuwe instructeur",
     "editTitle": "Instructeur bewerken",
@@ -491,7 +500,8 @@
     "removeDesc": "Het bijbehorende account wordt ook verwijderd. Deze actie kan niet ongedaan worden gemaakt.",
     "hasClasses": "Kan niet verwijderen: deze instructeur heeft geplande lessen.",
     "fullNamePlaceholder": "bijv. Anna de Vries",
-    "emailPlaceholder": "bijv. jane@studio.com"
+    "emailPlaceholder": "bijv. jane@studio.com",
+    "noResults": "Geen instructeurs komen overeen met je zoekopdracht."
   },
   "editModal": {
     "title": "Edit Class",

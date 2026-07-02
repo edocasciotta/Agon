@@ -9,7 +9,13 @@
     "close": "Fermer le support",
     "open": "Ouvrir le support",
     "greeting": "Bonjour ! Comment puis-je vous aider avec Agon ? Posez-moi des questions sur les cours, les clients, les abonnements, les réservations, les check-ins, les rapports ou les paramètres.",
-    "emptyHint": "Posez-moi une question sur Agon."
+    "emptyHint": "Posez-moi une question sur Agon.",
+    "agentModeLabel": "Mode actions",
+    "agentPlaceholder": "Ex. Crée un cours mercredi prochain à Milan avec Elena, 1 heure...",
+    "actionExecuted": "Action terminée",
+    "deleteSession": "Supprimer la session",
+    "contextUsed": "{{used}} / {{max}} tokens",
+    "contextNearLimit": "Contexte presque plein — commencez une nouvelle discussion pour continuer."
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -443,6 +449,7 @@
   "establishments": {
     "title": "Établissements",
     "subtitle": "Gérez vos lieux de studio",
+    "searchPlaceholder": "Rechercher par nom...",
     "add": "+ Ajouter un lieu",
     "addTitle": "Nouvel établissement",
     "editTitle": "Modifier l'établissement",
@@ -461,11 +468,13 @@
     "removeDesc": "Cette action est irréversible.",
     "hasClasses": "Impossible de supprimer : cet établissement a des cours planifiés.",
     "namePlaceholder": "ex. Studio Principal",
-    "addressPlaceholder": "1 Rue de la Paix, Paris"
+    "addressPlaceholder": "1 Rue de la Paix, Paris",
+    "noResults": "Aucun établissement ne correspond à votre recherche."
   },
   "instructors": {
     "title": "Instructeurs",
     "subtitle": "Gérez votre personnel enseignant",
+    "searchPlaceholder": "Rechercher par nom ou email...",
     "add": "+ Ajouter un instructeur",
     "addTitle": "Nouvel instructeur",
     "editTitle": "Modifier l'instructeur",
@@ -491,7 +500,8 @@
     "removeDesc": "Son compte sera également supprimé. Cette action est irréversible.",
     "hasClasses": "Impossible de supprimer : cet instructeur a des cours planifiés.",
     "fullNamePlaceholder": "ex. Marie Dupont",
-    "emailPlaceholder": "ex. jane@studio.com"
+    "emailPlaceholder": "ex. jane@studio.com",
+    "noResults": "Aucun instructeur ne correspond à votre recherche."
   },
   "editModal": {
     "title": "Edit Class",
