@@ -9,7 +9,13 @@
     "close": "Chiudi chat di supporto",
     "open": "Apri chat di supporto",
     "greeting": "Ciao! Come posso aiutarti con Agon? Puoi chiedermi informazioni su lezioni, clienti, abbonamenti, prenotazioni, check-in, report o impostazioni.",
-    "emptyHint": "Chiedimi qualcosa su Agon."
+    "emptyHint": "Chiedimi qualcosa su Agon.",
+    "agentModeLabel": "Modalità azioni",
+    "agentPlaceholder": "Es. Crea una classe mercoledì prossimo a Milano con Elena, 1 ora...",
+    "actionExecuted": "Azione completata",
+    "deleteSession": "Elimina sessione",
+    "contextUsed": "{{used}} / {{max}} token",
+    "contextNearLimit": "Contesto quasi pieno — inizia una nuova chat per continuare."
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -451,6 +457,7 @@
   "establishments": {
     "title": "Sedi",
     "subtitle": "Gestisci le sedi del tuo studio",
+    "searchPlaceholder": "Cerca per nome...",
     "add": "+ Aggiungi Sede",
     "addTitle": "Nuova Sede",
     "editTitle": "Modifica Sede",
@@ -469,11 +476,13 @@
     "removeDesc": "Questa azione non può essere annullata.",
     "hasClasses": "Impossibile rimuovere: questo stabilimento ha classi programmate.",
     "namePlaceholder": "es. Studio Centrale",
-    "addressPlaceholder": "Via Roma 1, Milano"
+    "addressPlaceholder": "Via Roma 1, Milano",
+    "noResults": "Nessun establishment corrisponde alla ricerca."
   },
   "instructors": {
     "title": "Istruttori",
     "subtitle": "Gestisci il personale docente",
+    "searchPlaceholder": "Cerca per nome o email...",
     "add": "+ Aggiungi Istruttore",
     "addTitle": "Nuovo Istruttore",
     "editTitle": "Modifica Istruttore",
@@ -499,6 +508,7 @@
     "removeDesc": "Verrà eliminato anche il suo account di accesso. Questa azione non può essere annullata.",
     "hasClasses": "Impossibile rimuovere: questo istruttore ha classi programmate.",
     "fullNamePlaceholder": "es. Sara Bianchi",
-    "emailPlaceholder": "es. jane@studio.com"
+    "emailPlaceholder": "es. jane@studio.com",
+    "noResults": "Nessun istruttore corrisponde alla ricerca."
   }
 }

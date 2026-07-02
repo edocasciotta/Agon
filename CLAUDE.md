@@ -152,96 +152,23 @@ Before accepting output from any sub-agent, verify all of the following. If any 
 
 ## Build Order
 
-Follow this sequence. Do not start a phase until the previous one is complete and all tests pass.
-
-**Phase 0 — Project scaffolding**
-- Initialize FastAPI project structure in `/backend`
-- Initialize Electron + React project in `/frontend`
-- Initialize React Native + Expo project in `/mobile`
-- Initialize Docusaurus in `/docs-site`
-- Set up GitHub Actions CI pipeline
-- Configure Alembic for database migrations
-
-**Phase 1 — Database and authentication**
-- Create all SQLAlchemy models from TECHNICAL_SPEC.md section 4
-- Create all Alembic migrations
-- Implement JWT authentication (TECHNICAL_SPEC.md section 5)
-- Implement auth endpoints (TECHNICAL_SPEC.md section 6.1)
-
-**Phase 2 — Core backend**
-- Studio settings endpoints
-- Client management endpoints
-- Instructor management endpoints
-- Class templates endpoints
-- Scheduled classes endpoints
-
-**Phase 3 — Booking engine**
-- Booking creation with all validation rules
-- Booking cancellation with credit refund logic
-- Waitlist management
-- Background task: waitlist expiry checker
-
-**Phase 4 — Check-in system**
-- Check-in endpoint (all three methods)
-- QR code generation
-- Check-in validation logic
-
-**Phase 5 — Memberships and payments**
-- Membership types CRUD
-- Membership assignment and lifecycle
-- Stripe integration
-- Payment recording
-
-**Phase 6 — Notifications and background tasks**
-- Push notification sender
-- Class reminder background task
-- Membership expiry checker
-- Nightly backup task
-
-**Phase 7 — Reports and GDPR**
-- All report endpoints
-- CSV export
-- GDPR data export and deletion
-- Consent log
-
-**Phase 8 — Migration assistant**
-- File upload and analysis
-- Column mapping engine
-- Import execution
-- Client invitation flow
-
-**Phase 9 — Frontend (desktop)**
-- Onboarding wizard
-- Calendar view
-- Client management
-- Membership management
-- Reports
-- Settings
-
-**Phase 10 — Mobile app**
-- Client onboarding
-- Class browser and booking
-- Check-in screen
-- Membership view
-- Push notification setup
-
-**Phase 11 — Docs site**
-- Documentation for every feature
-- AI support agent integration
+**All phases 0–11 complete.** See `TASK_LOG.md` for current project state and next tasks.
 
 ---
 
 ## LLM Configuration for Sub-Agents
 
-Sub-agents in the Agon product (the AI support agent, the migration assistant) use free LLM APIs. Do not use OpenAI. The configured provider for development is Ollama (local). For production, the default is Google Gemini Flash (free tier).
+Sub-agents use **Groq** (`llama-3.3-70b-versatile`, 14,400 req/day free). Never use OpenAI.
 
-This is configured in `backend/app/config.py` via environment variables:
+Configured in `backend/app/config.py` via env vars:
 
 ```
-LLM_PROVIDER=gemini
-LLM_MODEL=gemini/gemini-1.5-flash
-LLM_API_KEY=                 # required for gemini
+LLM_PROVIDER=groq
+LLM_MODEL=groq/llama-3.3-70b-versatile
+LLM_API_KEY=                 # required
 ```
+
+`LLM_BASE_URL` was removed — never reference it.
 
 ---
 
@@ -252,84 +179,7 @@ Every time a new Claude Code session starts:
 - [ ] Read `TASK_LOG.md` to understand current state
 - [ ] Run `git status` to see any uncommitted changes
 - [ ] Run `pytest` to verify current test status
-- [ ] Identify the next task from the build order
-- [ ] Delegate to the appropriate sub-agent
+- [ ] Identify the next task and delegate to the appropriate sub-agent
 - [ ] After every sub-agent task: run the Expert Review Compliance checklist above before accepting output
 
----
-
-## Code Quality Standards
-
-These standards are enforced on ALL new code. Sub-agents must follow them without exception. The orchestrator must verify compliance before accepting any output.
-
-### Python / Backend
-
-**Datetime**
-- Always use `utcnow()` from `app.utils` for timestamps stored in or compared against the database
-- `datetime.now(timezone.utc)` is allowed ONLY in `app/auth.py` for JWT exp claims
-- Never use `datetime.utcnow()` — deprecated since Python 3.12
-
-**Database transactions**
-- `db.commit()` belongs in the router layer only — never inside service functions (`app/services/`)
-- Service functions receive a `db` session and perform operations but never commit
-- The router commits once after all operations succeed
-
-**Secrets**
-- No hardcoded secret defaults. If a secret must have a fallback, generate it randomly at startup via `secrets.token_hex(32)` and write it to `.env`
-- Never commit `.env` files
-
-**SQLite**
-- `PRAGMA foreign_keys=ON` must be active — enforced in `database.py` via `event.listens_for(engine, "connect")`
-- All new tables with FK columns need composite indexes on the columns used in `WHERE` clauses with `status` or other filter fields
-- Datetime columns store UTC-naive values — always compare with `utcnow()`, never with timezone-aware datetimes
-
-**LLM calls (litellm)**
-- All `completion()` calls must be wrapped in try/except
-- Catch content-filtering errors specifically: `if "content filtering" in str(e).lower() or "blocked" in str(e).lower()`
-- Provide a graceful fallback — never surface a raw litellm exception to the user
-- Never reference `settings.LLM_BASE_URL` — it was removed in the Gemini migration
-
-**File writes**
-- Any write to a config or state file (e.g. `.env`) must be atomic: write to a temp file, then `os.replace(tmp, target)`
-
-**Error handling**
-- Stripe webhook handlers must check idempotency: verify `provider_payment_id` does not already exist before creating a payment or membership
-- Auth endpoints must have rate limiting (add slowapi if not present)
-
-**Testing**
-- Every new endpoint: at minimum one happy-path test and one test per documented error code
-- Never remove tests — if behavior changes, update the test
-- Do not use `--passWithNoTests` in any test script
-
-### TypeScript / Electron / React
-
-**Electron**
-- `sandbox` must always be `true` in `webPreferences`
-- The preload script must only use `contextBridge` and `ipcRenderer` — no direct Node.js API calls
-- Always poll `http://127.0.0.1:8000/health` before showing the main window
-
-**Token storage**
-- `accessToken` must never be in `localStorage`
-- Use `sessionStorage` (via Zustand `createJSONStorage(() => sessionStorage)`) or in-memory store
-- `partialize` must exclude `accessToken` from any persisted slice
-
-**CORS**
-- The backend must never use `allow_origins=["*"]` with `allow_credentials=True`
-- Enumerate allowed origins explicitly: `http://localhost:5173`, `http://localhost:4173`, `app://.`, `file://`
-
-**i18n**
-- All new user-facing strings must use `t('namespace.key')` via `useTranslation()`
-- Add the key to both `en.json` and `it.json` (and all other locale files) in the same PR
-- Never hardcode UI strings in components
-
-**State**
-- Server state → React Query (`useQuery`, `useMutation`)
-- UI/auth state → Zustand
-- No `useEffect` for data fetching
-
-### Git and review
-
-- Every database schema change requires an Alembic migration in the same commit
-- Run `pytest tests/ -q` (backend) and `npm run test` + `npm run build` (frontend) before every commit
-- No commit may reduce the passing test count
-- `backups/`, `uploads/`, `*.db`, `.env` are in `.gitignore` — never commit them
+> Code quality standards (datetime, transactions, IDOR, i18n, etc.) are enforced in each sub-agent's own `CLAUDE.md`.

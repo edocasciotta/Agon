@@ -1,4 +1,4 @@
-import { useState, useRef, forwardRef } from 'react'
+import { useState, useEffect, useRef, forwardRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import PhoneInput from 'react-phone-number-input'
@@ -118,10 +118,23 @@ export function EstablishmentsPage() {
   const [confirmRemove, setConfirmRemove] = useState<Location | null>(null)
   const [removeError, setRemoveError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
+  const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [prevSearch, setPrevSearch] = useState(debouncedSearch)
+
+  if (debouncedSearch !== prevSearch) {
+    setPrevSearch(debouncedSearch)
+    setPage(1)
+  }
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300)
+    return () => clearTimeout(timer)
+  }, [search])
 
   const { data: locations = [], isLoading } = useQuery({
-    queryKey: ['locations'],
-    queryFn: () => locationsApi.list(true),
+    queryKey: ['locations', debouncedSearch],
+    queryFn: () => locationsApi.list(true, debouncedSearch || undefined),
   })
 
   const createMutation = useMutation({
@@ -228,10 +241,24 @@ export function EstablishmentsPage() {
         }
       />
 
+      {(isLoading || locations.length > 0 || debouncedSearch) && (
+        <div className="mb-4">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t('establishments.searchPlaceholder')}
+            className="w-full max-w-md px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
+      )}
+
       {isLoading ? (
         <div className="flex items-center justify-center h-48">
           <LoadingSpinner size="lg" />
         </div>
+      ) : locations.length === 0 && debouncedSearch ? (
+        <p className="text-sm text-gray-500 text-center py-12">{t('establishments.noResults')}</p>
       ) : locations.length === 0 ? (
         <EmptyState
           icon={

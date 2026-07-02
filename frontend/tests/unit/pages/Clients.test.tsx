@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router-dom'
@@ -6,7 +6,12 @@ import { ClientsPage } from '../../../src/renderer/src/pages/Clients'
 
 vi.mock('../../../src/renderer/src/api/clients', () => ({
   clientsApi: {
-    list: vi.fn().mockResolvedValue([]),
+    list: vi.fn().mockResolvedValue({
+      items: [{ id: 1, full_name: 'John Doe', email: 'john@example.com', is_active: true, created_at: new Date().toISOString() }],
+      total: 1,
+      page: 1,
+      page_size: 20,
+    }),
     create: vi.fn().mockResolvedValue({ id: 1, full_name: 'Test User', email: 'test@example.com', is_active: true, created_at: new Date().toISOString(), email_sent: true }),
   },
 }))
@@ -63,5 +68,21 @@ describe('ClientsPage', () => {
     fireEvent.click(cancelBtn)
 
     expect(screen.queryByText(/add new client/i)).toBeNull()
+  })
+
+  it('requests page 1 by default and resets to page 1 on new search', async () => {
+    const { clientsApi } = await import('../../../src/renderer/src/api/clients')
+    renderPage()
+
+    await waitFor(() => {
+      expect(clientsApi.list).toHaveBeenCalledWith(undefined, 1, 20)
+    })
+
+    const input = await screen.findByPlaceholderText(/search by name or email/i)
+    fireEvent.change(input, { target: { value: 'John' } })
+
+    await waitFor(() => {
+      expect(clientsApi.list).toHaveBeenCalledWith('John', 1, 20)
+    })
   })
 })

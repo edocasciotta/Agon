@@ -9,7 +9,13 @@
     "close": "Support schließen",
     "open": "Support öffnen",
     "greeting": "Hallo! Wie kann ich Ihnen mit Agon helfen? Sie können mich zu Kursen, Kunden, Mitgliedschaften, Buchungen, Check-ins, Berichten oder Einstellungen befragen.",
-    "emptyHint": "Stellen Sie mir eine Frage zu Agon."
+    "emptyHint": "Stellen Sie mir eine Frage zu Agon.",
+    "agentModeLabel": "Aktionsmodus",
+    "agentPlaceholder": "Z.B. Erstelle einen Kurs nächsten Mittwoch in Mailand mit Elena, 1 Stunde...",
+    "actionExecuted": "Aktion abgeschlossen",
+    "deleteSession": "Sitzung löschen",
+    "contextUsed": "{{used}} / {{max}} Token",
+    "contextNearLimit": "Kontext fast voll — starten Sie einen neuen Chat, um fortzufahren."
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -443,6 +449,7 @@
   "establishments": {
     "title": "Standorte",
     "subtitle": "Verwalte deine Studiostandorte",
+    "searchPlaceholder": "Nach Namen suchen...",
     "add": "+ Standort hinzufügen",
     "addTitle": "Neuer Standort",
     "editTitle": "Standort bearbeiten",
@@ -461,11 +468,13 @@
     "removeDesc": "Diese Aktion kann nicht rückgängig gemacht werden.",
     "hasClasses": "Kann nicht entfernt werden: Dieser Standort hat geplante Kurse.",
     "namePlaceholder": "z. B. Hauptstudio",
-    "addressPlaceholder": "Hauptstraße 1, Berlin"
+    "addressPlaceholder": "Hauptstraße 1, Berlin",
+    "noResults": "Keine Einrichtung entspricht Ihrer Suche."
   },
   "instructors": {
     "title": "Kursleiter",
     "subtitle": "Lehrpersonal verwalten",
+    "searchPlaceholder": "Nach Name oder E-Mail suchen...",
     "add": "+ Trainer hinzufügen",
     "addTitle": "Neuer Kursleiter",
     "editTitle": "Kursleiter bearbeiten",
@@ -491,7 +500,8 @@
     "removeDesc": "Dies löscht auch das zugehörige Konto. Diese Aktion kann nicht rückgängig gemacht werden.",
     "hasClasses": "Kann nicht entfernt werden: Dieser Trainer hat geplante Kurse.",
     "fullNamePlaceholder": "z. B. Anna Müller",
-    "emailPlaceholder": "z.B. jane@studio.com"
+    "emailPlaceholder": "z.B. jane@studio.com",
+    "noResults": "Kein Kursleiter entspricht Ihrer Suche."
   },
   "editModal": {
     "title": "Edit Class",

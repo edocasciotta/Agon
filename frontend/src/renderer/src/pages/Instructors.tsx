@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { format, startOfWeek, endOfWeek } from 'date-fns'
@@ -52,14 +52,27 @@ export function InstructorsPage() {
   const [confirmRemove, setConfirmRemove] = useState<Instructor | null>(null)
   const [removeError, setRemoveError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
+  const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [prevSearch, setPrevSearch] = useState(debouncedSearch)
+
+  if (debouncedSearch !== prevSearch) {
+    setPrevSearch(debouncedSearch)
+    setPage(1)
+  }
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300)
+    return () => clearTimeout(timer)
+  }, [search])
 
   const now = new Date()
   const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd')
   const weekEnd = format(endOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd')
 
   const { data: instructors = [], isLoading } = useQuery({
-    queryKey: ['instructors'],
-    queryFn: instructorsApi.list,
+    queryKey: ['instructors', debouncedSearch],
+    queryFn: () => instructorsApi.list(debouncedSearch || undefined),
   })
 
   const { data: weekClasses = [] } = useQuery({
@@ -213,10 +226,24 @@ export function InstructorsPage() {
         }
       />
 
+      {(isLoading || instructors.length > 0 || debouncedSearch) && (
+        <div className="mb-4">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t('instructors.searchPlaceholder')}
+            className="w-full max-w-md px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
+      )}
+
       {isLoading ? (
         <div className="flex items-center justify-center h-48">
           <LoadingSpinner size="lg" />
         </div>
+      ) : instructors.length === 0 && debouncedSearch ? (
+        <p className="text-sm text-gray-500 text-center py-12">{t('instructors.noResults')}</p>
       ) : instructors.length === 0 ? (
         <EmptyState
           icon={

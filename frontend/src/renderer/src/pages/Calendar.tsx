@@ -112,7 +112,7 @@ export function CalendarPage() {
 
   const { data: instructors } = useQuery({
     queryKey: ['instructors'],
-    queryFn: instructorsApi.list,
+    queryFn: () => instructorsApi.list(),
   })
 
   const { data: locations } = useQuery({

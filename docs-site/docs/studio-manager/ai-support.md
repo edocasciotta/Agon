@@ -24,17 +24,18 @@ It knows everything covered in this documentation: classes, bookings, membership
 
 ## What the AI assistant does NOT do
 
-The assistant only answers questions — it never makes changes to your data.
+By default, the assistant only answers questions — it never makes changes to your data.
 
 Specifically, it will **not**:
 
-- Book or cancel classes on your behalf
 - Create or modify client profiles
 - Process payments or change membership plans
 - Access your clients' personal information
 - Delete any data
 
-If you ask it to perform an action, it will explain how to do it yourself instead.
+If you ask it to perform one of these actions, it will explain how to do it yourself instead.
+
+**Exception:** studio managers can turn on [AI Action Mode](./ai-actions) to let the assistant create scheduled classes from a plain-language request. This is opt-in, only available to the studio manager account, and limited to creating classes — see the [AI Action Mode](./ai-actions) guide for details.
 
 ## How to use it
 
