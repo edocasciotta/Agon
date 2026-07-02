@@ -1,0 +1,38 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "create_class",
+      "description": "Schedule a new class. Extract each field from the user's message as plain natural-language text — do NOT invent IDs, do NOT guess a date if unsure. Leave a field empty/omit it if the user did not mention it.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "class_type":        {"type": "string", "description": "Class type name, e.g. 'Yoga Flow'. Omit if not mentioned."},
+          "location":          {"type": "string", "description": "Location name, e.g. 'Main Studio'. Omit if not mentioned."},
+          "instructor":        {"type": "string", "description": "Instructor name. Omit if not mentioned."},
+          "date":              {"type": "string", "description": "Date in YYYY-MM-DD, using the pre-computed dates from the system prompt. Leave empty if unsure."},
+          "start_time":        {"type": "string", "description": "Start time in HH:MM 24h format. Omit if not mentioned."},
+          "duration_minutes":  {"type": "string", "description": "Duration in minutes as a number. Omit if not mentioned."},
+          "capacity":          {"type": "string", "description": "Max number of clients. Omit if not mentioned."}
+        },
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "cancel_class",
+      "description": "Cancel a scheduled class. Identify the class by describing its type, date, and time.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "class_type":  {"type": "string", "description": "Class type name."},
+          "date":        {"type": "string", "description": "Date in YYYY-MM-DD."},
+          "start_time":  {"type": "string", "description": "Start time in HH:MM."}
+        },
+        "required": []
+      }
+    }
+  }
+]

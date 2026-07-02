@@ -1,0 +1,31 @@
+{
+  "locations": [
+    "Main Studio",
+    "Agon Milano",
+    "Agon Roma",
+    "Agon Bologna",
+    "Agon Firenze",
+    "Agon Napoli"
+  ],
+  "class_types": [
+    {"name": "Yoga Flow",    "duration": 60, "capacity": 20},
+    {"name": "Pilates Mat",  "duration": 50, "capacity": 15},
+    {"name": "HIIT",         "duration": 45, "capacity": 25},
+    {"name": "Spinning",     "duration": 45, "capacity": 20},
+    {"name": "Zumba",        "duration": 60, "capacity": 30},
+    {"name": "Boxing",       "duration": 60, "capacity": 12},
+    {"name": "Stretching",   "duration": 30, "capacity": 20}
+  ],
+  "instructors": [
+    "Sara Bianchi",
+    "Marco Rossi",
+    "Elena Verdi",
+    "Luca Neri",
+    "Giulia Ferrari"
+  ],
+  "membership_types": [
+    {"name": "Monthly Unlimited", "type": "recurring",   "price": 49.90},
+    {"name": "10-Class Pack",     "type": "credit_pack", "price": 89.00},
+    {"name": "Drop-in",           "type": "credit_pack", "price": 12.00}
+  ]
+}
