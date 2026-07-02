@@ -467,11 +467,14 @@ _AGON_KEYWORDS: set[str] = {
 }
 
 
-def _greeting_reply(message: str) -> str | None:
-    """Return a localised greeting reply, or None if not a greeting."""
+def _greeting_reply(message: str, platform_lang: str = "en") -> str | None:
+    """Return a greeting reply in the platform language, or None if not a greeting."""
     normalized = message.strip().lower().rstrip("!.,?")
     lang = _GREETING_LANG.get(normalized)
-    return _GREETING_REPLIES[lang] if lang else None
+    if lang is None:
+        return None
+    reply_lang = platform_lang if platform_lang in _GREETING_REPLIES else "en"
+    return _GREETING_REPLIES[reply_lang]
 
 
 def _is_in_scope(user_message: str) -> bool:
@@ -622,7 +625,7 @@ async def support_chat(
 
     # Greeting handler — short-circuit before LLM for common salutations
     if last_user_message:
-        greeting = _greeting_reply(last_user_message)
+        greeting = _greeting_reply(last_user_message, request.language)
         if greeting:
             logger.info(f"Greeting detected, returning localised reply: {last_user_message[:80]!r}")
             return ChatResponse(reply=greeting)

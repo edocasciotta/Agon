@@ -15,9 +15,9 @@ export interface LocationCreate {
 }
 
 export const locationsApi = {
-  list: async (includeInactive = false): Promise<Location[]> => {
+  list: async (includeInactive = false, search?: string): Promise<Location[]> => {
     const res = await apiClient.get('/api/v1/locations', {
-      params: includeInactive ? { include_inactive: true } : {},
+      params: { ...(includeInactive ? { include_inactive: true } : {}), ...(search ? { search } : {}) },
     })
     return res.data
   },

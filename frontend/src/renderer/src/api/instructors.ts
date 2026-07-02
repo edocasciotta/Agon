@@ -24,8 +24,10 @@ export interface InstructorUpdate {
 }
 
 export const instructorsApi = {
-  list: async (): Promise<Instructor[]> => {
-    const res = await apiClient.get('/api/v1/instructors')
+  list: async (search?: string): Promise<Instructor[]> => {
+    const res = await apiClient.get('/api/v1/instructors', {
+      params: search ? { search } : {},
+    })
     return res.data
   },
   create: async (data: InstructorCreate): Promise<Instructor> => {

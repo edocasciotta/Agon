@@ -11,9 +11,18 @@ export interface ClientCreateResponse extends Client {
   email_sent: boolean
 }
 
+export interface ClientListPage {
+  items: Client[]
+  total: number
+  page: number
+  page_size: number
+}
+
 export const clientsApi = {
-  list: async (search?: string): Promise<Client[]> => {
-    const res = await apiClient.get('/api/v1/clients', { params: search ? { search } : {} })
+  list: async (search: string | undefined, page: number, pageSize: number): Promise<ClientListPage> => {
+    const res = await apiClient.get('/api/v1/clients', {
+      params: { ...(search ? { search } : {}), page, page_size: pageSize },
+    })
     return res.data
   },
   get: async (id: number): Promise<Client> => {

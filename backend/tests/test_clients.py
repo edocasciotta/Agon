@@ -21,19 +21,47 @@ def sample_client(db_session):
 
 
 def test_list_clients_as_manager(client, manager_auth_headers, registered_client):
-    """GET /clients as manager → 200, list"""
+    """GET /clients as manager → 200, paginated envelope"""
     response = client.get("/api/v1/clients", headers=manager_auth_headers)
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
-    assert len(response.json()) >= 1
+    data = response.json()
+    assert isinstance(data["items"], list)
+    assert len(data["items"]) >= 1
+    assert data["total"] >= 1
+    assert data["page"] == 1
+    assert data["page_size"] == 20
 
 
 def test_list_clients_search(client, manager_auth_headers, sample_client):
     """GET /clients?search=name → filtered results"""
     response = client.get("/api/v1/clients?search=John", headers=manager_auth_headers)
     assert response.status_code == 200
-    results = response.json()
+    results = response.json()["items"]
     assert any("John" in r["full_name"] for r in results)
+
+
+def test_list_clients_pagination(client, manager_auth_headers, db_session):
+    """GET /clients?page=2&page_size=2 → second page of results, correct total"""
+    from app.auth import hash_password
+    from app.models.client import Client
+
+    for i in range(5):
+        db_session.add(
+            Client(
+                email=f"page{i}@example.com",
+                password_hash=hash_password("password123"),
+                full_name=f"Page Client {i}",
+            )
+        )
+    db_session.commit()
+
+    response = client.get("/api/v1/clients?page=2&page_size=2", headers=manager_auth_headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["page"] == 2
+    assert data["page_size"] == 2
+    assert len(data["items"]) == 2
+    assert data["total"] >= 5
 
 
 def test_get_client_as_manager(client, manager_auth_headers, sample_client):

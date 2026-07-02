@@ -64,7 +64,7 @@ export function EditClassModal({ isOpen, onClose, onSuccess, editClass, onCancel
 
   const { data: instructors = [] } = useQuery({
     queryKey: ['instructors'],
-    queryFn: instructorsApi.list,
+    queryFn: () => instructorsApi.list(),
     enabled: isOpen,
   })
 

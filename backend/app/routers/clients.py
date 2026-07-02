@@ -1,11 +1,8 @@
 import uuid
 from datetime import timedelta
-from typing import List, Optional
+from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-
-from app.auth import get_current_client, get_current_user, require_manager, require_staff
+from app.auth import get_current_client, require_manager, require_staff
 from app.database import get_db
 from app.models.booking import Booking
 from app.models.client import Client
@@ -15,11 +12,13 @@ from app.models.studio_settings import StudioSettings
 from app.schemas.client import (
     ClientCreate,
     ClientCreateResponse,
-    ClientListResponse,
+    ClientListPage,
     ClientResponse,
     ClientUpdate,
 )
 from app.utils import utcnow
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1/clients", tags=["clients"])
 
@@ -68,10 +67,12 @@ def update_push_token(
 # ---- Collection and /{id} routes ----
 
 
-@router.get("", response_model=List[ClientListResponse])
+@router.get("", response_model=ClientListPage)
 def list_clients(
     search: Optional[str] = Query(None),
     active_only: bool = Query(False),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
     current_user=Depends(require_staff),
 ):
@@ -81,7 +82,11 @@ def list_clients(
     if search:
         pattern = f"%{search}%"
         query = query.filter((Client.full_name.ilike(pattern)) | (Client.email.ilike(pattern)))
-    return query.all()
+    total = query.count()
+    items = (
+        query.order_by(Client.full_name.asc()).offset((page - 1) * page_size).limit(page_size).all()
+    )
+    return ClientListPage(items=items, total=total, page=page, page_size=page_size)
 
 
 @router.post("", response_model=ClientCreateResponse, status_code=201)
