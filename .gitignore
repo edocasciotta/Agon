@@ -47,4 +47,7 @@ backend/uploads/
 
 # Fine-tuning artifacts (regenerable)
 training/output/
+training/data/train.jsonl
+training/data/valid.jsonl
+training/data/test.jsonl
 vendor/
