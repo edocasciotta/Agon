@@ -10,7 +10,7 @@
 ### Test Counts
 | Suite | Count | Status |
 |---|---|---|
-| Backend (pytest) | 236 | ✅ |
+| Backend (pytest) | 244 | ✅ |
 | Mobile (jest-expo) | 21 | ✅ |
 | Frontend (Vitest) | 43 | ✅ |
 | Frontend (Playwright) | scaffold only | — |
@@ -64,7 +64,7 @@
 | L | Second fine-tuning round: 210-example JSONL covering all 9 tools targeting 3 regressions (`cancel_booking` multi-turn confirmation, Italian `get_class_roster` phrasings, `get_report` Italian keyword→type mapping); `train.sh` updated with Step 0 merge (Phase J + Phase L); `tools.json` expanded to 9 tools |
 | M | Training execution (800 total iters on 625+210 merged set, then 600 focused iters on 210 Phase L examples at lr=5e-6); `get_report` revenue/attendance/membership/retention fixed ✅; `cancel_booking` confirmation gate implemented deterministically in router (`_is_user_confirming` + `_cancel_booking_confirm_prompt`); system prompt conflict (ONLY-JSON vs CONFIRMATION RULE) resolved; 234 tests pass |
 | N | UI bug fixes post-testing: (1) hallucinated tool call guard — `_is_hallucinated_tool_call()` + `_unsupported_op_reply()` intercept JSON for unknown tools (e.g. `create_location`) before they reach the user; (2) system prompt UNSUPPORTED OPERATIONS rule added; (3) i18n language persistence — `agon-language` key in localStorage, read on app init and written on language change; 236 backend tests + 43 frontend tests pass |
-| O | AI UX fixes (branch `feat/ai-support-ux-fixes`): (1) system prompt "REQUIRED FIELDS — NEVER INVENT VALUES" block added — explicit required fields per tool + correct-behavior examples; (2) system prompt "NO RAW JSON IN REPLIES" block added; (3) `_is_echoed_studio_data()` guard — detects when model echoes studio data JSON (membership_types, class_types, etc.) and returns fallback instead of raw JSON; fixes `assign_membership` echoing `{"membership_types": [...]}` to user; 241 backend tests pass (5 new) |
+| O | AI UX fixes (branch `feat/ai-support-ux-fixes`): (1) system prompt "REQUIRED FIELDS — NEVER INVENT VALUES" block added — explicit required fields per tool + correct-behavior examples; (2) system prompt "NO RAW JSON IN REPLIES" block added; (3) `_is_echoed_studio_data()` guard — detects when model echoes studio data JSON (membership_types, class_types, etc.) and returns fallback instead of raw JSON; fixes `assign_membership` echoing `{"membership_types": [...]}` to user; (4) Calendar hours now configurable from Settings (backend: `calendar_start_hour`/`calendar_end_hour` on `studio_settings` + Alembic migration `c4d5e6f7a8b9`; frontend: Settings Calendar section + Calendar.tsx reads hours from API); (5) Malformed tool-call JSON guard: any `{...}` content that could not be parsed as a valid tool call now returns a fallback message — never raw JSON (fixes create_class with double-encoded/truncated parameters); 244 backend tests pass (8 new) |
 
 ## Next Task
 
@@ -99,10 +99,6 @@ Critical facts for the next session:
 - AI quality overall depends on the fine-tuned model being loaded in Ollama; if Ollama is not running or `agon-assistant` is not registered, the backend will fail silently
 
 ### Uncommitted changes
-- `backend/app/routers/agent.py` (Phase N — hallucination guard + system prompt)
-- `backend/tests/test_agent.py` (Phase N — 3 new tests)
-- `frontend/src/renderer/src/i18n.ts` (Phase N — language persistence)
-- `frontend/src/renderer/src/components/Layout.tsx` (Phase N — localStorage write on language change)
-- `TASK_LOG.md` (this file)
+None — Phase O fully committed on branch `feat/ai-support-ux-fixes`.
 
-*Last updated: 2026-07-03 — Phase N complete.*
+*Last updated: 2026-07-03 — Phase O complete (all commits on feat/ai-support-ux-fixes).*
