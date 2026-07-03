@@ -659,3 +659,60 @@ def test_hallucinated_tool_call_returns_unsupported_reply(client, manager_auth_h
     assert "{" not in data["reply"]
     # Must mention what the agent can do
     assert "class" in data["reply"].lower() or "report" in data["reply"].lower()
+
+
+# ─── Echoed studio data guard ─────────────────────────────────────────────────
+
+
+def test_is_echoed_studio_data_detects_membership_types():
+    from app.routers.agent import _is_echoed_studio_data
+
+    # membership_types JSON echoed verbatim from studio data
+    payload = '{"membership_types": [{"name": "Pack", "type": "credit_pack"}]}'
+    assert _is_echoed_studio_data(payload) is True
+
+
+def test_is_echoed_studio_data_detects_other_studio_keys():
+    from app.routers.agent import _is_echoed_studio_data
+
+    assert _is_echoed_studio_data('{"class_types": [{"name": "Yoga"}]}') is True
+    assert _is_echoed_studio_data('{"locations": []}') is True
+    assert _is_echoed_studio_data('{"clients": [], "total": 0}') is True
+
+
+def test_is_echoed_studio_data_passes_valid_tool_call():
+    from app.routers.agent import _is_echoed_studio_data
+
+    # Has "name" key → it's a tool call, not studio data
+    assert _is_echoed_studio_data('{"name": "assign_membership", "parameters": {}}') is False
+    assert _is_echoed_studio_data('{"name": "create_class", "parameters": {}}') is False
+    assert _is_echoed_studio_data("Just plain text") is False
+    assert _is_echoed_studio_data("{'invalid json'}") is False
+
+
+def test_echoed_studio_data_returns_fallback_not_raw_json(client, manager_auth_headers):
+    """When model echoes membership_types JSON, the router must NOT return raw JSON."""
+    membership_json = '{"membership_types": [{"name": "Pack", "price": 50.0}]}'
+    with patch(
+        "app.routers.agent.completion",
+        return_value=_make_plain_response(membership_json),
+    ):
+        response = client.post(
+            ACT_URL,
+            json={
+                "messages": [
+                    {"role": "user", "content": "assign Elena a new membership plan"},
+                    {"role": "assistant", "content": "Elena has no active membership."},
+                    {"role": "user", "content": "assign to Elena Verdi the Membership Pack"},
+                ],
+                "language": "en",
+            },
+            headers=manager_auth_headers,
+        )
+
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert data["action"] is None
+    # Must NOT return raw JSON to the user
+    assert "membership_types" not in data["reply"]
+    assert data["reply"]  # Must return something (fallback)

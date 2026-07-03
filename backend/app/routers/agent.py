@@ -147,11 +147,32 @@ Available tools and their parameters:
 - assign_membership: client, membership_type, starts_at (YYYY-MM-DD, optional)
 - get_report: type (attendance|revenue|membership|retention), start_date, end_date
 
+REQUIRED FIELDS — NEVER INVENT VALUES:
+Only call a tool when the user has explicitly provided all required fields.
+Required fields per tool:
+  create_class      → class_type, date, start_time are all required.
+  create_client     → full_name AND email are both required.
+  assign_membership → client AND membership_type are both required.
+  book_client / cancel_booking / check_in_client → client, class_type, date, start_time.
+  get_class_roster / cancel_class → class_type, date.
+If ANY required field is missing, ask the user for it in plain text BEFORE calling the tool.
+NEVER invent, guess, or fill in random/typical values (random names, times, dates, capacities).
+Correct examples:
+  User: "create a new class"          → Reply: "What type of class? On which date? At what time?"
+  User: "create a new client"         → Reply: "Please provide the client's full name and email."
+  User: "assign a membership to Elena"→ Reply: "Which membership plan? Available: Pack."
+
+NO RAW JSON IN REPLIES — STRICT:
+Your reply MUST be plain text or a single tool call JSON. NEVER output raw data structures.
+The REAL STUDIO DATA section above is for your internal reference only — never echo it to the user.
+Do NOT output {{membership_types: [...]}}, {{class_types: [...]}}, {{clients: [...]}}, or any similar structure.
+If you want to mention available plans or class types, write them as a plain sentence.
+
 CONFIRMATION RULE (cancel_booking only): Before calling cancel_booking, write a plain-text sentence describing what you are about to cancel and ask "Shall I proceed?" in {language_name}. Wait for explicit confirmation ("yes", "sì", "oui", "ja", etc.) before outputting the JSON tool call.
 
 UNSUPPORTED OPERATIONS: If the user asks for something NOT covered by the 9 tools above (e.g. creating a location/establishment, managing staff permissions, configuring the studio, editing class templates, etc.), respond with a plain-text explanation in {language_name} that this action cannot be done through the assistant. Do NOT output a JSON tool call for operations that are not in the list of 9 tools.
 
-Do NOT copy raw JSON from the REAL STUDIO DATA section into your reply. Only output one tool call at a time.
+Only output one tool call at a time.
 
 TIMES: Accept times in any format (18:30, 6:30 pm, 6.30 pm) and convert to 24h HH:MM.
 
@@ -295,6 +316,37 @@ def _unsupported_op_reply(lang: str) -> str:
     return _UNSUPPORTED_OP_REPLIES.get(lang, _UNSUPPORTED_OP_REPLIES["en"])
 
 
+_STUDIO_DATA_KEYS: frozenset[str] = frozenset(
+    {
+        "membership_types",
+        "class_types",
+        "locations",
+        "instructors",
+        "clients",
+        "scheduled_classes",
+    }
+)
+
+
+def _is_echoed_studio_data(content: str) -> bool:
+    """Return True if content is JSON echoing known studio data structures.
+
+    The model occasionally copies studio data JSON from its context window into
+    its reply (e.g. the full membership_types array when asked to assign a
+    membership). We detect this to avoid returning raw JSON to the user.
+    """
+    stripped = content.strip()
+    if not stripped.startswith("{"):
+        return False
+    try:
+        data = json.loads(stripped)
+        if isinstance(data, dict) and "name" not in data:
+            return bool(set(data.keys()) & _STUDIO_DATA_KEYS)
+    except (json.JSONDecodeError, ValueError, TypeError):
+        pass
+    return False
+
+
 def _is_hallucinated_tool_call(content: str) -> bool:
     """Return True if content is JSON with a 'name' field that is NOT a known tool.
 
@@ -314,22 +366,43 @@ def _is_hallucinated_tool_call(content: str) -> bool:
     return False
 
 
-_CONFIRMATION_TOKENS: frozenset[str] = frozenset({
-    # en
-    "yes", "yep", "yeah", "sure", "ok", "okay", "proceed", "confirm", "do it", "go ahead",
-    # it
-    "sì", "si", "vai", "procedi", "conferma",
-    # fr
-    "oui", "ouais",
-    # de
-    "ja", "jawohl",
-    # es
-    "sí", "claro", "dale", "hazlo",
-    # pt
-    "sim", "pode",
-    # nl
-    "doe",
-})
+_CONFIRMATION_TOKENS: frozenset[str] = frozenset(
+    {
+        # en
+        "yes",
+        "yep",
+        "yeah",
+        "sure",
+        "ok",
+        "okay",
+        "proceed",
+        "confirm",
+        "do it",
+        "go ahead",
+        # it
+        "sì",
+        "si",
+        "vai",
+        "procedi",
+        "conferma",
+        # fr
+        "oui",
+        "ouais",
+        # de
+        "ja",
+        "jawohl",
+        # es
+        "sí",
+        "claro",
+        "dale",
+        "hazlo",
+        # pt
+        "sim",
+        "pode",
+        # nl
+        "doe",
+    }
+)
 
 _CANCEL_BOOKING_CONFIRM: dict[str, str] = {
     "en": "I'm about to cancel {client}'s booking for {class_type} on {date} at {time}. Shall I proceed?",
@@ -577,6 +650,12 @@ def agent_act(
             if _is_hallucinated_tool_call(choice.content):
                 return AgentResponse(
                     reply=_unsupported_op_reply(lang),
+                    draft=request.draft,
+                    usage=usage,
+                )
+            if _is_echoed_studio_data(choice.content):
+                return AgentResponse(
+                    reply=_fallback_reply(lang),
                     draft=request.draft,
                     usage=usage,
                 )
