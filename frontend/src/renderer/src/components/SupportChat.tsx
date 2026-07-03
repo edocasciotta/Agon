@@ -190,7 +190,7 @@ export function SupportChat() {
               {sessions.map((session) => (
                 <div
                   key={session.id}
-                  className={`group flex items-center gap-1.5 px-2.5 py-2 cursor-pointer border-b border-gray-100/60 transition-colors ${
+                  className={`group flex items-start gap-1.5 px-2.5 py-2 cursor-pointer border-b border-gray-100/60 transition-colors ${
                     session.id === activeSessionId
                       ? 'bg-white border-l-2 border-l-indigo-400'
                       : 'hover:bg-gray-100/60'
@@ -200,21 +200,31 @@ export function SupportChat() {
                     setAgentDraft(null)
                   }}
                 >
-                  <span
-                    className={`flex-1 text-xs truncate ${
-                      session.id === activeSessionId
-                        ? 'text-gray-900 font-medium'
-                        : 'text-gray-500'
-                    }`}
-                  >
-                    {session.title}
-                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className={`text-xs truncate leading-tight ${
+                        session.id === activeSessionId
+                          ? 'text-gray-900 font-medium'
+                          : 'text-gray-500'
+                      }`}
+                    >
+                      {session.title}
+                    </p>
+                    {(() => {
+                      const lastAsst = session.messages.findLast((m) => m.role === 'assistant')
+                      return lastAsst ? (
+                        <p className="text-[10px] truncate text-gray-400 leading-tight mt-0.5">
+                          {lastAsst.content}
+                        </p>
+                      ) : null
+                    })()}
+                  </div>
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
                       handleDeleteSession(session.id)
                     }}
-                    className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition-all"
+                    className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition-all flex-shrink-0 mt-0.5"
                     aria-label={t('support.deleteSession')}
                   >
                     <Trash2 size={12} strokeWidth={1.75} />

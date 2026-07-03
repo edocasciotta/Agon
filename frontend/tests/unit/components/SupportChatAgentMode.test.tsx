@@ -77,7 +77,8 @@ describe('SupportChat — agent integration', () => {
     await waitFor(() => {
       expect(screen.getByText(/Action completed/)).toBeTruthy()
     })
-    expect(screen.getByText(/Created Yoga Flow/)).toBeTruthy()
+    // Text appears in both the message bubble and the sidebar preview
+    expect(screen.getAllByText(/Created Yoga Flow/).length).toBeGreaterThan(0)
   })
 
   it('does not show an action banner when the agent only replies with a clarifying question', async () => {
@@ -95,7 +96,8 @@ describe('SupportChat — agent integration', () => {
     fireEvent.click(screen.getByRole('button', { name: /send/i }))
 
     await waitFor(() => {
-      expect(screen.getByText('Which location?')).toBeTruthy()
+      // Text appears in both the message bubble and the sidebar preview
+      expect(screen.getAllByText('Which location?').length).toBeGreaterThan(0)
     })
     expect(screen.queryByText('Action completed')).toBeNull()
   })
