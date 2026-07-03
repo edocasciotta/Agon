@@ -16,6 +16,8 @@ class StudioSettingsUpdate(BaseModel):
     guest_bookings_enabled: Optional[bool] = None
     self_service_purchases_enabled: Optional[bool] = None
     reminder_hours_before: Optional[int] = None
+    calendar_start_hour: Optional[int] = None
+    calendar_end_hour: Optional[int] = None
 
 
 class StudioSettingsResponse(BaseModel):
@@ -31,6 +33,8 @@ class StudioSettingsResponse(BaseModel):
     guest_bookings_enabled: bool
     self_service_purchases_enabled: bool
     reminder_hours_before: int
+    calendar_start_hour: int
+    calendar_end_hour: int
     stripe_connected: bool
     tunnel_url: Optional[str] = None
     last_backup_at: Optional[datetime] = None

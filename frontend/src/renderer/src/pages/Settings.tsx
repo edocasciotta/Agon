@@ -240,6 +240,34 @@ export function SettingsPage() {
               </div>
             </section>
 
+            <section>
+              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3">{t('settings.sectionCalendar')}</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label={t('settings.calendarStartHour')}>
+                  <select
+                    value={form.calendar_start_hour ?? 7}
+                    onChange={(e) => handleChange('calendar_start_hour', Number(e.target.value))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    {Array.from({ length: 24 }, (_, i) => (
+                      <option key={i} value={i}>{String(i).padStart(2, '0')}:00</option>
+                    ))}
+                  </select>
+                </Field>
+                <Field label={t('settings.calendarEndHour')}>
+                  <select
+                    value={form.calendar_end_hour ?? 21}
+                    onChange={(e) => handleChange('calendar_end_hour', Number(e.target.value))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    {Array.from({ length: 24 }, (_, i) => (
+                      <option key={i} value={i}>{String(i).padStart(2, '0')}:00</option>
+                    ))}
+                  </select>
+                </Field>
+              </div>
+            </section>
+
             {saveSuccess && (
               <div className="rounded-md bg-green-50 border border-green-200 p-3 text-sm text-green-700">
                 {t('settings.savedSuccess')}
