@@ -175,7 +175,8 @@
     "clearFilters": "Clear filters",
     "zoom15m": "15 min",
     "zoom30m": "30 min",
-    "zoom1h": "1 hour"
+    "zoom1h": "1 hour",
+    "allEstablishments": "All Establishments"
   },
   "editModal": {
     "title": "Edit Class",
@@ -309,7 +310,8 @@
     "emptyDescTypes": "Create a membership plan to offer to your clients.",
     "currencyPlaceholder": "USD",
     "pricePlaceholder": "e.g. 49.99",
-    "creditsPlaceholder": "e.g. 10"
+    "creditsPlaceholder": "e.g. 10",
+    "currency": "Currency"
   },
   "reports": {
     "title": "Reports",
@@ -480,7 +482,8 @@
     "emptyDesc": "Add your first studio location to get started.",
     "namePlaceholder": "e.g. Main Studio",
     "addressPlaceholder": "1 Oxford Street, London",
-    "noResults": "No establishments match your search."
+    "noResults": "No establishments match your search.",
+    "reactivate": "Reactivate"
   },
   "instructors": {
     "title": "Instructors",
@@ -512,6 +515,7 @@
     "classesCount": "{{n}} classes this week",
     "fullNamePlaceholder": "e.g. Jane Smith",
     "emailPlaceholder": "e.g. jane@studio.com",
-    "noResults": "No instructors match your search."
+    "noResults": "No instructors match your search.",
+    "reactivate": "Reactivate"
   }
 }

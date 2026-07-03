@@ -175,7 +175,8 @@
     "editClass": "Edit",
     "zoom15m": "15 min",
     "zoom30m": "30 min",
-    "zoom1h": "1 hora"
+    "zoom1h": "1 hora",
+    "allEstablishments": "Todos os estabelecimentos"
   },
   "classTypes": {
     "title": "Tipos de aula",
@@ -301,7 +302,8 @@
     "emptyDescTypes": "Crie um plano de associação para oferecer aos seus clientes.",
     "currencyPlaceholder": "EUR",
     "pricePlaceholder": "ex. 49.99",
-    "creditsPlaceholder": "ex. 10"
+    "creditsPlaceholder": "ex. 10",
+    "currency": "Moeda"
   },
   "reports": {
     "title": "Relatórios",
@@ -472,7 +474,8 @@
     "hasClasses": "Não é possível remover: este estabelecimento tem aulas agendadas.",
     "namePlaceholder": "ex. Estúdio Principal",
     "addressPlaceholder": "Rua Augusta 1, Lisboa",
-    "noResults": "Nenhum estabelecimento corresponde à sua pesquisa."
+    "noResults": "Nenhum estabelecimento corresponde à sua pesquisa.",
+    "reactivate": "Reativar"
   },
   "instructors": {
     "title": "Instrutores",
@@ -504,7 +507,8 @@
     "hasClasses": "Não é possível remover: este instrutor tem aulas agendadas.",
     "fullNamePlaceholder": "ex. Ana Silva",
     "emailPlaceholder": "ex. jane@studio.com",
-    "noResults": "Nenhum instrutor corresponde à sua pesquisa."
+    "noResults": "Nenhum instrutor corresponde à sua pesquisa.",
+    "reactivate": "Reativar"
   },
   "editModal": {
     "title": "Edit Class",

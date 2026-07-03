@@ -304,12 +304,20 @@ export function EstablishmentsPage() {
                   >
                     {t('common.edit')}
                   </button>
-                  {loc.is_active && (
+                  {loc.is_active ? (
                     <button
                       onClick={() => setConfirmDeactivate(loc)}
                       className="text-xs text-amber-600 hover:text-amber-800 font-medium"
                     >
                       {t('establishments.deactivate')}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => updateMutation.mutate({ id: loc.id, data: { is_active: true } })}
+                      disabled={updateMutation.isPending}
+                      className="text-xs text-green-600 hover:text-green-800 font-medium disabled:opacity-50"
+                    >
+                      {t('establishments.reactivate')}
                     </button>
                   )}
                   <button

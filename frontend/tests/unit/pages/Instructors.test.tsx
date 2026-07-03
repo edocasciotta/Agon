@@ -52,7 +52,7 @@ describe('InstructorsPage', () => {
 
     await waitFor(
       () => {
-        expect(listMock).toHaveBeenCalledWith('Jane')
+        expect(listMock).toHaveBeenCalledWith('Jane', true)
       },
       { timeout: 1000 }
     )

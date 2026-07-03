@@ -175,7 +175,8 @@
     "editClass": "Edit",
     "zoom15m": "15 min",
     "zoom30m": "30 min",
-    "zoom1h": "1 hora"
+    "zoom1h": "1 hora",
+    "allEstablishments": "Todos los establecimientos"
   },
   "classTypes": {
     "title": "Tipos de clase",
@@ -301,7 +302,8 @@
     "emptyDescTypes": "Crea un plan de membresía para ofrecer a tus clientes.",
     "currencyPlaceholder": "EUR",
     "pricePlaceholder": "ej. 49.99",
-    "creditsPlaceholder": "ej. 10"
+    "creditsPlaceholder": "ej. 10",
+    "currency": "Moneda"
   },
   "reports": {
     "title": "Informes",
@@ -472,7 +474,8 @@
     "hasClasses": "No se puede eliminar: este establecimiento tiene clases programadas.",
     "namePlaceholder": "ej. Estudio Principal",
     "addressPlaceholder": "Calle Mayor 1, Madrid",
-    "noResults": "Ningún establecimiento coincide con tu búsqueda."
+    "noResults": "Ningún establecimiento coincide con tu búsqueda.",
+    "reactivate": "Reactivar"
   },
   "instructors": {
     "title": "Instructores",
@@ -504,7 +507,8 @@
     "hasClasses": "No se puede eliminar: este instructor tiene clases programadas.",
     "fullNamePlaceholder": "ej. María García",
     "emailPlaceholder": "ej. jane@studio.com",
-    "noResults": "Ningún instructor coincide con tu búsqueda."
+    "noResults": "Ningún instructor coincide con tu búsqueda.",
+    "reactivate": "Reactivar"
   },
   "editModal": {
     "title": "Edit Class",

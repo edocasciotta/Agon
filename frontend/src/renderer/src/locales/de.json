@@ -175,7 +175,8 @@
     "editClass": "Edit",
     "zoom15m": "15 Min",
     "zoom30m": "30 Min",
-    "zoom1h": "1 Std"
+    "zoom1h": "1 Std",
+    "allEstablishments": "Alle Standorte"
   },
   "classTypes": {
     "title": "Kurstypen",
@@ -301,7 +302,8 @@
     "emptyDescTypes": "Erstelle einen Mitgliedschaftsplan für deine Kunden.",
     "currencyPlaceholder": "EUR",
     "pricePlaceholder": "z.B. 49.99",
-    "creditsPlaceholder": "z.B. 10"
+    "creditsPlaceholder": "z.B. 10",
+    "currency": "Währung"
   },
   "reports": {
     "title": "Berichte",
@@ -472,7 +474,8 @@
     "hasClasses": "Kann nicht entfernt werden: Dieser Standort hat geplante Kurse.",
     "namePlaceholder": "z. B. Hauptstudio",
     "addressPlaceholder": "Hauptstraße 1, Berlin",
-    "noResults": "Keine Einrichtung entspricht Ihrer Suche."
+    "noResults": "Keine Einrichtung entspricht Ihrer Suche.",
+    "reactivate": "Reaktivieren"
   },
   "instructors": {
     "title": "Kursleiter",
@@ -504,7 +507,8 @@
     "hasClasses": "Kann nicht entfernt werden: Dieser Trainer hat geplante Kurse.",
     "fullNamePlaceholder": "z. B. Anna Müller",
     "emailPlaceholder": "z.B. jane@studio.com",
-    "noResults": "Kein Kursleiter entspricht Ihrer Suche."
+    "noResults": "Kein Kursleiter entspricht Ihrer Suche.",
+    "reactivate": "Reaktivieren"
   },
   "editModal": {
     "title": "Edit Class",

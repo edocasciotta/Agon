@@ -175,7 +175,8 @@
     "editClass": "Edit",
     "zoom15m": "15 min",
     "zoom30m": "30 min",
-    "zoom1h": "1 uur"
+    "zoom1h": "1 uur",
+    "allEstablishments": "Alle vestigingen"
   },
   "classTypes": {
     "title": "Lestypen",
@@ -301,7 +302,8 @@
     "emptyDescTypes": "Maak een lidmaatschapsplan aan voor je klanten.",
     "currencyPlaceholder": "EUR",
     "pricePlaceholder": "bijv. 49.99",
-    "creditsPlaceholder": "bijv. 10"
+    "creditsPlaceholder": "bijv. 10",
+    "currency": "Valuta"
   },
   "reports": {
     "title": "Rapporten",
@@ -472,7 +474,8 @@
     "hasClasses": "Kan niet verwijderen: deze vestiging heeft geplande lessen.",
     "namePlaceholder": "bijv. Hoofdstudio",
     "addressPlaceholder": "Damrak 1, Amsterdam",
-    "noResults": "Geen vestigingen komen overeen met je zoekopdracht."
+    "noResults": "Geen vestigingen komen overeen met je zoekopdracht.",
+    "reactivate": "Reactiveren"
   },
   "instructors": {
     "title": "Instructeurs",
@@ -504,7 +507,8 @@
     "hasClasses": "Kan niet verwijderen: deze instructeur heeft geplande lessen.",
     "fullNamePlaceholder": "bijv. Anna de Vries",
     "emailPlaceholder": "bijv. jane@studio.com",
-    "noResults": "Geen instructeurs komen overeen met je zoekopdracht."
+    "noResults": "Geen instructeurs komen overeen met je zoekopdracht.",
+    "reactivate": "Reactiveren"
   },
   "editModal": {
     "title": "Edit Class",

@@ -113,7 +113,9 @@ export function MembershipsPage() {
                 {membershipTypes.map((mt) => (
                   <tr key={mt.id}>
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">{mt.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{mt.type}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {mt.type === 'recurring' ? t('memberships.recurring') : t('memberships.creditPack')}
+                    </td>
                     <td className="px-6 py-4 text-sm text-gray-500">{mt.currency} {mt.price.toFixed(2)}</td>
                     <td className="px-6 py-4 text-sm text-gray-500">
                       {mt.unlimited ? t('memberships.unlimited') : (mt.credits_included ?? '—')}

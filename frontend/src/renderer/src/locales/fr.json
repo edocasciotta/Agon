@@ -175,7 +175,8 @@
     "editClass": "Edit",
     "zoom15m": "15 min",
     "zoom30m": "30 min",
-    "zoom1h": "1 heure"
+    "zoom1h": "1 heure",
+    "allEstablishments": "Tous les établissements"
   },
   "classTypes": {
     "title": "Types de cours",
@@ -301,7 +302,8 @@
     "emptyDescTypes": "Créez un plan d'abonnement à proposer à vos clients.",
     "currencyPlaceholder": "EUR",
     "pricePlaceholder": "ex. 49.99",
-    "creditsPlaceholder": "ex. 10"
+    "creditsPlaceholder": "ex. 10",
+    "currency": "Devise"
   },
   "reports": {
     "title": "Rapports",
@@ -472,7 +474,8 @@
     "hasClasses": "Impossible de supprimer : cet établissement a des cours planifiés.",
     "namePlaceholder": "ex. Studio Principal",
     "addressPlaceholder": "1 Rue de la Paix, Paris",
-    "noResults": "Aucun établissement ne correspond à votre recherche."
+    "noResults": "Aucun établissement ne correspond à votre recherche.",
+    "reactivate": "Réactiver"
   },
   "instructors": {
     "title": "Instructeurs",
@@ -504,7 +507,8 @@
     "hasClasses": "Impossible de supprimer : cet instructeur a des cours planifiés.",
     "fullNamePlaceholder": "ex. Marie Dupont",
     "emailPlaceholder": "ex. jane@studio.com",
-    "noResults": "Aucun instructeur ne correspond à votre recherche."
+    "noResults": "Aucun instructeur ne correspond à votre recherche.",
+    "reactivate": "Réactiver"
   },
   "editModal": {
     "title": "Edit Class",

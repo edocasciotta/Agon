@@ -175,7 +175,8 @@
     "clearFilters": "Rimuovi filtri",
     "zoom15m": "15 min",
     "zoom30m": "30 min",
-    "zoom1h": "1 ora"
+    "zoom1h": "1 ora",
+    "allEstablishments": "Tutti gli stabilimenti"
   },
   "editModal": {
     "title": "Modifica lezione",
@@ -309,7 +310,8 @@
     "emptyDescTypes": "Crea un piano di abbonamento da offrire ai tuoi clienti.",
     "currencyPlaceholder": "EUR",
     "pricePlaceholder": "es. 49.99",
-    "creditsPlaceholder": "es. 10"
+    "creditsPlaceholder": "es. 10",
+    "currency": "Valuta"
   },
   "reports": {
     "title": "Report",
@@ -480,7 +482,8 @@
     "hasClasses": "Impossibile rimuovere: questo stabilimento ha classi programmate.",
     "namePlaceholder": "es. Studio Centrale",
     "addressPlaceholder": "Via Roma 1, Milano",
-    "noResults": "Nessun establishment corrisponde alla ricerca."
+    "noResults": "Nessun establishment corrisponde alla ricerca.",
+    "reactivate": "Riattiva"
   },
   "instructors": {
     "title": "Istruttori",
@@ -512,6 +515,7 @@
     "hasClasses": "Impossibile rimuovere: questo istruttore ha classi programmate.",
     "fullNamePlaceholder": "es. Sara Bianchi",
     "emailPlaceholder": "es. jane@studio.com",
-    "noResults": "Nessun istruttore corrisponde alla ricerca."
+    "noResults": "Nessun istruttore corrisponde alla ricerca.",
+    "reactivate": "Riattiva"
   }
 }

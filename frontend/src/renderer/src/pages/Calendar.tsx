@@ -236,7 +236,7 @@ export function CalendarPage() {
                     onChange={(e) => setFilterLocation(e.target.value ? Number(e.target.value) : null)}
                     className="text-xs border border-gray-200 rounded-md px-2 py-1.5 text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 cursor-pointer"
                   >
-                    <option value="">{t('calendar.allLocations')}</option>
+                    <option value="">{t('calendar.allEstablishments')}</option>
                     {locations.map((loc) => (
                       <option key={loc.id} value={loc.id}>{loc.name}</option>
                     ))}
