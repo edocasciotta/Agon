@@ -443,6 +443,10 @@ CREATE_CLASS_TOOL_SCHEMA = {
                     "type": "string",
                     "description": "Maximum number of clients. Omit if not mentioned.",
                 },
+                "notes": {
+                    "type": "string",
+                    "description": "Free-text notes for this class (e.g. 'bring a mat'). Omit if not mentioned.",
+                },
             },
             "required": [],
         },
@@ -663,6 +667,8 @@ def handle_create_class(
     except (ValueError, TypeError):
         capacity = template.default_capacity
 
+    notes: str | None = args.get("notes") or None
+
     starts_at = datetime.combine(resolved_date, datetime.min.time()).replace(
         hour=resolved_time[0], minute=resolved_time[1]
     )
@@ -681,6 +687,7 @@ def handle_create_class(
         starts_at=starts_at,
         ends_at=ends_at,
         capacity=capacity,
+        notes=notes,
         status="scheduled",
     )
     db.add(scheduled_class)
@@ -705,6 +712,8 @@ def handle_create_class(
         instructor=instr_suffix,
         capacity=str(capacity),
     )
+    if notes:
+        summary += f" Notes: {notes}"
     return AgentActionResult(status="executed", message=summary, scheduled_class=scheduled_class)
 
 
