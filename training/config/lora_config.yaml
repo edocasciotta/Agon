@@ -1,0 +1,5 @@
+lora_parameters:
+  rank: 16
+  scale: 32
+  dropout: 0.0
+  keys: null  # fine-tune all default LoRA layers

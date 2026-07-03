@@ -15,7 +15,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TRAINING_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 REPO_ROOT="$(cd "$TRAINING_DIR/.." && pwd)"
 
-FUSED_DIR="$TRAINING_DIR/output/fused"
+FUSED_DIR="$TRAINING_DIR/output/fused_f16"
 GGUF_DIR="$TRAINING_DIR/output/gguf"
 LLAMA_CPP="$REPO_ROOT/vendor/llama.cpp"
 MODEL_NAME="agon-assistant"
@@ -30,7 +30,7 @@ python "$LLAMA_CPP/convert_hf_to_gguf.py" \
   --outtype f16
 
 echo "Quantising to Q4_K_M (~2 GB)..."
-"$LLAMA_CPP/llama-quantize" \
+"$LLAMA_CPP/build/bin/llama-quantize" \
   "$GGUF_DIR/agon-f16.gguf" \
   "$GGUF_DIR/agon-q4_k_m.gguf" \
   Q4_K_M

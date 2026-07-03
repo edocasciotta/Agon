@@ -144,6 +144,7 @@ export function Layout() {
                     aria-selected={lang.code === currentLang.code}
                     onClick={() => {
                       void i18n.changeLanguage(lang.code)
+                      localStorage.setItem('agon-language', lang.code)
                       setLangOpen(false)
                     }}
                     className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors text-left ${

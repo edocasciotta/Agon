@@ -3,16 +3,16 @@
 
 ---
 
-## Project State (2026-07-02)
+## Project State (2026-07-03)
 
-**All build phases complete.** V1 shipped + improvements A–I applied.
+**All build phases complete.** V1 shipped + improvements A–N applied.
 
 ### Test Counts
 | Suite | Count | Status |
 |---|---|---|
-| Backend (pytest) | 232 | ✅ |
+| Backend (pytest) | 236 | ✅ |
 | Mobile (jest-expo) | 21 | ✅ |
-| Frontend (Vitest) | 8 | ✅ |
+| Frontend (Vitest) | 43 | ✅ |
 | Frontend (Playwright) | scaffold only | — |
 | Docs build | — | ✅ |
 
@@ -44,8 +44,9 @@
 
 ### Key Implementation Decisions (non-obvious)
 - `passlib` replaced with direct `bcrypt 5.0.0` (passlib 1.7.4 incompatible with bcrypt 4+)
-- LLM stack: **Groq** `llama-3.3-70b-versatile` (14,400 req/day free). Config in `backend/app/config.py` via `LLM_PROVIDER` / `LLM_MODEL` / `LLM_API_KEY`. `LLM_BASE_URL` was removed — never reference it.
-- Agent mode: reads all studio data into system prompt upfront; only 2 write tools sent to Groq (`create_class`, `cancel_class`)
+- LLM stack (agent): **Ollama** `ollama_chat/agon-assistant` — locally fine-tuned Llama 3.2 3B 4-bit GGUF. Config via `LLM_PROVIDER=ollama` / `LLM_MODEL=ollama_chat/agon-assistant`. Tools API skipped for Ollama (model emits tool calls as JSON in content). `LLM_BASE_URL` was removed — never reference it.
+- LLM stack (support/migration): **Groq** `llama-3.3-70b-versatile` (14,400 req/day free) via `LLM_PROVIDER=groq` / `LLM_MODEL=groq/llama-3.3-70b-versatile` / `LLM_API_KEY`.
+- Agent mode: reads all studio data into system prompt upfront; 9 tools available (`create_class`, `cancel_class`, `book_client`, `cancel_booking`, `get_class_roster`, `check_in_client`, `create_client`, `assign_membership`, `get_report`); model emits raw JSON tool calls intercepted by `_parse_llama_json_tool_call`
 - `Client.password_hash` is nullable (backoffice-created clients have no password yet)
 - i18n: 7 locales only — EN, IT, FR, DE, ES, PT, NL. PL and TR removed.
 - Supported email event types: `client_invite`, `password_reset`, `booking_confirmed`, `booking_cancelled`, `class_reminder`, `membership_expiring`, `waitlist_promoted`
@@ -55,14 +56,52 @@
 
 ---
 
+### Post-V1 Improvements — continued
+| Phase | Summary |
+|---|---|
+| J | Fine-tuning: LoRA on Llama 3.2 3B (lr=1e-5, rank=16), GGUF export via llama.cpp, Ollama registration as `agon-assistant`; backend switched to `ollama_chat/agon-assistant`; fixed litellm `format:json` issue by skipping tools API for Ollama; added `_parse_llama_json_tool_call`, fallback history filtering, `_KNOWN_TOOL_NAMES` guard |
+| K | Agent tool expansion: 7 new tools (`book_client`, `cancel_booking`, `get_class_roster`, `check_in_client`, `create_client`, `assign_membership`, `get_report`); full entity resolution for clients + class instances; credit deduction/refund on booking/cancellation; natural-language confirmation rule for `cancel_booking`; system prompt updated with all 9 tools listed; test fix for date-sensitive timezone test; `_best_match` reverse-substring fix (`n.lower() in normalized`) for plan names with Italian prefixes (e.g. "Piano Pack" → "Pack") |
+| L | Second fine-tuning round: 210-example JSONL covering all 9 tools targeting 3 regressions (`cancel_booking` multi-turn confirmation, Italian `get_class_roster` phrasings, `get_report` Italian keyword→type mapping); `train.sh` updated with Step 0 merge (Phase J + Phase L); `tools.json` expanded to 9 tools |
+| M | Training execution (800 total iters on 625+210 merged set, then 600 focused iters on 210 Phase L examples at lr=5e-6); `get_report` revenue/attendance/membership/retention fixed ✅; `cancel_booking` confirmation gate implemented deterministically in router (`_is_user_confirming` + `_cancel_booking_confirm_prompt`); system prompt conflict (ONLY-JSON vs CONFIRMATION RULE) resolved; 234 tests pass |
+| N | UI bug fixes post-testing: (1) hallucinated tool call guard — `_is_hallucinated_tool_call()` + `_unsupported_op_reply()` intercept JSON for unknown tools (e.g. `create_location`) before they reach the user; (2) system prompt UNSUPPORTED OPERATIONS rule added; (3) i18n language persistence — `agon-language` key in localStorage, read on app init and written on language change; 236 backend tests + 43 frontend tests pass |
+
 ## Next Task
 
-**User-driven.** No orchestrator-initiated tasks pending.
+**Phase O — candidati da ROADMAP.md V1.1**
 
-Candidates from ROADMAP.md V1.1:
+Candidates:
 - Electron auto-update (electron-updater + GitHub releases + Alembic on relaunch)
-- Storybook component library
 - Multi-location support (location_id already on all tables)
 - Stripe subscription billing
 
-*Last updated: 2026-07-02 — Phase I complete.*
+---
+
+## Handover Notes (2026-07-03)
+
+Critical facts for the next session:
+
+### Local dev environment
+- Backend: `cd backend && .venv/bin/uvicorn app.main:app --reload`
+- Frontend: `cd frontend && npm run dev`
+- Local DB credentials: `admin@example.com` / `password`
+- Ollama model: `agon-assistant` (registered locally); backend env needs `LLM_PROVIDER=ollama LLM_MODEL=ollama_chat/agon-assistant`
+
+### AI Agent — current state
+- Fine-tuned model (`agon-assistant`) is loaded in Ollama on the user's M5 MacBook
+- 9 tools implemented and working; `cancel_booking` uses a deterministic confirmation gate in the router (model-agnostic)
+- `get_report` Italian keyword mapping fixed via fine-tuning
+- `get_class_roster` Italian phrasings partially improved (3B model still has strong prior for alternative actions)
+- Hallucinated tool calls for unsupported operations (e.g. `create_location`) are now intercepted by `_is_hallucinated_tool_call()` and return a localized unsupported-op reply
+
+### Known open issues
+- `get_class_roster` Italian phrasing still not 100% reliable — model sometimes picks wrong tool
+- AI quality overall depends on the fine-tuned model being loaded in Ollama; if Ollama is not running or `agon-assistant` is not registered, the backend will fail silently
+
+### Uncommitted changes
+- `backend/app/routers/agent.py` (Phase N — hallucination guard + system prompt)
+- `backend/tests/test_agent.py` (Phase N — 3 new tests)
+- `frontend/src/renderer/src/i18n.ts` (Phase N — language persistence)
+- `frontend/src/renderer/src/components/Layout.tsx` (Phase N — localStorage write on language change)
+- `TASK_LOG.md` (this file)
+
+*Last updated: 2026-07-03 — Phase N complete.*

@@ -34,5 +34,120 @@
         "required": []
       }
     }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "book_client",
+      "description": "Book a client into a scheduled class.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "client":      {"type": "string", "description": "Client name or email."},
+          "class_type":  {"type": "string"},
+          "date":        {"type": "string", "description": "YYYY-MM-DD"},
+          "start_time":  {"type": "string", "description": "HH:MM"}
+        },
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "cancel_booking",
+      "description": "Cancel a client's booking. ALWAYS ask for confirmation before calling this tool.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "client":      {"type": "string"},
+          "class_type":  {"type": "string"},
+          "date":        {"type": "string"},
+          "start_time":  {"type": "string"}
+        },
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_class_roster",
+      "description": "Get the list of clients booked for a specific class.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "class_type":  {"type": "string"},
+          "date":        {"type": "string"},
+          "start_time":  {"type": "string"}
+        },
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "check_in_client",
+      "description": "Record a client's check-in for a class.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "client":      {"type": "string"},
+          "class_type":  {"type": "string"},
+          "date":        {"type": "string"},
+          "start_time":  {"type": "string"}
+        },
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "create_client",
+      "description": "Create a new client in the system.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "full_name":  {"type": "string"},
+          "email":      {"type": "string"},
+          "phone":      {"type": "string", "description": "Optional phone number."}
+        },
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "assign_membership",
+      "description": "Assign a membership type to a client.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "client":          {"type": "string"},
+          "membership_type": {"type": "string"},
+          "starts_at":       {"type": "string", "description": "YYYY-MM-DD, optional."}
+        },
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_report",
+      "description": "Generate a studio report. type must be one of: attendance, revenue, membership, retention.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "type":       {"type": "string", "description": "attendance | revenue | membership | retention"},
+          "start_date": {"type": "string", "description": "YYYY-MM-DD"},
+          "end_date":   {"type": "string", "description": "YYYY-MM-DD"}
+        },
+        "required": []
+      }
+    }
   }
 ]

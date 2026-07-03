@@ -17,6 +17,11 @@ from datetime import date, datetime, timezone
 from typing import Any
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
+from fastapi import APIRouter, Depends
+from litellm import completion
+from pydantic import BaseModel, field_validator
+from sqlalchemy.orm import Session
+
 from app.auth import require_manager
 from app.config import settings
 from app.database import get_db
@@ -24,14 +29,17 @@ from app.models.studio_settings import StudioSettings
 from app.schemas.scheduled_class import ScheduledClassResponse
 from app.services.agent_tools import (
     ALL_WRITE_TOOLS,
+    handle_assign_membership,
+    handle_book_client,
+    handle_cancel_booking,
     handle_cancel_class,
+    handle_check_in_client,
     handle_create_class,
+    handle_create_client,
+    handle_get_class_roster,
+    handle_get_report,
     load_studio_data_summary,
 )
-from fastapi import APIRouter, Depends
-from litellm import completion
-from pydantic import BaseModel, field_validator
-from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -111,6 +119,8 @@ DATE REFERENCE (do not compute — use these exact values):
   In 2 days  : {day_after_tomorrow} ({dat_weekday})
   This week  : {week_calendar}
 
+DATES: Accept any future date the user mentions, not only the three listed above. The DATE REFERENCE section is provided only for computing relative expressions like "today", "tomorrow", "next Monday". A user can schedule a class weeks or months in the future — always accept it and convert it to YYYY-MM-DD.
+
 FORMATTING RULES — MANDATORY:
 Do NOT use markdown. Do NOT write bold (**text**), italic (*text*), or headers (# text).
 Use plain text only. For lists, use numbered steps: 1. 2. 3.
@@ -121,6 +131,29 @@ REAL STUDIO DATA (pre-loaded — use this to answer data questions, NEVER invent
 You can also perform actions:
 - "Create a yoga class tomorrow at 10" → call create_class (use tomorrow={tomorrow} as the date)
 - "Cancel the pilates class on Friday" → call cancel_class
+
+TOOL CALL FORMAT:
+To perform an action, output a raw JSON object: {{"name": "<tool_name>", "parameters": {{...}}}}
+Do NOT add any text before or after it — EXCEPT for cancel_booking (see CONFIRMATION RULE).
+
+Available tools and their parameters:
+- create_class: class_type, location, date (YYYY-MM-DD), start_time (HH:MM), duration_minutes
+- cancel_class: class_type, date, start_time
+- book_client: client (name or email), class_type, date, start_time
+- cancel_booking: client, class_type, date, start_time
+- get_class_roster: class_type, date, start_time
+- check_in_client: client, class_type, date, start_time
+- create_client: full_name, email, phone (optional)
+- assign_membership: client, membership_type, starts_at (YYYY-MM-DD, optional)
+- get_report: type (attendance|revenue|membership|retention), start_date, end_date
+
+CONFIRMATION RULE (cancel_booking only): Before calling cancel_booking, write a plain-text sentence describing what you are about to cancel and ask "Shall I proceed?" in {language_name}. Wait for explicit confirmation ("yes", "sì", "oui", "ja", etc.) before outputting the JSON tool call.
+
+UNSUPPORTED OPERATIONS: If the user asks for something NOT covered by the 9 tools above (e.g. creating a location/establishment, managing staff permissions, configuring the studio, editing class templates, etc.), respond with a plain-text explanation in {language_name} that this action cannot be done through the assistant. Do NOT output a JSON tool call for operations that are not in the list of 9 tools.
+
+Do NOT copy raw JSON from the REAL STUDIO DATA section into your reply. Only output one tool call at a time.
+
+TIMES: Accept times in any format (18:30, 6:30 pm, 6.30 pm) and convert to 24h HH:MM.
 
 For how-to questions about using Agon (e.g. "how do I add a client?"), answer using \
 the documentation below. If the answer is not in the documentation, say so — do NOT \
@@ -213,8 +246,132 @@ class AgentResponse(BaseModel):
     usage: AgentUsage | None = None
 
 
+_UNSUPPORTED_OP_REPLIES: dict[str, str] = {
+    "en": (
+        "I'm sorry, I can't do that. I can help you with: creating or cancelling classes, "
+        "booking or cancelling client bookings, checking in clients, managing class rosters, "
+        "creating clients, assigning memberships, and generating reports."
+    ),
+    "it": (
+        "Mi dispiace, non posso farlo. Posso aiutarti con: creare o cancellare classi, "
+        "prenotare o cancellare prenotazioni, fare check-in, visualizzare la lista di una classe, "
+        "creare clienti, assegnare abbonamenti e generare report."
+    ),
+    "fr": (
+        "Désolé, je ne peux pas faire cela. Je peux vous aider avec : créer ou annuler des cours, "
+        "réserver ou annuler des réservations, enregistrer des clients, gérer les listes de cours, "
+        "créer des clients, attribuer des abonnements et générer des rapports."
+    ),
+    "de": (
+        "Entschuldigung, das kann ich nicht tun. Ich kann Ihnen helfen mit: Kurse erstellen "
+        "oder stornieren, Buchungen vornehmen oder stornieren, Eincheckungen, Teilnehmerlisten, "
+        "Kunden anlegen, Mitgliedschaften zuweisen und Berichte erstellen."
+    ),
+    "es": (
+        "Lo siento, no puedo hacer eso. Puedo ayudarte con: crear o cancelar clases, "
+        "reservar o cancelar reservas, registrar asistencia, ver listas de clases, "
+        "crear clientes, asignar membresías y generar informes."
+    ),
+    "pt": (
+        "Desculpe, não consigo fazer isso. Posso ajudar com: criar ou cancelar aulas, "
+        "reservar ou cancelar reservas, fazer check-in, ver listas de aulas, "
+        "criar clientes, atribuir planos e gerar relatórios."
+    ),
+    "nl": (
+        "Sorry, dat kan ik niet doen. Ik kan helpen met: lessen aanmaken of annuleren, "
+        "reserveringen maken of annuleren, inchecken, deelnemerslijsten, "
+        "klanten aanmaken, lidmaatschappen toewijzen en rapporten genereren."
+    ),
+}
+
+_FALLBACK_TEXTS: set[str] = set(_FALLBACK_REPLIES.values())
+
+
 def _fallback_reply(lang: str) -> str:
     return _FALLBACK_REPLIES.get(lang, _FALLBACK_REPLIES["en"])
+
+
+def _unsupported_op_reply(lang: str) -> str:
+    return _UNSUPPORTED_OP_REPLIES.get(lang, _UNSUPPORTED_OP_REPLIES["en"])
+
+
+def _is_hallucinated_tool_call(content: str) -> bool:
+    """Return True if content is JSON with a 'name' field that is NOT a known tool.
+
+    The model occasionally invents tool calls for operations that don't exist
+    (e.g. create_location). We detect this pattern to avoid returning raw JSON
+    to the user.
+    """
+    stripped = content.strip()
+    if not stripped.startswith("{"):
+        return False
+    try:
+        data = json.loads(stripped)
+        if isinstance(data, dict) and "name" in data:
+            return data["name"] not in _KNOWN_TOOL_NAMES
+    except (json.JSONDecodeError, ValueError, TypeError):
+        pass
+    return False
+
+
+_CONFIRMATION_TOKENS: frozenset[str] = frozenset({
+    # en
+    "yes", "yep", "yeah", "sure", "ok", "okay", "proceed", "confirm", "do it", "go ahead",
+    # it
+    "sì", "si", "vai", "procedi", "conferma",
+    # fr
+    "oui", "ouais",
+    # de
+    "ja", "jawohl",
+    # es
+    "sí", "claro", "dale", "hazlo",
+    # pt
+    "sim", "pode",
+    # nl
+    "doe",
+})
+
+_CANCEL_BOOKING_CONFIRM: dict[str, str] = {
+    "en": "I'm about to cancel {client}'s booking for {class_type} on {date} at {time}. Shall I proceed?",
+    "it": "Sto per cancellare la prenotazione di {client} per {class_type} il {date} alle {time}. Vuoi procedere?",
+    "fr": "Je vais annuler la réservation de {client} pour {class_type} le {date} à {time}. Voulez-vous procéder ?",
+    "de": "Ich storniere die Buchung von {client} für {class_type} am {date} um {time} Uhr. Möchten Sie fortfahren?",
+    "es": "Voy a cancelar la reserva de {client} para {class_type} el {date} a las {time}. ¿Desea proceder?",
+    "pt": "Vou cancelar a reserva de {client} para {class_type} em {date} às {time}. Deseja prosseguir?",
+    "nl": "Ik annuleer de boeking van {client} voor {class_type} op {date} om {time}. Wilt u doorgaan?",
+}
+
+
+def _is_user_confirming(messages: list[dict]) -> bool:
+    """Return True if the last user message is an explicit confirmation."""
+    for msg in reversed(messages):
+        if msg["role"] == "user":
+            words = set((msg.get("content") or "").lower().strip(".,!? ").split())
+            return bool(words & _CONFIRMATION_TOKENS)
+    return False
+
+
+def _cancel_booking_confirm_prompt(tool_args: dict, lang: str) -> str:
+    tpl = _CANCEL_BOOKING_CONFIRM.get(lang, _CANCEL_BOOKING_CONFIRM["en"])
+    return tpl.format(
+        client=tool_args.get("client", "?"),
+        class_type=tool_args.get("class_type", "?"),
+        date=tool_args.get("date", "?"),
+        time=tool_args.get("start_time", "?"),
+    )
+
+
+def _filter_fallbacks(messages: list[dict]) -> list[dict]:
+    """Strip assistant fallback messages from conversation history.
+
+    Fallbacks are error artifacts (empty LLM response, parse failure) — the
+    model never actually generated them. Including them in the next turn's
+    history makes the model believe it said something it didn't, corrupting
+    the conversation state and causing confused replies.
+    """
+    return [
+        m for m in messages if not (m["role"] == "assistant" and m["content"] in _FALLBACK_TEXTS)
+    ]
 
 
 def _build_week_calendar(today: date) -> str:
@@ -254,6 +411,41 @@ def _parse_inline_tool_call(content: str) -> tuple[str, dict] | None:
     return None
 
 
+_KNOWN_TOOL_NAMES = {
+    "create_class",
+    "cancel_class",
+    "book_client",
+    "cancel_booking",
+    "get_class_roster",
+    "check_in_client",
+    "create_client",
+    "assign_membership",
+    "get_report",
+}
+
+
+def _parse_llama_json_tool_call(content: str) -> tuple[str, dict] | None:
+    """Parse Llama 3.2's native tool call format: {"name": "...", "parameters": {...}}
+
+    Only matches known tool names to avoid treating studio data JSON (which also
+    has a "name" field, e.g. class type records) as tool calls.
+    """
+    try:
+        data = json.loads(content.strip())
+        if isinstance(data, dict) and "name" in data:
+            tool_name = data["name"]
+            if tool_name not in _KNOWN_TOOL_NAMES:
+                return None
+            # Llama uses "parameters", litellm uses "arguments" — normalise
+            args = data.get("parameters") or data.get("arguments") or {}
+            if isinstance(args, str):
+                args = json.loads(args)
+            return tool_name, args
+    except (json.JSONDecodeError, ValueError, TypeError):
+        pass
+    return None
+
+
 def _call_llm_with_retry(
     model: str,
     messages: list[dict],
@@ -261,18 +453,27 @@ def _call_llm_with_retry(
     api_key: str | None,
     max_retries: int = 3,
 ):
-    """Call litellm with exponential backoff on rate-limit (429) errors."""
+    """Call litellm with exponential backoff on rate-limit (429) errors.
+
+    For Ollama models, tools are omitted from the API call to avoid litellm
+    injecting `format: json`, which causes Ollama to reject non-JSON replies.
+    The fine-tuned model emits tool calls as JSON in the content field instead.
+    """
+    is_ollama = model.startswith("ollama")
     delay = 2.0
     last_exc: Exception | None = None
     for attempt in range(max_retries):
         try:
-            return completion(
+            kwargs: dict = dict(
                 model=model,
                 messages=messages,
-                tools=tools,
-                tool_choice="auto",
                 api_key=api_key or None,
+                api_base="http://localhost:11434" if is_ollama else None,
             )
+            if not is_ollama:
+                kwargs["tools"] = tools
+                kwargs["tool_choice"] = "auto"
+            return completion(**kwargs)
         except Exception as exc:
             last_exc = exc
             exc_str = str(exc).lower()
@@ -288,7 +489,9 @@ def _call_llm_with_retry(
                 time.sleep(delay)
                 delay *= 2
             else:
-                logger.warning("Agent LLM call failed (attempt %d/%d): %s", attempt + 1, max_retries, exc)
+                logger.warning(
+                    "Agent LLM call failed (attempt %d/%d): %s", attempt + 1, max_retries, exc
+                )
                 break
     raise last_exc  # type: ignore[misc]
 
@@ -335,7 +538,7 @@ def agent_act(
         draft_summary=_draft_summary(request.draft),
         docs_context=docs_context,
     )
-    messages = [{"role": m.role, "content": m.content} for m in request.messages]
+    messages = _filter_fallbacks([{"role": m.role, "content": m.content} for m in request.messages])
 
     try:
         response = _call_llm_with_retry(
@@ -365,10 +568,18 @@ def agent_act(
         except (json.JSONDecodeError, TypeError):
             tool_args = {}
     elif choice.content:
-        parsed = _parse_inline_tool_call(choice.content)
+        parsed = _parse_inline_tool_call(choice.content) or _parse_llama_json_tool_call(
+            choice.content
+        )
         if parsed:
             tool_name, tool_args = parsed
         else:
+            if _is_hallucinated_tool_call(choice.content):
+                return AgentResponse(
+                    reply=_unsupported_op_reply(lang),
+                    draft=request.draft,
+                    usage=usage,
+                )
             return AgentResponse(
                 reply=choice.content,
                 draft=request.draft,
@@ -403,6 +614,70 @@ def agent_act(
         if result.status == "executed":
             db.commit()
             return AgentResponse(reply=result.message, usage=usage)
+        return AgentResponse(reply=result.message, draft=request.draft, usage=usage)
+
+    # ── Write tool: book_client
+    if tool_name == "book_client":
+        merged_args = _merge_draft(request.draft, tool_args)
+        result = handle_book_client(db, merged_args, today=today, lang=lang)
+
+        if result.status == "executed":
+            db.commit()
+            return AgentResponse(reply=result.message, usage=usage)
+        return AgentResponse(reply=result.message, draft=merged_args, usage=usage)
+
+    # ── Write tool: cancel_booking  (requires explicit user confirmation)
+    if tool_name == "cancel_booking":
+        if not _is_user_confirming(messages):
+            # Model skipped the confirmation step — intercept and ask deterministically.
+            return AgentResponse(
+                reply=_cancel_booking_confirm_prompt(tool_args, lang),
+                draft=tool_args,
+                usage=usage,
+            )
+        result = handle_cancel_booking(db, tool_args, today=today, lang=lang)
+        if result.status == "executed":
+            db.commit()
+            return AgentResponse(reply=result.message, usage=usage)
+        return AgentResponse(reply=result.message, draft=request.draft, usage=usage)
+
+    # ── Read tool: get_class_roster
+    if tool_name == "get_class_roster":
+        result = handle_get_class_roster(db, tool_args, today=today, lang=lang)
+        return AgentResponse(reply=result.message, draft=request.draft, usage=usage)
+
+    # ── Write tool: check_in_client
+    if tool_name == "check_in_client":
+        result = handle_check_in_client(db, tool_args, today=today, lang=lang)
+
+        if result.status == "executed":
+            db.commit()
+            return AgentResponse(reply=result.message, usage=usage)
+        return AgentResponse(reply=result.message, draft=request.draft, usage=usage)
+
+    # ── Write tool: create_client
+    if tool_name == "create_client":
+        merged_args = _merge_draft(request.draft, tool_args)
+        result = handle_create_client(db, merged_args, lang=lang)
+
+        if result.status == "executed":
+            db.commit()
+            return AgentResponse(reply=result.message, usage=usage)
+        return AgentResponse(reply=result.message, draft=merged_args, usage=usage)
+
+    # ── Write tool: assign_membership
+    if tool_name == "assign_membership":
+        merged_args = _merge_draft(request.draft, tool_args)
+        result = handle_assign_membership(db, merged_args, today=today, lang=lang)
+
+        if result.status == "executed":
+            db.commit()
+            return AgentResponse(reply=result.message, usage=usage)
+        return AgentResponse(reply=result.message, draft=merged_args, usage=usage)
+
+    # ── Read tool: get_report
+    if tool_name == "get_report":
+        result = handle_get_report(db, tool_args, today=today, lang=lang)
         return AgentResponse(reply=result.message, draft=request.draft, usage=usage)
 
     return AgentResponse(

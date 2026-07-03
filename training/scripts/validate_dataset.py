@@ -20,7 +20,17 @@ from pathlib import Path
 
 DATASET_DIR = Path(__file__).parent.parent / "dataset"
 VALID_ROLES = {"system", "user", "assistant", "tool"}
-KNOWN_TOOLS = {"create_class", "cancel_class"}
+KNOWN_TOOLS = {
+    "create_class",
+    "cancel_class",
+    "book_client",
+    "cancel_booking",
+    "get_class_roster",
+    "check_in_client",
+    "create_client",
+    "assign_membership",
+    "get_report",
+}
 
 
 def validate_file(path: Path) -> tuple[int, list[str]]:

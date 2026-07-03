@@ -30,31 +30,47 @@ echo "Dataset    : $DATA_DIR"
 echo "Adapters   : $ADAPTER_DIR"
 echo ""
 
+# ── Step 0: Merge Phase J + Phase L datasets ──────────────────────────────────
+echo "Step 0/4 — Merging datasets..."
+PHASE_L_FILE="$TRAINING_DIR/data/phase_l_tools.jsonl"
+if [ -f "$PHASE_L_FILE" ]; then
+    if [ ! -f "$DATA_DIR/train_phase_j.jsonl" ]; then
+        cp "$DATA_DIR/train.jsonl" "$DATA_DIR/train_phase_j.jsonl"
+        echo "  Backed up Phase J data to train_phase_j.jsonl"
+    fi
+    cat "$DATA_DIR/train_phase_j.jsonl" "$PHASE_L_FILE" > "$DATA_DIR/merged_train.jsonl"
+    echo "  Merged $(wc -l < "$DATA_DIR/train_phase_j.jsonl") + $(wc -l < "$PHASE_L_FILE") examples"
+    cp "$DATA_DIR/merged_train.jsonl" "$DATA_DIR/train.jsonl"
+    echo "  train.jsonl updated with merged dataset."
+else
+    echo "  Phase L file not found ($PHASE_L_FILE), training on Phase J data only."
+fi
+
 # ── Step 1: Validate dataset ──────────────────────────────────────────────────
-echo "Step 1/3 — Validating dataset..."
+echo "Step 1/4 — Validating dataset..."
 python "$SCRIPT_DIR/validate_dataset.py"
 
 # ── Step 2: LoRA fine-tuning ──────────────────────────────────────────────────
 echo ""
-echo "Step 2/3 — Fine-tuning (this will take 2-3 hours on M5)..."
-python -m mlx_lm.lora \
+echo "Step 2/4 — Fine-tuning (this will take 2-3 hours on M5)..."
+python -m mlx_lm lora \
   --model "$BASE_MODEL" \
   --data "$DATA_DIR" \
   --train \
-  --batch-size 4 \
+  --batch-size 2 \
   --num-layers 16 \
-  --iters 1200 \
-  --learning-rate 1e-4 \
-  --lora-rank 16 \
-  --lora-scale 32 \
+  --iters 200 \
+  --learning-rate 1e-5 \
   --adapter-path "$ADAPTER_DIR" \
+  --resume-adapter-file "$ADAPTER_DIR/0001000_adapters.safetensors" \
   --save-every 200 \
-  --val-batches 20
+  --val-batches 20 \
+  -c "$SCRIPT_DIR/../config/lora_config.yaml"
 
 # ── Step 3: Fuse LoRA weights into base model ─────────────────────────────────
 echo ""
-echo "Step 3/3 — Fusing LoRA adapters into base model..."
-python -m mlx_lm.fuse \
+echo "Step 3/4 — Fusing LoRA adapters into base model..."
+python -m mlx_lm fuse \
   --model "$BASE_MODEL" \
   --adapter-path "$ADAPTER_DIR" \
   --save-path "$FUSED_DIR"

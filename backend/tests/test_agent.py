@@ -500,6 +500,9 @@ def test_relative_date_anchored_to_studio_timezone_not_utc(
 
     # 23:30 UTC on July 1st == 01:30 CEST on July 2nd in Rome.
     fixed_utc = datetime.datetime(2026, 7, 1, 23, 30, tzinfo=datetime.timezone.utc)
+    # utcnow() in agent_tools returns a naive UTC datetime — freeze it to the
+    # same instant so the "is class in the past?" guard sees consistent time.
+    fixed_utcnow = datetime.datetime(2026, 7, 1, 23, 30)
 
     class FrozenDateTime(datetime.datetime):
         @classmethod
@@ -507,22 +510,26 @@ def test_relative_date_anchored_to_studio_timezone_not_utc(
             return fixed_utc.astimezone(tz) if tz else fixed_utc
 
     with patch("app.routers.agent.datetime", FrozenDateTime):
-        with patch(
-            "app.routers.agent.completion",
-            return_value=_make_tool_call_response(
-                "create_class",
-                {"location": "Genova", "date": "domani", "start_time": "08:45"},
-            ),
-        ):
-            response = client.post(
-                ACT_URL,
-                json={
-                    "messages": [
-                        {"role": "user", "content": "crea una classe domani a Genova alle 8:45"}
-                    ]
-                },
-                headers=manager_auth_headers,
-            )
+        with patch("app.services.agent_tools.utcnow", return_value=fixed_utcnow):
+            with patch(
+                "app.routers.agent.completion",
+                return_value=_make_tool_call_response(
+                    "create_class",
+                    {"location": "Genova", "date": "domani", "start_time": "08:45"},
+                ),
+            ):
+                response = client.post(
+                    ACT_URL,
+                    json={
+                        "messages": [
+                            {
+                                "role": "user",
+                                "content": "crea una classe domani a Genova alle 8:45",
+                            }
+                        ]
+                    },
+                    headers=manager_auth_headers,
+                )
 
     assert response.status_code == 200, response.text
     data = response.json()
@@ -531,3 +538,124 @@ def test_relative_date_anchored_to_studio_timezone_not_utc(
     # Rome-local "today" at this instant is already July 2nd, so "domani" must
     # be July 3rd — not July 2nd (raw UTC's "tomorrow").
     assert created["starts_at"].startswith("2026-07-03")
+
+
+# ─── cancel_booking confirmation gate ────────────────────────────────────────
+
+
+def test_cancel_booking_without_confirmation_intercepts(client, manager_auth_headers):
+    """Model returns cancel_booking tool call but user has NOT confirmed.
+    Router must intercept and return a confirmation prompt — no DB write."""
+    cancel_args = {
+        "client": "Maria Rossi",
+        "class_type": "Yoga Flow",
+        "date": "2026-07-04",
+        "start_time": "10:00",
+    }
+
+    with patch(
+        "app.routers.agent.completion",
+        return_value=_make_tool_call_response("cancel_booking", cancel_args),
+    ):
+        response = client.post(
+            ACT_URL,
+            json={
+                "messages": [
+                    {"role": "user", "content": "cancella la prenotazione di Maria Rossi"}
+                ],
+                "language": "it",
+            },
+            headers=manager_auth_headers,
+        )
+
+    assert response.status_code == 200, response.text
+    data = response.json()
+    # Must return a confirmation prompt, not execute
+    assert data["action"] is None
+    reply = data["reply"].lower()
+    assert "maria rossi" in reply
+    assert "yoga flow" in reply
+    # Italian prompt ends with "vuoi procedere?"
+    assert "procedere" in reply or "proceed" in reply
+
+
+def test_cancel_booking_with_confirmation_calls_handler(client, manager_auth_headers):
+    """Model returns cancel_booking tool call and last user message contains 'sì'.
+    Router must call the handler (which returns not-found here — no real booking)."""
+    cancel_args = {
+        "client": "Maria Rossi",
+        "class_type": "Yoga Flow",
+        "date": "2026-07-04",
+        "start_time": "10:00",
+    }
+
+    with patch(
+        "app.routers.agent.completion",
+        return_value=_make_tool_call_response("cancel_booking", cancel_args),
+    ):
+        response = client.post(
+            ACT_URL,
+            json={
+                "messages": [
+                    {"role": "user", "content": "cancella la prenotazione di Maria Rossi"},
+                    {
+                        "role": "assistant",
+                        "content": "Sto per cancellare. Vuoi procedere?",
+                    },
+                    {"role": "user", "content": "Sì, procedi"},
+                ],
+                "language": "it",
+            },
+            headers=manager_auth_headers,
+        )
+
+    assert response.status_code == 200, response.text
+    data = response.json()
+    # Handler was called (not intercepted). No booking exists → not-found reply.
+    # The key assertion: no confirmation prompt returned (reply doesn't ask "procedere").
+    assert "procedere" not in data["reply"].lower()
+
+
+# ─── Hallucinated tool call guard ─────────────────────────────────────────────
+
+
+def test_is_hallucinated_tool_call_detects_unknown_tool():
+    from app.routers.agent import _is_hallucinated_tool_call
+
+    assert _is_hallucinated_tool_call('{"name": "create_location", "parameters": {}}') is True
+    assert _is_hallucinated_tool_call('{"name": "Agon Bologna", "address": "Via X 1"}') is True
+    assert _is_hallucinated_tool_call('{"name": "delete_studio"}') is True
+
+
+def test_is_hallucinated_tool_call_passes_known_tools():
+    from app.routers.agent import _is_hallucinated_tool_call
+
+    assert _is_hallucinated_tool_call('{"name": "create_class", "parameters": {}}') is False
+    assert _is_hallucinated_tool_call('{"name": "get_report", "parameters": {}}') is False
+    assert _is_hallucinated_tool_call("Not JSON at all") is False
+    assert _is_hallucinated_tool_call("{'invalid json'}") is False
+
+
+def test_hallucinated_tool_call_returns_unsupported_reply(client, manager_auth_headers):
+    """When the model outputs JSON for an unknown tool, the router must NOT return
+    raw JSON to the user — it should return a localized 'unsupported operation' reply."""
+    with patch(
+        "app.routers.agent.completion",
+        return_value=_make_plain_response('{"name": "create_location", "parameters": {}}'),
+    ):
+        response = client.post(
+            ACT_URL,
+            json={
+                "messages": [{"role": "user", "content": "create a new establishment"}],
+                "language": "en",
+            },
+            headers=manager_auth_headers,
+        )
+
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert data["action"] is None
+    # Must not contain raw JSON
+    assert "{" not in data["reply"]
+    # Must mention what the agent can do
+    assert "class" in data["reply"].lower() or "report" in data["reply"].lower()

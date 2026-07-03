@@ -646,6 +646,7 @@ async def support_chat(
             model=settings.LLM_MODEL,
             messages=[{"role": "system", "content": system_prompt}] + messages,
             api_key=settings.LLM_API_KEY if settings.LLM_API_KEY else None,
+            api_base="http://localhost:11434" if settings.LLM_MODEL.startswith("ollama") else None,
         )
         reply = response.choices[0].message.content
     except Exception as e:
