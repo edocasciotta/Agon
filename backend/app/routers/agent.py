@@ -647,13 +647,19 @@ def agent_act(
         if parsed:
             tool_name, tool_args = parsed
         else:
-            if _is_hallucinated_tool_call(choice.content):
-                return AgentResponse(
-                    reply=_unsupported_op_reply(lang),
-                    draft=request.draft,
-                    usage=usage,
-                )
-            if _is_echoed_studio_data(choice.content):
+            stripped = choice.content.strip()
+            if stripped.startswith("{"):
+                # Any JSON we couldn't parse as a valid tool call must never
+                # be shown raw to the user — this catches:
+                #   • hallucinated tools (create_location, etc.)
+                #   • echoed studio data (membership_types, etc.)
+                #   • known tool calls with malformed/double-encoded parameters
+                if _is_hallucinated_tool_call(stripped):
+                    return AgentResponse(
+                        reply=_unsupported_op_reply(lang),
+                        draft=request.draft,
+                        usage=usage,
+                    )
                 return AgentResponse(
                     reply=_fallback_reply(lang),
                     draft=request.draft,

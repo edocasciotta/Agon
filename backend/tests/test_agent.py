@@ -7,6 +7,8 @@ non-tool-call fallback, LLM failure fallback.
 import datetime
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 ACT_URL = "/api/v1/agent/act"
 
 
@@ -716,3 +718,38 @@ def test_echoed_studio_data_returns_fallback_not_raw_json(client, manager_auth_h
     # Must NOT return raw JSON to the user
     assert "membership_types" not in data["reply"]
     assert data["reply"]  # Must return something (fallback)
+
+
+@pytest.mark.parametrize(
+    "raw_json",
+    [
+        # Double-encoded parameters string with truncated inner JSON
+        '{"name": "create_class", "parameters": "{\\"class_type\\": \\"Yoga\\", \\"date\\": \\"2026-07-04\\""}',
+        # Valid outer JSON but inner parameters string is malformed (extra brace)
+        '{"name": "create_class", "parameters": "{\\"class_type\\": \\"Yoga\\", \\"duration_minutes\\": 60}}"}',
+        # Parameters is empty string (unparseable)
+        '{"name": "assign_membership", "parameters": ""}',
+    ],
+)
+def test_malformed_tool_call_returns_fallback_not_raw_json(raw_json, client, manager_auth_headers):
+    """When the model emits a known tool name but unparseable parameters, the
+    router must return a fallback message — never the raw JSON string."""
+    with patch(
+        "app.routers.agent.completion",
+        return_value=_make_plain_response(raw_json),
+    ):
+        response = client.post(
+            ACT_URL,
+            json={
+                "messages": [{"role": "user", "content": "create a Yoga class tomorrow at 22:12"}],
+                "language": "en",
+            },
+            headers=manager_auth_headers,
+        )
+
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert data["action"] is None
+    # Must NOT echo raw JSON back to user
+    assert not data["reply"].startswith("{"), f"Got raw JSON: {data['reply']}"
+    assert data["reply"]  # fallback message must be non-empty
