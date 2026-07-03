@@ -241,6 +241,54 @@ export function SettingsPage() {
             </section>
 
             <section>
+              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3">{t('settings.sectionColors')}</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('settings.primaryColor')}</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={form.primary_color ?? '#4f46e5'}
+                      onChange={(e) => handleChange('primary_color', e.target.value)}
+                      className="h-9 w-16 cursor-pointer rounded border border-gray-300 p-0.5"
+                    />
+                    <span className="text-sm text-gray-500 font-mono">{form.primary_color ?? '#4f46e5'}</span>
+                    {form.primary_color && form.primary_color !== '#4f46e5' && (
+                      <button
+                        type="button"
+                        onClick={() => handleChange('primary_color', '')}
+                        className="text-xs text-gray-400 hover:text-gray-600"
+                      >
+                        {t('settings.resetDefault')}
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('settings.secondaryColor')}</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={form.secondary_color ?? '#10b981'}
+                      onChange={(e) => handleChange('secondary_color', e.target.value)}
+                      className="h-9 w-16 cursor-pointer rounded border border-gray-300 p-0.5"
+                    />
+                    <span className="text-sm text-gray-500 font-mono">{form.secondary_color ?? '#10b981'}</span>
+                    {form.secondary_color && form.secondary_color !== '#10b981' && (
+                      <button
+                        type="button"
+                        onClick={() => handleChange('secondary_color', '')}
+                        className="text-xs text-gray-400 hover:text-gray-600"
+                      >
+                        {t('settings.resetDefault')}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section>
               <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3">{t('settings.sectionCalendar')}</h3>
               <div className="grid grid-cols-2 gap-3">
                 <Field label={t('settings.calendarStartHour')}>

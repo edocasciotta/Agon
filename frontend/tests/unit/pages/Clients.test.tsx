@@ -78,7 +78,7 @@ describe('ClientsPage', () => {
       expect(clientsApi.list).toHaveBeenCalledWith(undefined, 1, 20)
     })
 
-    const input = await screen.findByPlaceholderText(/search by name or email/i)
+    const input = await screen.findByPlaceholderText(/search by name/i)
     fireEvent.change(input, { target: { value: 'John' } })
 
     await waitFor(() => {

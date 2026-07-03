@@ -34,10 +34,13 @@ def list_instructors(
 ):
     query = db.query(Instructor)
     if search:
-        pattern = f"%{search}%"
-        query = query.join(User, Instructor.user_id == User.id).filter(
-            (User.full_name.ilike(pattern)) | (User.email.ilike(pattern))
-        )
+        if search.isdigit():
+            query = query.filter(Instructor.id == int(search))
+        else:
+            pattern = f"%{search}%"
+            query = query.join(User, Instructor.user_id == User.id).filter(
+                (User.full_name.ilike(pattern)) | (User.email.ilike(pattern))
+            )
     instructors = query.all()
     result = []
     for inst in instructors:

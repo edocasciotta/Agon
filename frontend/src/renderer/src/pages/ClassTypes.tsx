@@ -20,6 +20,9 @@ interface ClassTypeFormData {
   default_capacity: number
   color: string
   default_instructor_id: string
+  cancellation_window_hours: string
+  booking_open_hours_before: string
+  booking_close_hours_before: string
 }
 
 const DEFAULT_FORM: ClassTypeFormData = {
@@ -29,6 +32,9 @@ const DEFAULT_FORM: ClassTypeFormData = {
   default_capacity: 20,
   color: '#4F46E5',
   default_instructor_id: '',
+  cancellation_window_hours: '',
+  booking_open_hours_before: '',
+  booking_close_hours_before: '',
 }
 
 export function ClassTypesPage() {
@@ -100,6 +106,18 @@ export function ClassTypesPage() {
       default_instructor_id: template.default_instructor_id
         ? String(template.default_instructor_id)
         : '',
+      cancellation_window_hours:
+        template.cancellation_window_hours != null
+          ? String(template.cancellation_window_hours)
+          : '',
+      booking_open_hours_before:
+        template.booking_open_hours_before != null
+          ? String(template.booking_open_hours_before)
+          : '',
+      booking_close_hours_before:
+        template.booking_close_hours_before != null
+          ? String(template.booking_close_hours_before)
+          : '',
     })
     setFormError(null)
     setShowModal(true)
@@ -128,6 +146,15 @@ export function ClassTypesPage() {
       color: formData.color,
       default_instructor_id: formData.default_instructor_id
         ? Number(formData.default_instructor_id)
+        : undefined,
+      cancellation_window_hours: formData.cancellation_window_hours
+        ? Number(formData.cancellation_window_hours)
+        : undefined,
+      booking_open_hours_before: formData.booking_open_hours_before
+        ? Number(formData.booking_open_hours_before)
+        : undefined,
+      booking_close_hours_before: formData.booking_close_hours_before
+        ? Number(formData.booking_close_hours_before)
         : undefined,
     }
     if (editingTemplate) {
@@ -318,6 +345,60 @@ export function ClassTypesPage() {
                       </option>
                     ))}
                   </select>
+                </div>
+              </div>
+
+              <div className="border-t border-gray-100 pt-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                  {t('classTypes.sectionBookingWindows')}
+                </p>
+                <p className="text-xs text-gray-400 mb-3">{t('classTypes.bookingWindowsHint')}</p>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      {t('classTypes.cancellationWindow')}
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={formData.cancellation_window_hours}
+                      onChange={(e) =>
+                        setFormData({ ...formData, cancellation_window_hours: e.target.value })
+                      }
+                      placeholder={t('classTypes.bookingWindowPlaceholder')}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      {t('classTypes.bookingOpenBefore')}
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={formData.booking_open_hours_before}
+                      onChange={(e) =>
+                        setFormData({ ...formData, booking_open_hours_before: e.target.value })
+                      }
+                      placeholder={t('classTypes.bookingWindowPlaceholder')}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      {t('classTypes.bookingCloseBefore')}
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={formData.booking_close_hours_before}
+                      onChange={(e) =>
+                        setFormData({ ...formData, booking_close_hours_before: e.target.value })
+                      }
+                      placeholder={t('classTypes.bookingWindowPlaceholder')}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
                 </div>
               </div>
 

@@ -209,12 +209,19 @@
     "updateClassType": "Update Class Type",
     "minLabel": "min",
     "maxLabel": "Max",
-    "emptyDesc": "Create your first class type to start scheduling sessions."
+    "emptyDesc": "Create your first class type to start scheduling sessions.",
+    "sectionBookingWindows": "Booking Windows",
+    "cancellationWindow": "Cancellation window (h)",
+    "bookingOpenBefore": "Opens before class (h)",
+    "bookingCloseBefore": "Closes before class (h)",
+    "bookingWindowsHint": "Leave blank to use studio defaults",
+    "bookingWindowPlaceholder": "e.g. 24"
   },
   "clients": {
     "title": "Clients",
     "addClient": "+ Add Client",
-    "searchPlaceholder": "Search by name or email...",
+    "searchPlaceholder": "Search by name, email or ID...",
+    "id": "ID",
     "name": "Name",
     "email": "Email",
     "phone": "Phone",
@@ -381,7 +388,11 @@
     "testEmailSent": "Test email sent!",
     "testEmailFailed": "Failed to send test email",
     "saveBeforeTest": "Save settings before sending a test email",
-    "smtpHostPlaceholder": "e.g. smtp.gmail.com"
+    "smtpHostPlaceholder": "e.g. smtp.gmail.com",
+    "sectionColors": "Appearance",
+    "primaryColor": "Primary Color",
+    "secondaryColor": "Secondary Color",
+    "resetDefault": "Reset to default"
   },
   "scheduleModal": {
     "title": "Schedule Class",
@@ -462,7 +473,7 @@
   "establishments": {
     "title": "Establishments",
     "subtitle": "Manage your studio locations",
-    "searchPlaceholder": "Search by name...",
+    "searchPlaceholder": "Search by name or ID...",
     "add": "+ Add Establishment",
     "addTitle": "New Establishment",
     "editTitle": "Edit Establishment",
@@ -488,7 +499,7 @@
   "instructors": {
     "title": "Instructors",
     "subtitle": "Manage your teaching staff",
-    "searchPlaceholder": "Search by name or email...",
+    "searchPlaceholder": "Search by name, email or ID...",
     "add": "+ Add Instructor",
     "addTitle": "New Instructor",
     "editTitle": "Edit Instructor",

@@ -275,7 +275,10 @@ export function InstructorsPage() {
                   <div className="flex items-center gap-3">
                     <InitialsAvatar name={inst.full_name} color={color} />
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{inst.full_name}</p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-sm font-semibold text-gray-900 truncate">{inst.full_name}</p>
+                        <span className="text-[10px] font-mono text-gray-400 flex-shrink-0">#{inst.id}</span>
+                      </div>
                       <p className="text-xs text-gray-500 truncate">{inst.email}</p>
                     </div>
                     {!inst.is_active && (

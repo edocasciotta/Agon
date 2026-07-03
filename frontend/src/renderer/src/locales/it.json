@@ -209,12 +209,19 @@
     "updateClassType": "Aggiorna tipo di lezione",
     "minLabel": "min",
     "maxLabel": "Max",
-    "emptyDesc": "Crea il tuo primo tipo di lezione per iniziare a programmare."
+    "emptyDesc": "Crea il tuo primo tipo di lezione per iniziare a programmare.",
+    "sectionBookingWindows": "Finestre di prenotazione",
+    "cancellationWindow": "Finestra cancellazione (h)",
+    "bookingOpenBefore": "Apertura prenotazioni (h prima)",
+    "bookingCloseBefore": "Chiusura prenotazioni (h prima)",
+    "bookingWindowsHint": "Lascia vuoto per usare i default dello studio",
+    "bookingWindowPlaceholder": "es. 24"
   },
   "clients": {
     "title": "Clienti",
     "addClient": "+ Aggiungi cliente",
-    "searchPlaceholder": "Cerca per nome o email...",
+    "searchPlaceholder": "Cerca per nome, email o ID...",
+    "id": "ID",
     "name": "Nome",
     "email": "Email",
     "phone": "Telefono",
@@ -381,7 +388,11 @@
     "testEmailSent": "Email di test inviata!",
     "testEmailFailed": "Impossibile inviare l’email di test",
     "saveBeforeTest": "Salva le impostazioni prima di inviare un'email di test",
-    "smtpHostPlaceholder": "es. smtp.gmail.com"
+    "smtpHostPlaceholder": "es. smtp.gmail.com",
+    "sectionColors": "Aspetto",
+    "primaryColor": "Colore primario",
+    "secondaryColor": "Colore secondario",
+    "resetDefault": "Ripristina predefinito"
   },
   "scheduleModal": {
     "title": "Pianifica lezione",
@@ -462,7 +473,7 @@
   "establishments": {
     "title": "Sedi",
     "subtitle": "Gestisci le sedi del tuo studio",
-    "searchPlaceholder": "Cerca per nome...",
+    "searchPlaceholder": "Cerca per nome o ID...",
     "add": "+ Aggiungi Sede",
     "addTitle": "Nuova Sede",
     "editTitle": "Modifica Sede",
@@ -488,7 +499,7 @@
   "instructors": {
     "title": "Istruttori",
     "subtitle": "Gestisci il personale docente",
-    "searchPlaceholder": "Cerca per nome o email...",
+    "searchPlaceholder": "Cerca per nome, email o ID...",
     "add": "+ Aggiungi Istruttore",
     "addTitle": "Nuovo Istruttore",
     "editTitle": "Modifica Istruttore",

@@ -201,12 +201,18 @@
     "updateClassType": "Actualizar tipo de clase",
     "minLabel": "min",
     "maxLabel": "Máx",
-    "emptyDesc": "Crea tu primer tipo de clase para empezar a programar sesiones."
+    "emptyDesc": "Crea tu primer tipo de clase para empezar a programar sesiones.",
+    "sectionBookingWindows": "Ventanas de reserva",
+    "cancellationWindow": "Ventana de cancelación (h)",
+    "bookingOpenBefore": "Apertura reservas (h antes)",
+    "bookingCloseBefore": "Cierre reservas (h antes)",
+    "bookingWindowsHint": "Dejar en blanco para usar los valores del estudio",
+    "bookingWindowPlaceholder": "ej. 24"
   },
   "clients": {
     "title": "Clientes",
     "addClient": "+ Añadir cliente",
-    "searchPlaceholder": "Buscar por nombre o email...",
+    "searchPlaceholder": "Buscar por nombre, correo o ID...",
     "name": "Nombre",
     "email": "Email",
     "phone": "Teléfono",
@@ -225,7 +231,8 @@
     "phoneOptional": "Teléfono (opcional)",
     "inviteSent": "Email de invitación enviado a {{email}}",
     "inviteNotSent": "Cliente creado pero no se pudo enviar el email — comprueba la configuración de email",
-    "emptyDesc": "Añade tu primer cliente para gestionar reservas y membresías."
+    "emptyDesc": "Añade tu primer cliente para gestionar reservas y membresías.",
+    "id": "ID"
   },
   "clientDetail": {
     "editName": "Nombre",
@@ -373,7 +380,11 @@
     "testEmailSent": "¡Email de prueba enviado!",
     "testEmailFailed": "Error al enviar el email de prueba",
     "saveBeforeTest": "Guarda los ajustes antes de enviar un correo de prueba",
-    "smtpHostPlaceholder": "ej. smtp.gmail.com"
+    "smtpHostPlaceholder": "ej. smtp.gmail.com",
+    "sectionColors": "Apariencia",
+    "primaryColor": "Color primario",
+    "secondaryColor": "Color secundario",
+    "resetDefault": "Restaurar predeterminado"
   },
   "scheduleModal": {
     "title": "Programar clase",
@@ -454,7 +465,7 @@
   "establishments": {
     "title": "Sedes",
     "subtitle": "Gestiona las sedes de tu estudio",
-    "searchPlaceholder": "Buscar por nombre...",
+    "searchPlaceholder": "Buscar por nombre o ID...",
     "add": "+ Añadir sede",
     "addTitle": "Nueva Sede",
     "editTitle": "Editar Sede",
@@ -480,7 +491,7 @@
   "instructors": {
     "title": "Instructores",
     "subtitle": "Gestiona tu personal docente",
-    "searchPlaceholder": "Buscar por nombre o email...",
+    "searchPlaceholder": "Buscar por nombre, correo o ID...",
     "add": "+ Añadir instructor",
     "addTitle": "Nuevo Instructor",
     "editTitle": "Editar Instructor",

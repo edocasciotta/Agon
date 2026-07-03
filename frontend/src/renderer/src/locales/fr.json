@@ -201,12 +201,18 @@
     "updateClassType": "Mettre à jour le type de cours",
     "minLabel": "min",
     "maxLabel": "Max",
-    "emptyDesc": "Créez votre premier type de cours pour commencer à planifier."
+    "emptyDesc": "Créez votre premier type de cours pour commencer à planifier.",
+    "sectionBookingWindows": "Fenêtres de réservation",
+    "cancellationWindow": "Délai d'annulation (h)",
+    "bookingOpenBefore": "Ouverture réservations (h avant)",
+    "bookingCloseBefore": "Fermeture réservations (h avant)",
+    "bookingWindowsHint": "Laisser vide pour les paramètres du studio",
+    "bookingWindowPlaceholder": "ex. 24"
   },
   "clients": {
     "title": "Clients",
     "addClient": "+ Ajouter un client",
-    "searchPlaceholder": "Rechercher par nom ou email...",
+    "searchPlaceholder": "Rechercher par nom, e-mail ou ID...",
     "name": "Nom",
     "email": "Email",
     "phone": "Téléphone",
@@ -225,7 +231,8 @@
     "phoneOptional": "Téléphone (optionnel)",
     "inviteSent": "E-mail d’invitation envoyé à {{email}}",
     "inviteNotSent": "Client créé mais l’e-mail n’a pas pu être envoyé — vérifiez les paramètres e-mail",
-    "emptyDesc": "Ajoutez votre premier client pour gérer les réservations et abonnements."
+    "emptyDesc": "Ajoutez votre premier client pour gérer les réservations et abonnements.",
+    "id": "ID"
   },
   "clientDetail": {
     "editName": "Nom",
@@ -373,7 +380,11 @@
     "testEmailSent": "E-mail de test envoyé !",
     "testEmailFailed": "Échec de l’envoi de l’e-mail de test",
     "saveBeforeTest": "Enregistre les paramètres avant d'envoyer un e-mail de test",
-    "smtpHostPlaceholder": "ex. smtp.gmail.com"
+    "smtpHostPlaceholder": "ex. smtp.gmail.com",
+    "sectionColors": "Apparence",
+    "primaryColor": "Couleur primaire",
+    "secondaryColor": "Couleur secondaire",
+    "resetDefault": "Réinitialiser"
   },
   "scheduleModal": {
     "title": "Planifier un cours",
@@ -454,7 +465,7 @@
   "establishments": {
     "title": "Établissements",
     "subtitle": "Gérez vos lieux de studio",
-    "searchPlaceholder": "Rechercher par nom...",
+    "searchPlaceholder": "Rechercher par nom ou ID...",
     "add": "+ Ajouter un lieu",
     "addTitle": "Nouvel établissement",
     "editTitle": "Modifier l'établissement",
@@ -480,7 +491,7 @@
   "instructors": {
     "title": "Instructeurs",
     "subtitle": "Gérez votre personnel enseignant",
-    "searchPlaceholder": "Rechercher par nom ou email...",
+    "searchPlaceholder": "Rechercher par nom, e-mail ou ID...",
     "add": "+ Ajouter un instructeur",
     "addTitle": "Nouvel instructeur",
     "editTitle": "Modifier l'instructeur",

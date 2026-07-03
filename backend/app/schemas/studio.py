@@ -18,6 +18,8 @@ class StudioSettingsUpdate(BaseModel):
     reminder_hours_before: Optional[int] = None
     calendar_start_hour: Optional[int] = None
     calendar_end_hour: Optional[int] = None
+    primary_color: Optional[str] = None
+    secondary_color: Optional[str] = None
 
 
 class StudioSettingsResponse(BaseModel):
@@ -35,6 +37,8 @@ class StudioSettingsResponse(BaseModel):
     reminder_hours_before: int
     calendar_start_hour: int
     calendar_end_hour: int
+    primary_color: Optional[str] = None
+    secondary_color: Optional[str] = None
     stripe_connected: bool
     tunnel_url: Optional[str] = None
     last_backup_at: Optional[datetime] = None

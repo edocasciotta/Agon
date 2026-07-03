@@ -201,12 +201,18 @@
     "updateClassType": "Atualizar tipo de aula",
     "minLabel": "min",
     "maxLabel": "Máx",
-    "emptyDesc": "Crie o seu primeiro tipo de aula para começar a agendar."
+    "emptyDesc": "Crie o seu primeiro tipo de aula para começar a agendar.",
+    "sectionBookingWindows": "Janelas de reserva",
+    "cancellationWindow": "Janela de cancelamento (h)",
+    "bookingOpenBefore": "Abertura de reservas (h antes)",
+    "bookingCloseBefore": "Fechamento de reservas (h antes)",
+    "bookingWindowsHint": "Deixar em branco para usar os padrões do estúdio",
+    "bookingWindowPlaceholder": "ex. 24"
   },
   "clients": {
     "title": "Clientes",
     "addClient": "+ Adicionar cliente",
-    "searchPlaceholder": "Buscar por nome ou email...",
+    "searchPlaceholder": "Pesquisar por nome, e-mail ou ID...",
     "name": "Nome",
     "email": "Email",
     "phone": "Telefone",
@@ -225,7 +231,8 @@
     "phoneOptional": "Telefone (opcional)",
     "inviteSent": "E-mail de convite enviado para {{email}}",
     "inviteNotSent": "Cliente criado mas o e-mail não pôde ser enviado — verifique as configurações de e-mail",
-    "emptyDesc": "Adicione o seu primeiro cliente para gerir reservas e associações."
+    "emptyDesc": "Adicione o seu primeiro cliente para gerir reservas e associações.",
+    "id": "ID"
   },
   "clientDetail": {
     "editName": "Nome",
@@ -373,7 +380,11 @@
     "testEmailSent": "E-mail de teste enviado!",
     "testEmailFailed": "Falha ao enviar e-mail de teste",
     "saveBeforeTest": "Guarda as definições antes de enviar um e-mail de teste",
-    "smtpHostPlaceholder": "ex. smtp.gmail.com"
+    "smtpHostPlaceholder": "ex. smtp.gmail.com",
+    "sectionColors": "Aparência",
+    "primaryColor": "Cor primária",
+    "secondaryColor": "Cor secundária",
+    "resetDefault": "Restaurar padrão"
   },
   "scheduleModal": {
     "title": "Agendar aula",
@@ -454,7 +465,7 @@
   "establishments": {
     "title": "Estabelecimentos",
     "subtitle": "Gerencie as sedes do seu estúdio",
-    "searchPlaceholder": "Buscar por nome...",
+    "searchPlaceholder": "Pesquisar por nome ou ID...",
     "add": "+ Adicionar sede",
     "addTitle": "Novo Estabelecimento",
     "editTitle": "Editar Estabelecimento",
@@ -480,7 +491,7 @@
   "instructors": {
     "title": "Instrutores",
     "subtitle": "Gerencie seu corpo docente",
-    "searchPlaceholder": "Buscar por nome o email...",
+    "searchPlaceholder": "Pesquisar por nome, e-mail ou ID...",
     "add": "+ Adicionar instrutor",
     "addTitle": "Novo Instrutor",
     "editTitle": "Editar Instrutor",

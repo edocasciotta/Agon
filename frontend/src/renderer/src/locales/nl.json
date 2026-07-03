@@ -201,12 +201,18 @@
     "updateClassType": "Lestype bijwerken",
     "minLabel": "min",
     "maxLabel": "Max",
-    "emptyDesc": "Maak je eerste lestype aan om lessen te kunnen plannen."
+    "emptyDesc": "Maak je eerste lestype aan om lessen te kunnen plannen.",
+    "sectionBookingWindows": "Boekingsvensters",
+    "cancellationWindow": "Annuleringsvenster (u)",
+    "bookingOpenBefore": "Boekingen openen (u voor)",
+    "bookingCloseBefore": "Boekingen sluiten (u voor)",
+    "bookingWindowsHint": "Leeg laten voor studiostandaarden",
+    "bookingWindowPlaceholder": "bijv. 24"
   },
   "clients": {
     "title": "Klanten",
     "addClient": "+ Klant toevoegen",
-    "searchPlaceholder": "Zoeken op naam of e-mail...",
+    "searchPlaceholder": "Zoeken op naam, e-mail of ID...",
     "name": "Naam",
     "email": "E-mail",
     "phone": "Telefoon",
@@ -225,7 +231,8 @@
     "phoneOptional": "Telefoon (optioneel)",
     "inviteSent": "Uitnodigings-e-mail verzonden naar {{email}}",
     "inviteNotSent": "Klant aangemaakt maar e-mail kon niet worden verzonden — controleer e-mailinstellingen",
-    "emptyDesc": "Voeg je eerste klant toe om boekingen en lidmaatschappen te beheren."
+    "emptyDesc": "Voeg je eerste klant toe om boekingen en lidmaatschappen te beheren.",
+    "id": "ID"
   },
   "clientDetail": {
     "editName": "Naam",
@@ -373,7 +380,11 @@
     "testEmailSent": "Test-e-mail verzonden!",
     "testEmailFailed": "Test-e-mail verzenden mislukt",
     "saveBeforeTest": "Sla instellingen op vóór het verzenden van een test-e-mail",
-    "smtpHostPlaceholder": "bijv. smtp.gmail.com"
+    "smtpHostPlaceholder": "bijv. smtp.gmail.com",
+    "sectionColors": "Weergave",
+    "primaryColor": "Primaire kleur",
+    "secondaryColor": "Secundaire kleur",
+    "resetDefault": "Standaard herstellen"
   },
   "scheduleModal": {
     "title": "Les plannen",
@@ -454,7 +465,7 @@
   "establishments": {
     "title": "Vestigingen",
     "subtitle": "Beheer je studiolocaties",
-    "searchPlaceholder": "Zoeken op naam...",
+    "searchPlaceholder": "Zoeken op naam of ID...",
     "add": "+ Vestiging toevoegen",
     "addTitle": "Nieuwe vestiging",
     "editTitle": "Vestiging bewerken",
@@ -480,7 +491,7 @@
   "instructors": {
     "title": "Instructeurs",
     "subtitle": "Beheer je onderwijspersoneel",
-    "searchPlaceholder": "Zoeken op naam of e-mail...",
+    "searchPlaceholder": "Zoeken op naam, e-mail of ID...",
     "add": "+ Instructeur toevoegen",
     "addTitle": "Nieuwe instructeur",
     "editTitle": "Instructeur bewerken",

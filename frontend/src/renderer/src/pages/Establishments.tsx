@@ -283,7 +283,10 @@ export function EstablishmentsPage() {
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <h4 className="text-sm font-semibold text-gray-900">{loc.name}</h4>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-sm font-semibold text-gray-900">{loc.name}</h4>
+                      <span className="text-[10px] font-mono text-gray-400">#{loc.id}</span>
+                    </div>
                     {loc.address && (
                       <p className="text-xs text-gray-500 mt-0.5">{loc.address}</p>
                     )}

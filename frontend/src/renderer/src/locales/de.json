@@ -201,12 +201,18 @@
     "updateClassType": "Kurstyp aktualisieren",
     "minLabel": "Min.",
     "maxLabel": "Max",
-    "emptyDesc": "Erstelle deinen ersten Kurstyp, um mit der Planung zu beginnen."
+    "emptyDesc": "Erstelle deinen ersten Kurstyp, um mit der Planung zu beginnen.",
+    "sectionBookingWindows": "Buchungsfenster",
+    "cancellationWindow": "Stornierungsfenster (h)",
+    "bookingOpenBefore": "Buchung öffnet (h vorher)",
+    "bookingCloseBefore": "Buchung schließt (h vorher)",
+    "bookingWindowsHint": "Leer lassen für Studio-Standardwerte",
+    "bookingWindowPlaceholder": "z.B. 24"
   },
   "clients": {
     "title": "Kunden",
     "addClient": "+ Kunde hinzufügen",
-    "searchPlaceholder": "Nach Name oder E-Mail suchen...",
+    "searchPlaceholder": "Nach Name, E-Mail oder ID suchen...",
     "name": "Name",
     "email": "E-Mail",
     "phone": "Telefon",
@@ -225,7 +231,8 @@
     "phoneOptional": "Telefon (optional)",
     "inviteSent": "Einladungs-E-Mail gesendet an {{email}}",
     "inviteNotSent": "Kunde erstellt, aber E-Mail konnte nicht gesendet werden — E-Mail-Einstellungen prüfen",
-    "emptyDesc": "Füge deinen ersten Kunden hinzu, um Buchungen und Mitgliedschaften zu verwalten."
+    "emptyDesc": "Füge deinen ersten Kunden hinzu, um Buchungen und Mitgliedschaften zu verwalten.",
+    "id": "ID"
   },
   "clientDetail": {
     "editName": "Name",
@@ -373,7 +380,11 @@
     "testEmailSent": "Test-E-Mail gesendet!",
     "testEmailFailed": "Test-E-Mail konnte nicht gesendet werden",
     "saveBeforeTest": "Speichere die Einstellungen vor dem Senden einer Test-E-Mail",
-    "smtpHostPlaceholder": "z.B. smtp.gmail.com"
+    "smtpHostPlaceholder": "z.B. smtp.gmail.com",
+    "sectionColors": "Erscheinungsbild",
+    "primaryColor": "Primärfarbe",
+    "secondaryColor": "Sekundärfarbe",
+    "resetDefault": "Standard zurücksetzen"
   },
   "scheduleModal": {
     "title": "Kurs planen",
@@ -454,7 +465,7 @@
   "establishments": {
     "title": "Standorte",
     "subtitle": "Verwalte deine Studiostandorte",
-    "searchPlaceholder": "Nach Namen suchen...",
+    "searchPlaceholder": "Nach Name oder ID suchen...",
     "add": "+ Standort hinzufügen",
     "addTitle": "Neuer Standort",
     "editTitle": "Standort bearbeiten",
@@ -480,7 +491,7 @@
   "instructors": {
     "title": "Kursleiter",
     "subtitle": "Lehrpersonal verwalten",
-    "searchPlaceholder": "Nach Name oder E-Mail suchen...",
+    "searchPlaceholder": "Nach Name, E-Mail oder ID suchen...",
     "add": "+ Trainer hinzufügen",
     "addTitle": "Neuer Kursleiter",
     "editTitle": "Kursleiter bearbeiten",

@@ -41,13 +41,13 @@ beforeEach(() => {
 describe('InstructorsPage', () => {
   it('renders the search input', async () => {
     renderPage()
-    const input = await screen.findByPlaceholderText(/search by name or email/i)
+    const input = await screen.findByPlaceholderText(/search by name/i)
     expect(input).toBeTruthy()
   })
 
   it('calls the API with the search term after typing (debounced)', async () => {
     renderPage()
-    const input = await screen.findByPlaceholderText(/search by name or email/i)
+    const input = await screen.findByPlaceholderText(/search by name/i)
     fireEvent.change(input, { target: { value: 'Jane' } })
 
     await waitFor(
