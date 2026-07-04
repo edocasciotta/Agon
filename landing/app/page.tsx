@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const GITHUB = "https://github.com/edocasciotta/Agon";
 const RELEASES = `${GITHUB}/releases/latest`;
 
 type Lang = "en" | "it" | "fr" | "es" | "pt" | "de" | "nl" | "pl" | "tr";
+type MockScreen = "dashboard" | "calendar" | "clients";
 
 const langLabels: Record<Lang, string> = {
   en: "English", it: "Italiano", fr: "Français", es: "Español",
@@ -13,22 +14,16 @@ const langLabels: Record<Lang, string> = {
 };
 
 type Copy = {
-  badge: string;
-  h1: string;
-  sub: string;
-  source: string;
+  badge: string; h1: string; sub: string; source: string;
   downloadFor: (p: string) => string;
   featuresTitle: string;
   features: { title: string; desc: string }[];
-  selfTitle: string;
-  selfBody: string;
-  archItems: string[];
-  ctaTitle: string;
-  ctaBody: string;
-  viewGithub: string;
-  releases: string;
-  footerLicense: string;
+  selfTitle: string; selfBody: string; archItems: string[];
+  ctaTitle: string; ctaBody: string;
+  viewGithub: string; releases: string; footerLicense: string;
   platforms: { name: string; sub: string }[];
+  screensTitle: string; screensDesc: string;
+  tabDashboard: string; tabCalendar: string; tabClients: string;
 };
 
 const copy: Record<Lang, Copy> = {
@@ -54,6 +49,9 @@ const copy: Record<Lang, Copy> = {
     ctaBody: "Source code is publicly available on GitHub under the MIT license. Inspect it, contribute, or deploy it yourself.",
     viewGithub: "View on GitHub", releases: "Releases", footerLicense: "MIT License",
     platforms: [{ name: "macOS", sub: "macOS 12 or later" }, { name: "Windows", sub: "Windows 10 or later" }, { name: "Linux", sub: "Ubuntu 20.04+" }],
+    screensTitle: "See it in action",
+    screensDesc: "A few screens from the desktop app.",
+    tabDashboard: "Dashboard", tabCalendar: "Calendar", tabClients: "Clients",
   },
   it: {
     badge: "Gratis e open source",
@@ -77,6 +75,9 @@ const copy: Record<Lang, Copy> = {
     ctaBody: "Il codice sorgente è pubblico su GitHub con licenza MIT. Puoi ispezionarlo, contribuire o fare il deploy autonomamente.",
     viewGithub: "Vedi su GitHub", releases: "Release", footerLicense: "Licenza MIT",
     platforms: [{ name: "macOS", sub: "macOS 12 o superiore" }, { name: "Windows", sub: "Windows 10 o superiore" }, { name: "Linux", sub: "Ubuntu 20.04+" }],
+    screensTitle: "Scopri come funziona",
+    screensDesc: "Alcune schermate dall'app desktop.",
+    tabDashboard: "Dashboard", tabCalendar: "Calendario", tabClients: "Clienti",
   },
   fr: {
     badge: "Gratuit et open source",
@@ -100,6 +101,9 @@ const copy: Record<Lang, Copy> = {
     ctaBody: "Le code source est disponible publiquement sur GitHub sous licence MIT. Inspectez-le, contribuez ou déployez-le vous-même.",
     viewGithub: "Voir sur GitHub", releases: "Notes de version", footerLicense: "Licence MIT",
     platforms: [{ name: "macOS", sub: "macOS 12 ou version ultérieure" }, { name: "Windows", sub: "Windows 10 ou version ultérieure" }, { name: "Linux", sub: "Ubuntu 20.04+" }],
+    screensTitle: "Découvrez-le en action",
+    screensDesc: "Quelques écrans de l'application bureau.",
+    tabDashboard: "Dashboard", tabCalendar: "Calendrier", tabClients: "Clients",
   },
   es: {
     badge: "Gratis y open source",
@@ -123,6 +127,9 @@ const copy: Record<Lang, Copy> = {
     ctaBody: "El código fuente está disponible públicamente en GitHub bajo la licencia MIT. Inspéctalo, contribuye o despliégalo tú mismo.",
     viewGithub: "Ver en GitHub", releases: "Notas de versión", footerLicense: "Licencia MIT",
     platforms: [{ name: "macOS", sub: "macOS 12 o posterior" }, { name: "Windows", sub: "Windows 10 o posterior" }, { name: "Linux", sub: "Ubuntu 20.04+" }],
+    screensTitle: "Véalo en acción",
+    screensDesc: "Algunas pantallas de la aplicación.",
+    tabDashboard: "Dashboard", tabCalendar: "Calendario", tabClients: "Clientes",
   },
   pt: {
     badge: "Gratuito e open source",
@@ -146,6 +153,9 @@ const copy: Record<Lang, Copy> = {
     ctaBody: "O código-fonte está disponível publicamente no GitHub sob a licença MIT. Inspecione-o, contribua ou faça o deploy por conta própria.",
     viewGithub: "Ver no GitHub", releases: "Notas de versão", footerLicense: "Licença MIT",
     platforms: [{ name: "macOS", sub: "macOS 12 ou superior" }, { name: "Windows", sub: "Windows 10 ou superior" }, { name: "Linux", sub: "Ubuntu 20.04+" }],
+    screensTitle: "Veja em ação",
+    screensDesc: "Algumas telas do app desktop.",
+    tabDashboard: "Dashboard", tabCalendar: "Calendário", tabClients: "Clientes",
   },
   de: {
     badge: "Kostenlos und Open Source",
@@ -169,6 +179,9 @@ const copy: Record<Lang, Copy> = {
     ctaBody: "Der Quellcode ist öffentlich auf GitHub unter der MIT-Lizenz verfügbar. Inspiziere ihn, trage bei oder deploye ihn selbst.",
     viewGithub: "Auf GitHub ansehen", releases: "Versionshinweise", footerLicense: "MIT-Lizenz",
     platforms: [{ name: "macOS", sub: "macOS 12 oder neuer" }, { name: "Windows", sub: "Windows 10 oder neuer" }, { name: "Linux", sub: "Ubuntu 20.04+" }],
+    screensTitle: "Sieh es in Aktion",
+    screensDesc: "Einige Bildschirmfotos der Desktop-App.",
+    tabDashboard: "Dashboard", tabCalendar: "Kalender", tabClients: "Kunden",
   },
   nl: {
     badge: "Gratis en open source",
@@ -192,6 +205,9 @@ const copy: Record<Lang, Copy> = {
     ctaBody: "De broncode is openbaar beschikbaar op GitHub onder de MIT-licentie. Inspecteer het, draag bij of implementeer het zelf.",
     viewGithub: "Bekijk op GitHub", releases: "Release-notities", footerLicense: "MIT-licentie",
     platforms: [{ name: "macOS", sub: "macOS 12 of hoger" }, { name: "Windows", sub: "Windows 10 of hoger" }, { name: "Linux", sub: "Ubuntu 20.04+" }],
+    screensTitle: "Bekijk het in actie",
+    screensDesc: "Enkele schermen van de desktop-app.",
+    tabDashboard: "Dashboard", tabCalendar: "Agenda", tabClients: "Klanten",
   },
   pl: {
     badge: "Bezpłatne i open source",
@@ -215,6 +231,9 @@ const copy: Record<Lang, Copy> = {
     ctaBody: "Kod źródłowy jest publicznie dostępny na GitHub na licencji MIT. Możesz go sprawdzić, wnieść wkład lub wdrożyć samodzielnie.",
     viewGithub: "Zobacz na GitHub", releases: "Informacje o wydaniu", footerLicense: "Licencja MIT",
     platforms: [{ name: "macOS", sub: "macOS 12 lub nowszy" }, { name: "Windows", sub: "Windows 10 lub nowszy" }, { name: "Linux", sub: "Ubuntu 20.04+" }],
+    screensTitle: "Zobacz w działaniu",
+    screensDesc: "Kilka ekranów z aplikacji desktopowej.",
+    tabDashboard: "Dashboard", tabCalendar: "Kalendarz", tabClients: "Klienci",
   },
   tr: {
     badge: "Ücretsiz ve açık kaynak",
@@ -238,10 +257,13 @@ const copy: Record<Lang, Copy> = {
     ctaBody: "Kaynak kodu GitHub'da MIT lisansı altında kamuya açıktır. İnceleyebilir, katkıda bulunabilir veya kendiniz deploy edebilirsiniz.",
     viewGithub: "GitHub'da görüntüle", releases: "Sürüm notları", footerLicense: "MIT Lisansı",
     platforms: [{ name: "macOS", sub: "macOS 12 veya üzeri" }, { name: "Windows", sub: "Windows 10 veya üzeri" }, { name: "Linux", sub: "Ubuntu 20.04+" }],
+    screensTitle: "Uygulamayı görün",
+    screensDesc: "Masaüstü uygulamasından birkaç ekran.",
+    tabDashboard: "Dashboard", tabCalendar: "Takvim", tabClients: "Müşteriler",
   },
 };
 
-// ─── Icons ─────────────────────────────────────────────────────────────────────
+// ─── Static icons ──────────────────────────────────────────────────────────────
 
 function GithubIcon({ className }: { className?: string }) {
   return (
@@ -291,11 +313,210 @@ const featureIcons = [
   <svg key="bar" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
 ];
 
+// ─── Sidebar nav ───────────────────────────────────────────────────────────────
+
+type NavId = MockScreen | "memberships" | "reports" | "settings";
+
+const MOCK_NAV: { id: NavId; label: string; icon: React.ReactNode }[] = [
+  { id: "dashboard", label: "Dashboard", icon: <svg className="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> },
+  { id: "calendar", label: "Calendar", icon: <svg className="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
+  { id: "clients", label: "Clients", icon: <svg className="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
+  { id: "memberships", label: "Memberships", icon: <svg className="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> },
+  { id: "reports", label: "Reports", icon: <svg className="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> },
+  { id: "settings", label: "Settings", icon: <svg className="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> },
+];
+
+// ─── Mock screens ──────────────────────────────────────────────────────────────
+
+function DashboardMock() {
+  const kpis = [
+    { label: "Active members", value: "142", sub: "+5 this month", accent: "#4F46E5", iconBg: "#EEF2FF", dot: "#4F46E5" },
+    { label: "Classes today", value: "8", sub: "2 starting soon", accent: "#10b981", iconBg: "#ECFDF5", dot: "#10b981" },
+    { label: "Check-ins (week)", value: "47", sub: "vs 41 last week", accent: "#f59e0b", iconBg: "#FFFBEB", dot: "#f59e0b" },
+    { label: "Revenue (month)", value: "€3.2K", sub: "vs €2.9K last month", accent: "#8b5cf6", iconBg: "#F5F3FF", dot: "#8b5cf6" },
+  ];
+  const schedule = [
+    { time: "09:00", name: "Yoga Flow", info: "Sara Colombo · Studio 1", cap: "12/15", color: "#6366f1", past: true },
+    { time: "11:00", name: "HIIT", info: "Marco Esposito · Studio 2", cap: "8/10", color: "#ef4444", live: true },
+    { time: "18:00", name: "Pilates", info: "Elena Ferrara · Studio 1", cap: "6/12", color: "#10b981" },
+    { time: "19:30", name: "CrossFit", info: "Marco Esposito · Outdoor", cap: "15/20", color: "#f59e0b" },
+  ];
+  return (
+    <div className="p-4 overflow-auto h-full">
+      <div className="mb-4">
+        <p className="text-sm font-semibold text-gray-900">Good morning, Marco</p>
+        <p className="text-[11px] text-gray-400 mt-0.5">Monday, 7 July 2025</p>
+      </div>
+      <div className="grid grid-cols-4 gap-2 mb-5">
+        {kpis.map((k) => (
+          <div key={k.label} className="bg-white border border-gray-100 rounded-xl overflow-hidden">
+            <div className="h-0.5 w-full" style={{ background: k.accent }} />
+            <div className="p-2.5">
+              <div className="w-6 h-6 rounded-md flex items-center justify-center mb-2" style={{ background: k.iconBg }}>
+                <div className="w-2 h-2 rounded-full" style={{ background: k.dot }} />
+              </div>
+              <div className="text-base font-semibold text-gray-900 leading-none">{k.value}</div>
+              <div className="text-[9px] text-gray-500 mt-1">{k.label}</div>
+              <div className="text-[8px] text-gray-400 mt-1.5 pt-1.5 border-t border-gray-50">{k.sub}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="text-[9px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Today&rsquo;s schedule</p>
+      <div className="bg-white border border-gray-100 rounded-xl overflow-hidden">
+        {schedule.map((c) => (
+          <div key={c.time} className="flex items-center gap-2.5 px-3 py-2.5 border-b border-gray-50 last:border-0">
+            <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: c.past ? "#d1d5db" : c.color }} />
+            <span className="text-[10px] font-medium text-gray-400 w-9 flex-shrink-0">{c.time}</span>
+            <div className="flex-1 min-w-0">
+              <div className="text-[11px] font-medium text-gray-900 truncate">{c.name}</div>
+              <div className="text-[9px] text-gray-400 truncate">{c.info}</div>
+            </div>
+            {c.live && <span className="text-[8px] font-medium px-1.5 py-0.5 rounded-full bg-green-50 text-green-600 flex-shrink-0">Live</span>}
+            <span className="text-[9px] font-medium px-1.5 py-0.5 rounded-full flex-shrink-0"
+              style={c.past ? { background: "#f3f4f6", color: "#9ca3af" } : { background: `${c.color}18`, color: c.color }}>
+              {c.cap}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CalendarMock() {
+  const DAYS = ["Mon 7", "Tue 8", "Wed 9", "Thu 10", "Fri 11", "Sat 12"];
+  const HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
+  const ROW_H = 27;
+  const GRID_START = 8;
+  const N = DAYS.length;
+
+  const classes = [
+    { day: 0, sh: 9, sm: 0, dur: 50, name: "Yoga", color: "#6366f1" },
+    { day: 1, sh: 10, sm: 0, dur: 45, name: "HIIT", color: "#ef4444" },
+    { day: 2, sh: 9, sm: 0, dur: 50, name: "Yoga", color: "#6366f1" },
+    { day: 3, sh: 11, sm: 0, dur: 45, name: "Spinning", color: "#06b6d4" },
+    { day: 4, sh: 9, sm: 0, dur: 50, name: "Yoga", color: "#6366f1" },
+    { day: 4, sh: 10, sm: 15, dur: 60, name: "Boxing", color: "#8b5cf6" },
+    { day: 5, sh: 10, sm: 0, dur: 45, name: "HIIT", color: "#ef4444" },
+    { day: 0, sh: 18, sm: 0, dur: 60, name: "CrossFit", color: "#f59e0b" },
+    { day: 1, sh: 18, sm: 0, dur: 60, name: "Pilates", color: "#10b981" },
+    { day: 2, sh: 18, sm: 30, dur: 60, name: "CrossFit", color: "#f59e0b" },
+  ];
+
+  const GRID_H = HOURS.length * ROW_H;
+  const VISIBLE_H = 265;
+
+  return (
+    <div className="p-3 h-full flex flex-col">
+      <div className="flex items-center justify-between mb-2 flex-shrink-0">
+        <div className="flex items-center gap-1 text-[11px] font-medium text-gray-700">
+          <span className="cursor-pointer px-1 rounded hover:bg-gray-100">‹</span>
+          <span>Jul 7–12, 2025</span>
+          <span className="cursor-pointer px-1 rounded hover:bg-gray-100">›</span>
+        </div>
+        <button className="text-[9px] font-semibold bg-indigo-600 text-white px-2 py-1 rounded">+ Schedule</button>
+      </div>
+      <div className="flex flex-1 overflow-hidden">
+        <div className="w-8 flex-shrink-0 relative">
+          {HOURS.map((h, i) => (
+            <div key={h} className="absolute right-1 text-[8px] text-gray-400 leading-none" style={{ top: i * ROW_H - 4 }}>
+              {String(h).padStart(2, "0")}
+            </div>
+          ))}
+        </div>
+        <div className="flex-1 relative">
+          <div className="flex border-b border-gray-100 mb-0.5">
+            {DAYS.map((d, i) => (
+              <div key={d} className={`flex-1 text-center text-[8.5px] font-medium py-1 ${i === 0 ? "text-indigo-600" : "text-gray-500"}`}>{d}</div>
+            ))}
+          </div>
+          <div className="relative overflow-hidden" style={{ height: VISIBLE_H }}>
+            <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none" />
+            {HOURS.map((_, i) => (
+              <div key={i} className="absolute left-0 right-0 border-t border-gray-50" style={{ top: i * ROW_H }} />
+            ))}
+            <div className="absolute left-0 right-0" style={{ height: GRID_H }}>
+              {classes.map((cls, idx) => {
+                const top = ((cls.sh - GRID_START) + cls.sm / 60) * ROW_H;
+                const height = Math.max((cls.dur / 60) * ROW_H, 16);
+                return (
+                  <div key={idx} className="absolute rounded overflow-hidden px-1 pt-0.5 text-[8px] font-medium"
+                    style={{ top, height, left: `${(cls.day / N) * 100}%`, width: `${(1 / N) * 100 - 0.5}%`, backgroundColor: `${cls.color}20`, borderLeft: `2px solid ${cls.color}`, color: cls.color }}>
+                    <span className="truncate block leading-tight">{cls.name}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ClientsMock() {
+  const rows = [
+    { name: "Anna Rossi", email: "anna.r@email.com", plan: "Unlimited", status: "Active" },
+    { name: "Marco Ferrari", email: "marco.f@email.com", plan: "10 classes", status: "Active" },
+    { name: "Sara Bianchi", email: "sara.b@email.com", plan: "Monthly", status: "Expired" },
+    { name: "Luca Romano", email: "luca.r@email.com", plan: "Unlimited", status: "Active" },
+    { name: "Elena Conti", email: "elena.c@email.com", plan: "Drop-in", status: "Active" },
+    { name: "Giulia De Luca", email: "giulia.d@email.com", plan: "10 classes", status: "Active" },
+  ];
+  return (
+    <div className="p-4">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-sm font-semibold text-gray-900">Clients <span className="text-gray-400 font-normal text-xs">142</span></h2>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded px-2 py-1">
+            <svg className="w-2.5 h-2.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <span className="text-[9px] text-gray-400">Search…</span>
+          </div>
+          <button className="text-[9px] font-semibold bg-indigo-600 text-white px-2 py-1 rounded">+ New client</button>
+        </div>
+      </div>
+      <div className="border border-gray-100 rounded-xl overflow-hidden">
+        <div className="grid bg-gray-50 px-3 py-1.5 text-[8.5px] font-semibold text-gray-500 uppercase tracking-wide" style={{ gridTemplateColumns: "2fr 2.5fr 1.5fr 1fr" }}>
+          <span>Name</span><span>Email</span><span>Plan</span><span>Status</span>
+        </div>
+        {rows.map((r) => (
+          <div key={r.name} className="grid px-3 py-2 border-t border-gray-50 items-center hover:bg-gray-50 transition-colors" style={{ gridTemplateColumns: "2fr 2.5fr 1.5fr 1fr" }}>
+            <span className="text-[10px] font-medium text-gray-800">{r.name}</span>
+            <span className="text-[9px] text-gray-400 truncate">{r.email}</span>
+            <span className="text-[10px] text-gray-600">{r.plan}</span>
+            <span className={`text-[8px] font-semibold px-1.5 py-0.5 rounded-full w-fit ${r.status === "Active" ? "bg-green-50 text-green-600" : "bg-gray-100 text-gray-500"}`}>{r.status}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Page ──────────────────────────────────────────────────────────────────────
 
 export default function Home() {
   const [lang, setLang] = useState<Lang>("en");
+  const [mockScreen, setMockScreen] = useState<MockScreen>("dashboard");
+  const mockRef = useRef<HTMLDivElement>(null);
+  const [mockVisible, setMockVisible] = useState(false);
   const t = copy[lang];
+
+  useEffect(() => {
+    const el = mockRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { setMockVisible(true); obs.disconnect(); }
+    }, { threshold: 0.12 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  const SCREEN_TABS: { id: MockScreen; label: string }[] = [
+    { id: "dashboard", label: t.tabDashboard },
+    { id: "calendar", label: t.tabCalendar },
+    { id: "clients", label: t.tabClients },
+  ];
 
   return (
     <main className="min-h-screen bg-white text-zinc-900">
@@ -305,23 +526,15 @@ export default function Home() {
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
           <span className="font-bold text-base tracking-tight">Agon</span>
           <div className="flex items-center gap-4">
-            <select
-              value={lang}
-              onChange={(e) => setLang(e.target.value as Lang)}
-              className="text-xs font-medium border border-zinc-200 rounded px-2 py-1.5 bg-white text-zinc-700 cursor-pointer hover:border-zinc-400 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
-            >
+            <select value={lang} onChange={(e) => setLang(e.target.value as Lang)}
+              className="text-xs font-medium border border-zinc-200 rounded px-2 py-1.5 bg-white text-zinc-700 cursor-pointer hover:border-zinc-400 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
               {(Object.entries(langLabels) as [Lang, string][]).map(([code, label]) => (
                 <option key={code} value={code}>{label}</option>
               ))}
             </select>
-            <a
-              href={GITHUB}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-900 transition-colors"
-            >
-              <GithubIcon className="w-4 h-4" />
-              GitHub
+            <a href={GITHUB} target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-900 transition-colors">
+              <GithubIcon className="w-4 h-4" />GitHub
             </a>
           </div>
         </div>
@@ -329,27 +542,14 @@ export default function Home() {
 
       {/* ── Hero ── */}
       <section className="max-w-5xl mx-auto px-6 pt-20 pb-20 text-center">
-        <span className="inline-block text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full mb-6">
-          {t.badge}
-        </span>
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-zinc-900 mb-5 max-w-2xl mx-auto">
-          {t.h1}
-        </h1>
-        <p className="text-lg text-zinc-500 max-w-xl mx-auto mb-10 leading-relaxed">
-          {t.sub}
-        </p>
+        <span className="inline-block text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full mb-6">{t.badge}</span>
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-zinc-900 mb-5 max-w-2xl mx-auto">{t.h1}</h1>
+        <p className="text-lg text-zinc-500 max-w-xl mx-auto mb-10 leading-relaxed">{t.sub}</p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
           {t.platforms.map(({ name, sub }) => (
-            <a
-              key={name}
-              href={RELEASES}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex items-center gap-3 px-5 py-3 border border-zinc-300 rounded-lg bg-white hover:border-indigo-500 hover:bg-indigo-50 transition-colors text-sm"
-            >
-              <span className="text-zinc-400 group-hover:text-indigo-500 transition-colors">
-                {platformIcon(name)}
-              </span>
+            <a key={name} href={RELEASES} target="_blank" rel="noopener noreferrer"
+              className="group inline-flex items-center gap-3 px-5 py-3 border border-zinc-300 rounded-lg bg-white hover:border-indigo-500 hover:bg-indigo-50 transition-colors text-sm">
+              <span className="text-zinc-400 group-hover:text-indigo-500 transition-colors">{platformIcon(name)}</span>
               <div className="text-left">
                 <div className="font-semibold text-zinc-800 leading-none">{t.downloadFor(name)}</div>
                 <div className="text-xs text-zinc-400 mt-0.5">{sub}</div>
@@ -358,10 +558,64 @@ export default function Home() {
           ))}
         </div>
         <p className="mt-5 text-sm text-zinc-400">
-          <a href={GITHUB} target="_blank" rel="noopener noreferrer" className="hover:text-zinc-600 underline underline-offset-2 transition-colors">
-            {t.source} ↗
-          </a>
+          <a href={GITHUB} target="_blank" rel="noopener noreferrer" className="hover:text-zinc-600 underline underline-offset-2 transition-colors">{t.source} ↗</a>
         </p>
+      </section>
+
+      {/* ── Screenshots ── */}
+      <section className="border-t border-zinc-100 py-20" style={{ background: "linear-gradient(to bottom, #f8f9ff 0%, #ffffff 100%)" }}>
+        <div className="max-w-5xl mx-auto px-6">
+          <div ref={mockRef} className={`transition-all duration-700 ease-out ${mockVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+            <h2 className="text-2xl font-bold text-zinc-900 mb-2">{t.screensTitle}</h2>
+            <p className="text-zinc-500 text-sm mb-6">{t.screensDesc}</p>
+            <div className="flex gap-1 mb-4">
+              {SCREEN_TABS.map((tab) => (
+                <button key={tab.id} onClick={() => setMockScreen(tab.id)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${mockScreen === tab.id ? "bg-zinc-900 text-white" : "text-zinc-500 hover:bg-zinc-100"}`}>
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            <div className="overflow-x-auto">
+              <div style={{ minWidth: 680 }} className="rounded-xl border border-zinc-200 overflow-hidden shadow-2xl">
+                <div className="h-8 bg-zinc-100 border-b border-zinc-200 flex items-center px-3 gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
+                  <span className="text-[10px] text-zinc-400 ml-3 font-medium">Agon</span>
+                </div>
+                <div className="flex" style={{ height: 390 }}>
+                  {/* Sidebar */}
+                  <div className="w-40 bg-zinc-50 border-r border-zinc-100 flex flex-col py-3 flex-shrink-0">
+                    <div className="px-3 mb-3">
+                      <div className="text-[10px] font-bold text-zinc-900">FitZone Studio</div>
+                      <div className="text-[8.5px] text-zinc-400 mt-0.5">Milano</div>
+                    </div>
+                    <nav className="flex-1 px-1.5 space-y-0.5">
+                      {MOCK_NAV.map((item) => {
+                        const isActive = mockScreen === item.id;
+                        const isClickable = item.id === "dashboard" || item.id === "calendar" || item.id === "clients";
+                        return (
+                          <button key={item.id}
+                            onClick={() => isClickable && setMockScreen(item.id as MockScreen)}
+                            className={`w-full flex items-center gap-2 px-2 py-1.5 text-[10px] rounded-md transition-colors ${isActive ? "bg-indigo-50 text-indigo-700 font-semibold" : isClickable ? "text-zinc-500 hover:bg-zinc-100" : "text-zinc-400 cursor-default"}`}>
+                            {item.icon}{item.label}
+                          </button>
+                        );
+                      })}
+                    </nav>
+                  </div>
+                  {/* Content */}
+                  <div className="flex-1 overflow-hidden bg-white">
+                    {mockScreen === "dashboard" && <DashboardMock />}
+                    {mockScreen === "calendar" && <CalendarMock />}
+                    {mockScreen === "clients" && <ClientsMock />}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* ── Features ── */}
@@ -406,10 +660,12 @@ export default function Home() {
           <h2 className="text-2xl font-bold text-zinc-900 mb-3">{t.ctaTitle}</h2>
           <p className="text-zinc-500 mb-8 max-w-xl leading-relaxed">{t.ctaBody}</p>
           <div className="flex flex-wrap gap-3">
-            <a href={GITHUB} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-2.5 bg-zinc-900 text-white text-sm font-semibold rounded-lg hover:bg-zinc-700 transition-colors">
+            <a href={GITHUB} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-zinc-900 text-white text-sm font-semibold rounded-lg hover:bg-zinc-700 transition-colors">
               <GithubIcon className="w-4 h-4" />{t.viewGithub}
             </a>
-            <a href={`${GITHUB}/releases`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-2.5 border border-zinc-300 text-zinc-700 text-sm font-semibold rounded-lg hover:border-zinc-400 hover:bg-zinc-50 transition-colors">
+            <a href={`${GITHUB}/releases`} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 border border-zinc-300 text-zinc-700 text-sm font-semibold rounded-lg hover:border-zinc-400 hover:bg-zinc-50 transition-colors">
               {t.releases} ↗
             </a>
           </div>
