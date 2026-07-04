@@ -30,6 +30,13 @@ function darken(hex: string, amount = 0.12): string {
   return `rgb(${Math.round(r * (1 - amount))}, ${Math.round(g * (1 - amount))}, ${Math.round(b * (1 - amount))})`
 }
 
+function lighten(hex: string, amount = 0.35): string {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgb(${Math.round(r + (255 - r) * amount)}, ${Math.round(g + (255 - g) * amount)}, ${Math.round(b + (255 - b) * amount)})`
+}
+
 function ThemeInjector() {
   const token = useAuthStore((s) => s.accessToken)
   const { data: settings } = useQuery({
@@ -44,38 +51,71 @@ function ThemeInjector() {
   if (primary) {
     const dark = darken(primary)
     const darkest = darken(primary, 0.22)
+    const light400 = lighten(primary, 0.35)
     const light50 = `${primary}20`
     const light100 = `${primary}33`
+    const light200 = `${primary}40`
+    const light300 = `${primary}60`
     const ring = `${primary}80`
-    // text-indigo-700 used for active sidebar nav items — use secondary if set, else darker primary
+    // sidebar active nav text — secondary if set, else computed slightly darker primary
     const accent700 = secondary ?? darken(primary, 0.18)
+
     let css = `
+      /* — Buttons & backgrounds — */
       .bg-indigo-600 { background-color: ${primary} !important; }
-      .hover\\:bg-indigo-700:hover { background-color: ${dark} !important; }
+      .bg-indigo-400 { background-color: ${light400} !important; }
+      .bg-indigo-100 { background-color: ${light100} !important; }
+      .bg-indigo-50  { background-color: ${light50}  !important; }
       .hover\\:bg-indigo-800:hover { background-color: ${darkest} !important; }
-      .text-indigo-600 { color: ${primary} !important; }
+      .hover\\:bg-indigo-700:hover { background-color: ${dark}    !important; }
+      .hover\\:bg-indigo-100:hover { background-color: ${light100} !important; }
+      .hover\\:bg-indigo-50:hover  { background-color: ${light50}  !important; }
+
+      /* — Text — */
+      .text-indigo-800 { color: ${darkest}  !important; }
       .text-indigo-700 { color: ${accent700} !important; }
+      .text-indigo-600 { color: ${primary}  !important; }
+      .text-indigo-400 { color: ${light400} !important; }
+      .hover\\:text-indigo-800:hover { color: ${darkest}  !important; }
       .hover\\:text-indigo-700:hover { color: ${accent700} !important; }
-      .hover\\:text-indigo-800:hover { color: ${darkest} !important; }
+
+      /* — Borders — */
       .border-indigo-600 { border-color: ${primary} !important; }
       .border-b-2.border-indigo-600 { border-bottom-color: ${primary} !important; }
-      .bg-indigo-50 { background-color: ${light50} !important; }
-      .bg-indigo-100 { background-color: ${light100} !important; }
-      .hover\\:bg-indigo-100:hover { background-color: ${light100} !important; }
-      .text-indigo-800 { color: ${darkest} !important; }
+      .border-t-indigo-600 { border-top-color: ${primary} !important; }
+      .border-l-indigo-400 { border-left-color: ${primary} !important; }
+      .border-indigo-500 { border-color: ${ring}    !important; }
+      .border-indigo-300 { border-color: ${light300} !important; }
+      .border-indigo-200 { border-color: ${light200} !important; }
+
+      /* — Table dividers — */
+      .divide-indigo-100 > * + * { border-color: ${light50} !important; }
+
+      /* — Focus rings & borders — */
       .focus\\:ring-indigo-500:focus { --tw-ring-color: ${ring} !important; }
       .focus\\:ring-indigo-400:focus { --tw-ring-color: ${ring} !important; }
+      .focus\\:border-indigo-400:focus { border-color: ${ring} !important; }
+      .focus-within\\:ring-indigo-500:focus-within { --tw-ring-color: ${ring} !important; }
+      .focus-within\\:border-indigo-500:focus-within { border-color: ${ring} !important; }
+
+      /* — Calendar (always apply when primary is set) — */
+      .rbc-today { background-color: ${light50} !important; }
+      .rbc-current-time-indicator { background-color: ${primary}99 !important; }
     `
+
     if (secondary) {
       css += `
+        /* — Secondary color overrides — */
         .bg-emerald-600 { background-color: ${secondary} !important; }
         .text-emerald-600 { color: ${secondary} !important; }
         .bg-emerald-50 { background-color: ${secondary}20 !important; }
         .text-emerald-700 { color: ${darken(secondary, 0.08)} !important; }
+        /* Override calendar with secondary tint when set */
         .rbc-today { background-color: ${secondary}12 !important; }
-        .rbc-current-time-indicator { background-color: ${secondary}90 !important; }
+        .rbc-current-time-indicator { background-color: ${secondary}99 !important; }
       `
     }
+
     let el = document.getElementById('agon-theme')
     if (!el) {
       el = document.createElement('style')
