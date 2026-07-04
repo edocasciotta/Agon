@@ -310,7 +310,8 @@
     "currencyPlaceholder": "EUR",
     "pricePlaceholder": "bijv. 49.99",
     "creditsPlaceholder": "bijv. 10",
-    "currency": "Valuta"
+    "currency": "Valuta",
+    "member": "Lid"
   },
   "reports": {
     "title": "Rapporten",
@@ -418,7 +419,8 @@
     "capacityPositive": "Capaciteit moet positief zijn.",
     "selectOneDay": "Selecteer minimaal één dag.",
     "endDateRequired": "Einddatum is verplicht.",
-    "location": "Locatie"
+    "location": "Locatie",
+    "noLocation": "Geen locatie"
   },
   "marketing": {
     "sectionTitle": "Marketing",

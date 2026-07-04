@@ -47,11 +47,15 @@ function ThemeInjector() {
     const light50 = `${primary}20`
     const light100 = `${primary}33`
     const ring = `${primary}80`
+    // text-indigo-700 used for active sidebar nav items — use secondary if set, else darker primary
+    const accent700 = secondary ?? darken(primary, 0.18)
     let css = `
       .bg-indigo-600 { background-color: ${primary} !important; }
       .hover\\:bg-indigo-700:hover { background-color: ${dark} !important; }
       .hover\\:bg-indigo-800:hover { background-color: ${darkest} !important; }
       .text-indigo-600 { color: ${primary} !important; }
+      .text-indigo-700 { color: ${accent700} !important; }
+      .hover\\:text-indigo-700:hover { color: ${accent700} !important; }
       .hover\\:text-indigo-800:hover { color: ${darkest} !important; }
       .border-indigo-600 { border-color: ${primary} !important; }
       .border-b-2.border-indigo-600 { border-bottom-color: ${primary} !important; }
@@ -68,6 +72,8 @@ function ThemeInjector() {
         .text-emerald-600 { color: ${secondary} !important; }
         .bg-emerald-50 { background-color: ${secondary}20 !important; }
         .text-emerald-700 { color: ${darken(secondary, 0.08)} !important; }
+        .rbc-today { background-color: ${secondary}12 !important; }
+        .rbc-current-time-indicator { background-color: ${secondary}90 !important; }
       `
     }
     let el = document.getElementById('agon-theme')

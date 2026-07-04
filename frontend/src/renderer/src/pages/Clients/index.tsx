@@ -141,7 +141,6 @@ export function ClientsPage() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('clients.id')}</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('clients.name')}</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('clients.email')}</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('clients.phone')}</th>
@@ -156,7 +155,6 @@ export function ClientsPage() {
                   onClick={() => navigate(`/clients/${client.id}`)}
                   className="hover:bg-gray-50 cursor-pointer"
                 >
-                  <td className="px-6 py-4 text-sm font-mono text-gray-400">#{client.id}</td>
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">{client.full_name}</td>
                   <td className="px-6 py-4 text-sm text-gray-500">{client.email}</td>
                   <td className="px-6 py-4 text-sm text-gray-500">{client.phone ?? '—'}</td>

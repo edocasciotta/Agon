@@ -310,7 +310,8 @@
     "currencyPlaceholder": "EUR",
     "pricePlaceholder": "ex. 49.99",
     "creditsPlaceholder": "ex. 10",
-    "currency": "Devise"
+    "currency": "Devise",
+    "member": "Membre"
   },
   "reports": {
     "title": "Rapports",
@@ -418,7 +419,8 @@
     "capacityPositive": "La capacité doit être positive.",
     "selectOneDay": "Sélectionnez au moins un jour.",
     "endDateRequired": "La date de fin est requise.",
-    "location": "Lieu"
+    "location": "Lieu",
+    "noLocation": "Aucun emplacement"
   },
   "marketing": {
     "sectionTitle": "Marketing",
