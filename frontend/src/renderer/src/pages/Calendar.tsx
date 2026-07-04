@@ -355,7 +355,7 @@ export function CalendarPage() {
                       {/* Events */}
                       {dayClasses.map((cls) => {
                         const tpl = templateMap[cls.template_id]
-                        const color = tpl?.color ?? '#4F46E5'
+                        const color = tpl?.color ?? studioSettings?.primary_color ?? '#4F46E5'
                         const rgb = hexToRgb(color)
                         const top = getEventTop(cls.starts_at, rowH, gridStart)
                         const height = getEventHeight(cls.starts_at, cls.ends_at, rowH)
@@ -410,7 +410,7 @@ export function CalendarPage() {
       {tooltip && (() => {
         const cls = tooltip.cls
         const tpl = templateMap[cls.template_id]
-        const color = tpl?.color ?? '#4F46E5'
+        const color = tpl?.color ?? studioSettings?.primary_color ?? '#4F46E5'
         const instructorName = cls.instructor_id ? instructorMap[cls.instructor_id] : null
         const locationName = cls.location_id ? locationMap[cls.location_id] : null
 

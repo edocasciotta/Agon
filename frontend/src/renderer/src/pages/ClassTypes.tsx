@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { classTemplatesApi, type ClassTemplateCreate } from '../api/classTemplates'
 import { instructorsApi } from '../api/instructors'
+import { studioApi } from '../api/studio'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { PageHeader } from '../components/PageHeader'
 import { EmptyState } from '../components/EmptyState'
@@ -57,6 +58,11 @@ export function ClassTypesPage() {
     queryFn: () => instructorsApi.list(),
   })
 
+  const { data: studioSettings } = useQuery({
+    queryKey: ['studio'],
+    queryFn: studioApi.get,
+  })
+
   const createMutation = useMutation({
     mutationFn: (data: ClassTemplateCreate) => classTemplatesApi.create(data),
     onSuccess: () => {
@@ -90,7 +96,7 @@ export function ClassTypesPage() {
 
   const handleOpenNew = () => {
     setEditingTemplate(null)
-    setFormData(DEFAULT_FORM)
+    setFormData({ ...DEFAULT_FORM, color: studioSettings?.primary_color ?? DEFAULT_FORM.color })
     setFormError(null)
     setShowModal(true)
   }
