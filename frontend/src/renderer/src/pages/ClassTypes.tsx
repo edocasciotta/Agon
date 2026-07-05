@@ -13,6 +13,7 @@ import type { ApiError } from '../api/client'
 import { classTypeSchema } from '../lib/formSchemas'
 
 const PAGE_SIZE = 12
+const LEGACY_DEFAULT_COLOR = '#4F46E5'
 
 interface ClassTypeFormData {
   name: string
@@ -172,6 +173,9 @@ export function ClassTypesPage() {
 
   const isPending = createMutation.isPending || updateMutation.isPending
   const paged = (templates ?? []).slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  const primaryColor = studioSettings?.primary_color ?? LEGACY_DEFAULT_COLOR
+  const resolveColor = (color: string) =>
+    color === LEGACY_DEFAULT_COLOR ? primaryColor : color
 
   return (
     <div>
@@ -215,14 +219,14 @@ export function ClassTypesPage() {
               >
                 <div
                   className="w-1.5 flex-shrink-0"
-                  style={{ backgroundColor: template.color }}
+                  style={{ backgroundColor: resolveColor(template.color) }}
                 />
                 <div className="flex-1 p-4">
                   <div className="flex items-start justify-between mb-2">
                     <h3 className="font-semibold text-gray-900 text-sm">{template.name}</h3>
                     <div
                       className="w-3 h-3 rounded-full flex-shrink-0 ml-2 mt-0.5"
-                      style={{ backgroundColor: template.color }}
+                      style={{ backgroundColor: resolveColor(template.color) }}
                     />
                   </div>
                   <p className="text-xs text-gray-500 mb-1">{template.duration_minutes} {t('classTypes.minLabel')}</p>

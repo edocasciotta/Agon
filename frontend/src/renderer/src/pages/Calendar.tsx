@@ -64,6 +64,8 @@ function formatSubHour(h: number, m: number): string {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
 }
 
+const LEGACY_DEFAULT_COLOR = '#4F46E5'
+
 export function CalendarPage() {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
@@ -85,6 +87,10 @@ export function CalendarPage() {
     queryFn: studioApi.get,
     staleTime: 5 * 60 * 1000,
   })
+
+  const primaryColor = studioSettings?.primary_color ?? LEGACY_DEFAULT_COLOR
+  const resolveColor = (templateColor: string | undefined | null): string =>
+    !templateColor || templateColor === LEGACY_DEFAULT_COLOR ? primaryColor : templateColor
 
   const gridStart = studioSettings?.calendar_start_hour ?? 7
   const gridEnd = studioSettings?.calendar_end_hour ?? 21
@@ -288,9 +294,8 @@ export function CalendarPage() {
                     {format(day, 'EEE')}
                   </div>
                   <div
-                    className={`text-lg font-semibold leading-tight ${
-                      isToday(day) ? 'text-indigo-600' : 'text-gray-800'
-                    }`}
+                    className="text-lg font-semibold leading-tight"
+                    style={{ color: isToday(day) ? primaryColor : 'rgb(31 41 55)' }}
                   >
                     {format(day, 'd')}
                   </div>
@@ -333,12 +338,13 @@ export function CalendarPage() {
                     <div
                       key={day.toISOString()}
                       className="flex-1 relative border-l border-gray-100 first:border-l-0"
+                      style={isToday(day) ? { backgroundColor: `${primaryColor}0d` } : undefined}
                     >
                       {/* Hour lines + sub-lines */}
                       {hours.map((h) => (
                         <div key={h}>
                           <div
-                            className="absolute left-0 right-0 border-t border-gray-100 cursor-pointer hover:bg-indigo-50/30 transition-colors"
+                            className="absolute left-0 right-0 border-t border-gray-100 cursor-pointer hover:bg-gray-50/50 transition-colors"
                             style={{ top: `${(h - gridStart) * rowH}px`, height: `${rowH}px` }}
                             onClick={() => handleSlotClick(day, h)}
                           />
@@ -355,7 +361,7 @@ export function CalendarPage() {
                       {/* Events */}
                       {dayClasses.map((cls) => {
                         const tpl = templateMap[cls.template_id]
-                        const color = tpl?.color ?? studioSettings?.primary_color ?? '#4F46E5'
+                        const color = resolveColor(tpl?.color)
                         const rgb = hexToRgb(color)
                         const top = getEventTop(cls.starts_at, rowH, gridStart)
                         const height = getEventHeight(cls.starts_at, cls.ends_at, rowH)
@@ -410,7 +416,7 @@ export function CalendarPage() {
       {tooltip && (() => {
         const cls = tooltip.cls
         const tpl = templateMap[cls.template_id]
-        const color = tpl?.color ?? studioSettings?.primary_color ?? '#4F46E5'
+        const color = resolveColor(tpl?.color)
         const instructorName = cls.instructor_id ? instructorMap[cls.instructor_id] : null
         const locationName = cls.location_id ? locationMap[cls.location_id] : null
 
