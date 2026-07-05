@@ -26,6 +26,7 @@ Agon uses [Semantic Versioning](https://semver.org/).
 - `docs-site/docs/glossary.md`: canonical terminology reference
 - Playwright e2e scaffold: `auth.spec.ts`, `clients.spec.ts`, `calendar.spec.ts`, `instructors.spec.ts`
 - Mobile connectivity store (`connectivityStore.ts`) with offline/online tracking
+- Mobile Stripe Checkout: purchase screen now calls `POST /api/billing/checkout-session` and opens the Stripe URL via `Linking.openURL`; only `sellable_online` membership types are shown; loading state per card; `OfflineBanner` added; `@types/jest` installed and tsconfig updated to resolve pre-existing test typecheck errors
 - Backend authorization tests (IDOR checks — 12 tests)
 - Backend backup tests (6 tests)
 - Backend load tests: 100 concurrent bookings, capacity enforcement
