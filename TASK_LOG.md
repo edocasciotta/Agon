@@ -72,9 +72,24 @@ Scaffolding → DB models → Core API → Booking engine → Check-in → Membe
 - `get_class_roster` Italian phrasings not 100% reliable — 3B model still picks wrong tool occasionally.
 - Playwright e2e tests are scaffold only (no real backend needed; use `page.route()`).
 
+## Stripe Billing Integration (in progress)
+
+Spec: `~/Downloads/agon-stripe-billing-spec.md`
+
+| Phase | Status | Notes |
+|---|---|---|
+| 1 — Schema + config | ✅ done | Migration `9c30bc2887eb`; 5 new tables; `sellable_online` on `membership_types`; `STRIPE_PUBLISHABLE_KEY` in config; 256 tests pass |
+| 2 — Config endpoint + settings screen | ✅ done | `POST /api/billing/settings` + `GET /api/billing/settings`; validates key, writes .env atomically, sets `stripe_connected`; 261 tests pass |
+| 3 — Checkout (one-off payments) | ✅ done | `POST /api/billing/checkout-session` + `POST /api/billing/webhook`; idempotency, grants Membership+Payment; 268 tests pass |
+| 4 — Subscriptions | ✅ done | mode=subscription checkout; handlers for subscription.created/updated/deleted, invoice.paid/failed; GET+POST /members/{id}/subscription[/cancel]; 278 tests pass |
+| 5 — Dashboard surfacing (Electron) | ✅ done | Billing tab in Settings (key config + status); subscription card in ClientDetail; billingApi module; billing i18n in 7 locales; 44/44 frontend tests pass |
+| 6 — Mobile "pay/subscribe" button | ✅ done | Purchase screen calls checkout-session, opens Stripe URL via Linking.openURL; sellable_online filter; OfflineBanner; 26/26 mobile tests pass |
+| 7 — Cancellation + manual override | ✅ done | Override endpoint (no Stripe calls) + mobile cancel card with confirmation; 280 backend + 31 mobile tests pass |
+
 ## Next Task
 
-V1.1 candidates (from ROADMAP.md):
+**Stripe Phase 2** — `POST /api/billing/settings` endpoint (admin-only, validate key before saving).
+
+Other V1.1 candidates (deferred):
 - Electron auto-update (`electron-updater` + GitHub releases + Alembic on relaunch)
 - Multi-location support (`location_id` already on all tables, backend ready)
-- Stripe subscription billing

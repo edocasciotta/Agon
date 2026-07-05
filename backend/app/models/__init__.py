@@ -14,6 +14,11 @@ from app.models.notification_log import NotificationLog
 from app.models.payment import Payment
 from app.models.scheduled_class import ScheduledClass
 from app.models.smart_list import SmartList
+from app.models.stripe_checkout_session import StripeCheckoutSession
+from app.models.stripe_customer import StripeCustomer
+from app.models.stripe_price import StripePrice
+from app.models.stripe_subscription import StripeSubscription
+from app.models.stripe_webhook_event import StripeWebhookEvent
 from app.models.studio_settings import StudioSettings
 from app.models.user import User
 from app.models.waitlist import Waitlist
@@ -38,4 +43,9 @@ __all__ = [
     "EmailTemplate",
     "EmailEventAssignment",
     "SmartList",
+    "StripeCustomer",
+    "StripePrice",
+    "StripeSubscription",
+    "StripeCheckoutSession",
+    "StripeWebhookEvent",
 ]

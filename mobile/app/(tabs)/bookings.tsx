@@ -58,14 +58,14 @@ export default function BookingsScreen() {
   }
 
   if (isLoading) return <LoadingView message="Loading bookings..." />
-  if (error) return <ErrorView code={(error as ApiError).code} />
+  if (error) return <ErrorView code={(error as unknown as ApiError).code} />
 
   const now = new Date()
   const upcoming = (bookings ?? []).filter(
-    (b) => b.status === 'confirmed'
+    (b: Booking) => b.status === 'confirmed'
   )
   const past = (bookings ?? []).filter(
-    (b) => b.status !== 'confirmed'
+    (b: Booking) => b.status !== 'confirmed'
   )
 
   const sections = [

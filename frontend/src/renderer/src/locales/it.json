@@ -498,6 +498,31 @@
     "noResults": "Nessun establishment corrisponde alla ricerca.",
     "reactivate": "Riattiva"
   },
+  "billing": {
+    "tab": "Fatturazione",
+    "connectionStatus": "Connessione Stripe",
+    "connected": "Connesso",
+    "notConnected": "Non connesso",
+    "secretKey": "Chiave segreta",
+    "publishableKey": "Chiave pubblica",
+    "webhookSecret": "Segreto webhook (opzionale)",
+    "webhookSecretHint": "Trovato in Stripe Dashboard → Webhook. Lascia vuoto per mantenere il valore attuale.",
+    "save": "Salva",
+    "savedSuccess": "Impostazioni Stripe salvate",
+    "secretKeyRequired": "La chiave segreta è obbligatoria",
+    "publishableKeyRequired": "La chiave pubblica è obbligatoria",
+    "subscription": "Abbonamento Stripe",
+    "cancelSubscription": "Annulla abbonamento",
+    "cancelConfirm": "Annullare questo abbonamento alla fine del periodo corrente?",
+    "status": {
+      "active": "Attivo",
+      "past_due": "Scaduto",
+      "canceled": "Annullato",
+      "incomplete": "Incompleto",
+      "unpaid": "Non pagato",
+      "payment_overdue": "Pagamento in ritardo"
+    }
+  },
   "instructors": {
     "title": "Istruttori",
     "subtitle": "Gestisci il personale docente",

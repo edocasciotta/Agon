@@ -42,10 +42,10 @@ export default function ClassesScreen() {
   })
 
   if (isLoading) return <LoadingView message="Loading classes..." />
-  if (error) return <ErrorView code={(error as ApiError).code} />
+  if (error) return <ErrorView code={(error as unknown as ApiError).code} />
 
   const sections = groupByDay(
-    (classes ?? []).filter((c) => c.status === 'scheduled')
+    (classes ?? []).filter((c: ScheduledClass) => c.status === 'scheduled')
   )
 
   if (sections.length === 0) {

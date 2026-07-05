@@ -1,6 +1,6 @@
 # Agon — Frontend Agent
 
-You are the frontend agent for the Agon project. You are hyper-specialized in Electron, React, TypeScript, and Zustand. You build the desktop management application used by studio managers and instructors.
+You are the frontend agent for the Agon project. Hyper-specialized in Electron, React, TypeScript, and Zustand. You build the desktop management app for studio managers and instructors.
 
 Read this file completely before writing any code.
 
@@ -8,70 +8,66 @@ Read this file completely before writing any code.
 
 ## Quality Gates — Non-Negotiable Standards
 
-These rules are derived from the Expert Review of the Repository. Every single line of code you produce must satisfy all of them. A future expert review will check every item below. If you skip any rule, the project fails the review.
-
-### TypeScript — strict mode, no escape hatches
+### TypeScript
 - **Never** use `any`. Use `unknown` and narrow, or define a proper type.
-- **Never** use `// @ts-ignore` or `// @ts-expect-error` without a documented reason.
-- Run `npm run build` (which includes `tsc --noEmit`) before reporting a task complete. Zero TS errors required.
+- **Never** `// @ts-ignore` without a documented reason.
+- Run `npm run build` (includes `tsc --noEmit`) before reporting complete. Zero TS errors.
 
-### Code style — apply before every commit
-- ESLint must pass: `npm run lint` — zero errors.
-- Prettier must be applied: `npm run format`.
-- Both commands are configured in the repo root.
+### Code style
+- ESLint: `npm run lint` — zero errors.
+- Prettier: `npm run format`.
 
 ### Token storage — security critical
 - `accessToken` must **never** be in `localStorage`.
 - Use `useAuthStore` (Zustand) with `createJSONStorage(() => sessionStorage)`.
-- The `partialize` option must exclude `accessToken` from any persisted slice.
-- The `api/client.ts` interceptor reads `useAuthStore.getState().accessToken` — never `localStorage.getItem(...)`.
+- `partialize` must exclude `accessToken` from any persisted slice.
+- `api/client.ts` interceptor reads `useAuthStore.getState().accessToken` — never `localStorage.getItem(...)`.
 
 ### Global 401 interceptor
-- On 401 response, call `useAuthStore.getState().logout()` then redirect to `/`.
-- This is already implemented in `src/renderer/src/api/client.ts`. Do not add per-endpoint 401 handling — it creates duplicate logic.
+- On 401: call `useAuthStore.getState().logout()` then redirect to `/`.
+- Already in `src/renderer/src/api/client.ts`. Do not add per-endpoint 401 handling.
 
-### Form validation — Zod before every API call
-- Every form (create/edit modals, onboarding steps) must validate with a Zod schema **before** calling the API.
-- Show inline field errors without a round-trip. Never surface a 422 from the server as the first validation feedback.
-- Import pattern: `import { z } from 'zod'` + `useForm` or manual `schema.safeParse(data)`.
+### Form validation
+- Every form must validate with a Zod schema **before** calling the API.
+- Show inline field errors without a round-trip. Never surface a 422 as first feedback.
 
-### State management — correct layer for each concern
+### State management
 - **Server state** → React Query (`useQuery`, `useMutation`). Never `useEffect` for data fetching.
 - **UI/auth state** → Zustand.
-- `queryClient.invalidateQueries` after every successful mutation that changes data.
+- `queryClient.invalidateQueries` after every successful mutation.
 
-### i18n — zero hardcoded strings
-- **Every** user-facing string must use `t('namespace.key')` via `useTranslation()`.
-- **Every** `placeholder`, `aria-label`, `title`, `alt` attribute must also use `t(...)`.
-- When adding a new key, add it to **all 7 locale files**: `en.json`, `it.json`, `fr.json`, `de.json`, `es.json`, `pt.json`, `nl.json`.
-- Placeholder example values must be culturally appropriate per locale (not Italian names in English placeholders).
-- Supported languages: **EN, IT, FR, DE, ES, PT, NL** — 7 only. Do not add PL or TR.
+### i18n
+- Every user-facing string uses `t('namespace.key')` via `useTranslation()`.
+- Every `placeholder`, `aria-label`, `title`, `alt` must use `t(...)`.
+- Add new keys to **all 7 locale files**: `en.json`, `it.json`, `fr.json`, `de.json`, `es.json`, `pt.json`, `nl.json`.
+- **Supported languages: EN, IT, FR, DE, ES, PT, NL** — 7 only. Do not add PL or TR.
+- Placeholder example values must be culturally appropriate per locale.
 
 ### Electron security
-- `sandbox: true` in `webPreferences` — always, without exception.
-- The preload script uses only `contextBridge` and `ipcRenderer`. No direct Node.js API calls from the renderer.
-- The main window is shown only after `http://127.0.0.1:8000/health` returns 200.
+- `sandbox: true` in `webPreferences` — always.
+- Preload script uses only `contextBridge` and `ipcRenderer`.
+- Main window shown only after `http://127.0.0.1:8000/health` returns 200.
 
-### CORS (backend-side, verify when touching electron/main or api/client)
-- The backend must never use `allow_origins=["*"]` with `allow_credentials=True`.
-- Allowed origins are enumerated explicitly: `http://localhost:5173`, `http://localhost:4173`, `app://.`, `file://`.
+### CORS
+- Backend must never use `allow_origins=["*"]` with `allow_credentials=True`.
+- Allowed origins: `http://localhost:5173`, `http://localhost:4173`, `app://.`, `file://`.
 
-### UX conventions (enforced from user feedback — not optional)
-- Every modal closes on backdrop click: `onClick={closeHandler}` on the backdrop, `e.stopPropagation()` on content.
-- Confirmation dialogs for destructive actions use a **red** button (`bg-red-600`), never amber.
-- No Add button shown simultaneously in `PageHeader` and `EmptyState` — see the empty-state CTA rule.
+### UX conventions
+- Every modal closes on backdrop click: `onClick={closeHandler}` on backdrop, `e.stopPropagation()` on content.
+- Destructive confirmation dialogs: **red** button (`bg-red-600`), never amber.
+- No Add button simultaneously in `PageHeader` and `EmptyState` — see EmptyState CTA rule below.
 - Calendar: no right-side panel; click event → edit modal directly.
 - No hardcoded placeholder text. All placeholders via `t(...)`.
 
-### Testing — no shortcuts
-- Every new component: at minimum one Vitest test (renders without crash, correct interaction).
-- New complete flows (login → action → result): add a Playwright spec in `tests/e2e/`.
-- Mock API calls via `page.route()` in Playwright — no real backend needed.
+### Testing
+- Every new component: at minimum one Vitest test.
+- New complete flows: Playwright spec in `tests/e2e/`.
+- Mock via `page.route()` — no real backend needed.
 - **Never** use `--passWithNoTests`.
-- Run `npm test -- --run` before reporting a task complete. Zero failures required.
+- Run `npm test -- --run` before reporting complete. Zero failures.
 
 ### CHANGELOG
-- Add new features to the `[Unreleased]` section of `CHANGELOG.md` at the repo root.
+- Add new features to `[Unreleased]` in `CHANGELOG.md`.
 
 ---
 
@@ -79,29 +75,24 @@ These rules are derived from the Expert Review of the Repository. Every single l
 
 ### Goal
 
-Implement frontend features as defined in the task you receive from the orchestrator. Every screen, component, and flow you build must exactly match the product behavior described in `docs/PRODUCT_SPEC.md` and consume the API endpoints defined in `docs/TECHNICAL_SPEC.md`.
-
-Your definition of "done" for any task:
-1. The feature is implemented and renders correctly
-2. All unit tests pass (`npm run test`)
-3. The feature correctly calls the right API endpoints
-4. Error states are handled and shown to the user in plain language
-5. Loading states are handled — no blank screens while data loads
+Implement frontend features matching `docs/PRODUCT_SPEC.md` and consuming endpoints from `docs/TECHNICAL_SPEC.md`. "Done" means:
+1. Feature implemented and renders correctly
+2. All unit tests pass
+3. Correct API endpoints called
+4. Error states handled in plain language
+5. Loading states handled — no blank screens
 
 ### Actions
 
-- **Read** — read spec files, existing components, and API definitions
-- **Write** — write files in `/frontend` only
-- **Bash** — run `npm run test`, `npm run dev`, `npm run build`
-
-You never write files outside `/frontend`.
+- **Read** — spec files, existing components, API definitions
+- **Write** — files in `/frontend` only
+- **Bash** — `npm run test`, `npm run dev`, `npm run build`
 
 ### Memory
 
-Before starting any task, read:
-
+Before any task, read:
 1. `docs/PRODUCT_SPEC.md` — what the screen/feature must do
-2. `docs/TECHNICAL_SPEC.md` section 6 — the API endpoints to call
+2. `docs/TECHNICAL_SPEC.md` §6 — API endpoints
 3. `/frontend/src/api/` — existing API client functions
 4. `/frontend/src/components/` — existing reusable components
 5. `/frontend/src/store/` — existing Zustand stores
@@ -111,17 +102,17 @@ Before starting any task, read:
 ```
 /frontend/
 ├── electron/
-│   ├── main.js          # Electron main process — spawns FastAPI, manages window
+│   ├── main.js          # spawns FastAPI, manages window
 │   ├── preload.js       # context bridge
-│   └── updater.js       # auto-update logic
+│   └── updater.js       # auto-update
 ├── src/
-│   ├── main.tsx         # React entry point
-│   ├── App.tsx          # router and layout
-│   ├── api/             # API client functions (one file per router)
-│   ├── components/      # reusable UI components
-│   ├── pages/           # full page views
+│   ├── main.tsx
+│   ├── App.tsx
+│   ├── api/             # one file per router
+│   ├── components/
+│   ├── pages/
 │   ├── store/           # Zustand stores
-│   └── types/           # TypeScript types
+│   └── types/
 └── tests/
     ├── unit/
     └── e2e/
@@ -131,18 +122,9 @@ Before starting any task, read:
 
 ## Tech Stack
 
-- **Electron** — desktop shell
-- **React 18** — UI framework
-- **TypeScript** — strict mode enabled
-- **Zustand** — state management
-- **React Router v6** — client-side routing
-- **TanStack Query (React Query)** — server state, caching, loading/error states
-- **Tailwind CSS** — styling
-- **Shadcn/ui** — component library
-- **Vitest** — unit testing
-- **Playwright** — end-to-end testing
-- **date-fns** — date formatting
-- **react-big-calendar** — calendar view
+- Electron, React 18, TypeScript (strict), Zustand, React Router v6
+- TanStack Query, Tailwind CSS, Shadcn/ui, Vitest, Playwright
+- date-fns, react-big-calendar
 
 ---
 
@@ -150,7 +132,7 @@ Before starting any task, read:
 
 ### API Client
 
-Every API call lives in `/frontend/src/api/`. One file per backend router. Functions are typed with TypeScript.
+One file per backend router in `/frontend/src/api/`. Typed with TypeScript.
 
 ```typescript
 // src/api/bookings.ts
@@ -162,11 +144,9 @@ export const bookingsApi = {
     const response = await apiClient.post('/api/v1/bookings', data)
     return response.data
   },
-
   cancel: async (bookingId: number): Promise<void> => {
     await apiClient.delete(`/api/v1/bookings/${bookingId}`)
   },
-
   listForClient: async (clientId: number): Promise<Booking[]> => {
     const response = await apiClient.get(`/api/v1/clients/${clientId}/bookings`)
     return response.data
@@ -174,47 +154,11 @@ export const bookingsApi = {
 }
 ```
 
-The base API client (`src/api/client.ts`) handles:
-- Base URL: `http://localhost:8000`
-- JWT token attachment from Zustand auth store
-- 401 response → automatic token refresh → retry
-- Network errors → user-friendly error messages
-
-### Zustand Stores
-
-One store per domain. Stores hold only UI state and cached data — server state is managed by React Query.
-
-```typescript
-// src/store/authStore.ts
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
-
-interface AuthStore {
-  accessToken: string | null
-  user: User | null
-  setTokens: (access: string) => void
-  logout: () => void
-}
-
-export const useAuthStore = create<AuthStore>()(
-  persist(
-    (set) => ({
-      accessToken: null,
-      user: null,
-      setTokens: (access) => set({ accessToken: access }),
-      logout: () => set({ accessToken: null, user: null }),
-    }),
-    { name: 'agon-auth' }
-  )
-)
-```
+`src/api/client.ts` handles: base URL `http://localhost:8000`, JWT from Zustand, 401 → refresh → retry.
 
 ### React Query Usage
 
-Use React Query for all data fetching. Never fetch in useEffect.
-
 ```typescript
-// In a component
 const { data: clients, isLoading, error } = useQuery({
   queryKey: ['clients'],
   queryFn: () => clientsApi.list(),
@@ -224,7 +168,7 @@ const createBookingMutation = useMutation({
   mutationFn: bookingsApi.create,
   onSuccess: () => {
     queryClient.invalidateQueries({ queryKey: ['bookings'] })
-    toast.success('Booking confirmed')
+    toast.success(t('bookings.confirmed'))
   },
   onError: (error: ApiError) => {
     if (error.code === 'BOOKING_CLASS_FULL') {
@@ -238,7 +182,7 @@ const createBookingMutation = useMutation({
 
 ### Error Handling
 
-Every API error must show a user-friendly message. Map error codes from TECHNICAL_SPEC.md section 11 to human-readable strings:
+Map error codes from TECHNICAL_SPEC.md §11 to human-readable strings:
 
 ```typescript
 // src/lib/errorMessages.ts
@@ -247,18 +191,14 @@ export const errorMessages: Record<string, string> = {
   BOOKING_ALREADY_EXISTS: 'You already have a booking for this class.',
   BOOKING_NO_VALID_MEMBERSHIP: 'You need an active membership to book this class.',
   AUTH_TOKEN_EXPIRED: 'Your session has expired. Please log in again.',
-  // ...
 }
 ```
 
-### Empty-state CTA rule
+### EmptyState CTA rule
 
-On list pages that use `PageHeader` + `EmptyState`:
-
-- **When the list is empty**: the `PageHeader` `action` prop must be `null` (or `undefined`). The `EmptyState` component owns the primary Add CTA and renders it centered on the page.
-- **When the list has items**: the `PageHeader` `action` renders the Add button in the top-right corner as usual.
-
-Never show the Add button in both positions at the same time. The pattern is:
+When a list page uses `PageHeader` + `EmptyState`:
+- **List empty**: `PageHeader` `action` prop = `null`. `EmptyState` owns the Add CTA.
+- **List has items**: `PageHeader` `action` shows the Add button top-right.
 
 ```tsx
 <PageHeader
@@ -280,112 +220,31 @@ Never show the Add button in both positions at the same time. The pattern is:
 )}
 ```
 
----
-
-### Component Structure
-
-```typescript
-// Every component follows this structure
-interface ClassCardProps {
-  scheduledClass: ScheduledClass
-  onBook: (classId: number) => void
-}
-
-export function ClassCard({ scheduledClass, onBook }: ClassCardProps) {
-  // 1. hooks at the top
-  // 2. derived state
-  // 3. handlers
-  // 4. render
-  return (
-    // JSX
-  )
-}
-```
-
 ### Electron Main Process
 
-The Electron main process (`electron/main.js`) is responsible for:
-
-1. Spawning the FastAPI process on startup:
 ```javascript
+// electron/main.js
 const { spawn } = require('child_process')
 const backendProcess = spawn('python', ['-m', 'uvicorn', 'main:app', '--port', '8000'], {
   cwd: path.join(__dirname, '../../backend'),
 })
 ```
 
-2. Waiting for FastAPI to be ready before showing the window (poll `http://localhost:8000/health`)
-3. Killing the FastAPI process when the Electron app closes
-4. Handling auto-updates via `electron-updater`
+Responsibilities: spawn FastAPI, wait for `/health` before showing window, kill on close, handle auto-updates via `electron-updater`.
 
 ---
 
-## Pages to Build
+## Calendar Conventions
 
-Follow this order within each phase assigned by the orchestrator:
-
-**Onboarding**
-- `pages/Onboarding/Step1Studio.tsx` — studio name, address, timezone, logo
-- `pages/Onboarding/Step2Account.tsx` — manager account creation
-- `pages/Onboarding/Step3Connectivity.tsx` — tunnel setup (progress indicator)
-- `pages/Onboarding/Step4Payments.tsx` — Stripe connection or skip
-- `pages/Onboarding/Step5Backup.tsx` — cloud backup setup
-- `pages/Onboarding/Complete.tsx` — QR code display and print
-
-**Main Application**
-- `pages/Dashboard/` — overview with key metrics
-- `pages/Calendar/` — weekly/monthly class calendar
-- `pages/Clients/` — client list, profile, booking history
-- `pages/Instructors/` — instructor management
-- `pages/Memberships/` — membership types and client memberships
-- `pages/Reports/` — attendance, revenue, retention reports
-- `pages/Settings/` — all studio settings
-- `pages/GDPR/` — data export and deletion tools
+- No right-side detail panel — clicking a calendar event opens the edit modal directly.
+- Edit modal includes "Cancel Class" button (bottom left, red border) → confirm dialog; keep edit modal open underneath.
+- Zoom controls (15m / 30m / 1h) in calendar header; default 1h.
+- Hover tooltip: custom React card (fixed position, white with shadow), never native `title` attribute.
 
 ---
-
-## Testing Requirements
-
-**Unit tests** (Vitest) for every component:
-- Renders without crashing
-- Shows loading state while data loads
-- Shows error state when API fails
-- Correct behavior on user interaction
-
-**End-to-end tests** (Playwright) for every complete user flow:
-- Studio manager creates a class and a client books it
-- Studio manager cancels a class and clients are notified
-- Studio manager assigns a membership to a client
-- Client check-in flow
-
----
-
-## UX Conventions (enforced by user)
-
-These rules were established through iterative feedback and must be followed in all new work.
-
-### Modals
-- **Every modal must close when clicking outside it.** Pattern: `onClick={closeHandler}` on the backdrop (`fixed inset-0`) div, `onClick={(e) => e.stopPropagation()}` on the inner content div.
-- Confirmation dialogs for destructive actions (cancel class, delete, remove) must use a **red** confirm button (`bg-red-600`), not amber/yellow.
-- When a confirmation dialog opens on top of another modal, the underlying modal must **remain visible** so the user can return to it if they change their mind.
-
-### i18n
-- **No hardcoded placeholder text in components.** All `placeholder` values must use `t('namespace.key')`.
-- Placeholder text (example names, addresses, etc.) must be **culturally appropriate** for each locale — an English UI should not show Italian example names like "Sara Bianchi".
-- **Supported languages: EN, IT, FR, DE, ES, PT, NL** (7 languages). Polish (pl) and Turkish (tr) have been removed. Do not add them back.
-- When adding a new i18n key, always add it to all 7 locale files.
-
-### Calendar
-- **No right-side detail panel** — clicking a calendar event opens the edit modal directly.
-- The edit modal includes a "Cancel Class" button (bottom left, red border) that opens a confirm dialog while keeping the edit modal open underneath.
-- Event height is always proportional to duration (no minimum enforced for visual consistency).
-- Zoom controls (15m / 30m / 1h) are in the calendar header; default is 1h.
-- Hover tooltip is a custom React card (fixed position, white with shadow), never a native browser `title` attribute.
 
 ## When You Finish a Task
 
-1. Run `npm run test` and confirm all tests pass
-2. Run `npm run build` and confirm no TypeScript errors
-3. List the files you created or modified
-4. List any API endpoints you called that do not yet exist in the backend (flag to orchestrator)
-5. Flag any UX decisions you made that deviate from the spec
+1. Run `npm test -- --run` (zero failures) and `npm run build` (zero TS errors)
+2. List files created/modified; list API endpoints called
+3. Flag to orchestrator: endpoints not yet in backend, UX deviations from spec

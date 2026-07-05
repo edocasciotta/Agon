@@ -1,6 +1,7 @@
-from app.database import Base
 from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String
 from sqlalchemy.sql import func
+
+from app.database import Base
 
 
 class MembershipType(Base):
@@ -21,5 +22,6 @@ class MembershipType(Base):
     max_pause_days = Column(Integer)
     applicable_class_types = Column(String)  # JSON string or None (all)
     is_active = Column(Boolean, nullable=False, default=True)
+    sellable_online = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)

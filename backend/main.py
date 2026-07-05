@@ -6,9 +6,6 @@ from app.limiter import limiter
 from app.logging_config import configure_logging
 from app.routers import (
     agent,
-)
-from app.routers import auth as auth_router
-from app.routers import (
     bookings,
     checkins,
     class_templates,
@@ -27,9 +24,11 @@ from app.routers import (
     payments,
     reports,
     smart_lists,
+    stripe_billing,
     studio,
     support,
 )
+from app.routers import auth as auth_router
 from app.tasks.class_reminders import run_class_reminder_loop
 from app.tasks.membership_expiry import run_membership_expiry_loop
 from app.tasks.nightly_backup import run_nightly_backup_loop
@@ -106,6 +105,7 @@ app.include_router(checkins.router)
 app.include_router(membership_types.router)
 app.include_router(memberships.router)
 app.include_router(payments.router)
+app.include_router(stripe_billing.router)
 app.include_router(notifications.router)
 app.include_router(reports.router)
 app.include_router(gdpr.router)
