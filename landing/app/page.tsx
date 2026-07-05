@@ -6,7 +6,6 @@ const GITHUB = "https://github.com/edocasciotta/Agon";
 const RELEASES = `${GITHUB}/releases/latest`;
 
 type Lang = "en" | "it" | "fr" | "es" | "pt" | "de" | "nl" | "pl" | "tr";
-type MockScreen = "dashboard" | "calendar" | "clients";
 
 const langLabels: Record<Lang, string> = {
   en: "English", it: "Italiano", fr: "Français", es: "Español",
@@ -22,8 +21,7 @@ type Copy = {
   ctaTitle: string; ctaBody: string;
   viewGithub: string; releases: string; footerLicense: string;
   platforms: { name: string; sub: string }[];
-  screensTitle: string; screensDesc: string;
-  tabDashboard: string; tabCalendar: string; tabClients: string;
+  spotlightHeadlines: [string, string, string, string];
 };
 
 const copy: Record<Lang, Copy> = {
@@ -49,9 +47,12 @@ const copy: Record<Lang, Copy> = {
     ctaBody: "Source code is publicly available on GitHub under the MIT license. Inspect it, contribute, or deploy it yourself.",
     viewGithub: "View on GitHub", releases: "Releases", footerLicense: "MIT License",
     platforms: [{ name: "macOS", sub: "macOS 12 or later" }, { name: "Windows", sub: "Windows 10 or later" }, { name: "Linux", sub: "Ubuntu 20.04+" }],
-    screensTitle: "See it in action",
-    screensDesc: "A few screens from the desktop app.",
-    tabDashboard: "Dashboard", tabCalendar: "Calendar", tabClients: "Clients",
+    spotlightHeadlines: [
+      "Fill classes,\nnot spreadsheets.",
+      "Flexible plans\nfor every athlete.",
+      "Know every member,\ninside and out.",
+      "Numbers that\ndrive decisions.",
+    ],
   },
   it: {
     badge: "Gratis e open source",
@@ -75,9 +76,12 @@ const copy: Record<Lang, Copy> = {
     ctaBody: "Il codice sorgente è pubblico su GitHub con licenza MIT. Puoi ispezionarlo, contribuire o fare il deploy autonomamente.",
     viewGithub: "Vedi su GitHub", releases: "Release", footerLicense: "Licenza MIT",
     platforms: [{ name: "macOS", sub: "macOS 12 o superiore" }, { name: "Windows", sub: "Windows 10 o superiore" }, { name: "Linux", sub: "Ubuntu 20.04+" }],
-    screensTitle: "Scopri come funziona",
-    screensDesc: "Alcune schermate dall'app desktop.",
-    tabDashboard: "Dashboard", tabCalendar: "Calendario", tabClients: "Clienti",
+    spotlightHeadlines: [
+      "Riempi i corsi,\nnon i fogli di calcolo.",
+      "Piani flessibili\nper ogni atleta.",
+      "Conosci ogni cliente,\ndavvero.",
+      "Numeri che\nguidan le scelte.",
+    ],
   },
   fr: {
     badge: "Gratuit et open source",
@@ -101,9 +105,12 @@ const copy: Record<Lang, Copy> = {
     ctaBody: "Le code source est disponible publiquement sur GitHub sous licence MIT. Inspectez-le, contribuez ou déployez-le vous-même.",
     viewGithub: "Voir sur GitHub", releases: "Notes de version", footerLicense: "Licence MIT",
     platforms: [{ name: "macOS", sub: "macOS 12 ou version ultérieure" }, { name: "Windows", sub: "Windows 10 ou version ultérieure" }, { name: "Linux", sub: "Ubuntu 20.04+" }],
-    screensTitle: "Découvrez-le en action",
-    screensDesc: "Quelques écrans de l'application bureau.",
-    tabDashboard: "Dashboard", tabCalendar: "Calendrier", tabClients: "Clients",
+    spotlightHeadlines: [
+      "Remplissez vos cours,\npas vos tableurs.",
+      "Des forfaits flexibles\npour chaque athlète.",
+      "Connaissez chaque client,\nvraiment.",
+      "Des chiffres qui\nguident vos décisions.",
+    ],
   },
   es: {
     badge: "Gratis y open source",
@@ -127,9 +134,12 @@ const copy: Record<Lang, Copy> = {
     ctaBody: "El código fuente está disponible públicamente en GitHub bajo la licencia MIT. Inspéctalo, contribuye o despliégalo tú mismo.",
     viewGithub: "Ver en GitHub", releases: "Notas de versión", footerLicense: "Licencia MIT",
     platforms: [{ name: "macOS", sub: "macOS 12 o posterior" }, { name: "Windows", sub: "Windows 10 o posterior" }, { name: "Linux", sub: "Ubuntu 20.04+" }],
-    screensTitle: "Véalo en acción",
-    screensDesc: "Algunas pantallas de la aplicación.",
-    tabDashboard: "Dashboard", tabCalendar: "Calendario", tabClients: "Clientes",
+    spotlightHeadlines: [
+      "Llena tus clases,\nno tus hojas de cálculo.",
+      "Planes flexibles\npara cada atleta.",
+      "Conoce a cada cliente,\nde verdad.",
+      "Cifras que\nguían tus decisiones.",
+    ],
   },
   pt: {
     badge: "Gratuito e open source",
@@ -153,9 +163,12 @@ const copy: Record<Lang, Copy> = {
     ctaBody: "O código-fonte está disponível publicamente no GitHub sob a licença MIT. Inspecione-o, contribua ou faça o deploy por conta própria.",
     viewGithub: "Ver no GitHub", releases: "Notas de versão", footerLicense: "Licença MIT",
     platforms: [{ name: "macOS", sub: "macOS 12 ou superior" }, { name: "Windows", sub: "Windows 10 ou superior" }, { name: "Linux", sub: "Ubuntu 20.04+" }],
-    screensTitle: "Veja em ação",
-    screensDesc: "Algumas telas do app desktop.",
-    tabDashboard: "Dashboard", tabCalendar: "Calendário", tabClients: "Clientes",
+    spotlightHeadlines: [
+      "Encha suas aulas,\nnão suas planilhas.",
+      "Planos flexíveis\npara cada atleta.",
+      "Conheça cada aluno,\nde verdade.",
+      "Números que\norientam decisões.",
+    ],
   },
   de: {
     badge: "Kostenlos und Open Source",
@@ -179,9 +192,12 @@ const copy: Record<Lang, Copy> = {
     ctaBody: "Der Quellcode ist öffentlich auf GitHub unter der MIT-Lizenz verfügbar. Inspiziere ihn, trage bei oder deploye ihn selbst.",
     viewGithub: "Auf GitHub ansehen", releases: "Versionshinweise", footerLicense: "MIT-Lizenz",
     platforms: [{ name: "macOS", sub: "macOS 12 oder neuer" }, { name: "Windows", sub: "Windows 10 oder neuer" }, { name: "Linux", sub: "Ubuntu 20.04+" }],
-    screensTitle: "Sieh es in Aktion",
-    screensDesc: "Einige Bildschirmfotos der Desktop-App.",
-    tabDashboard: "Dashboard", tabCalendar: "Kalender", tabClients: "Kunden",
+    spotlightHeadlines: [
+      "Füll deine Kurse,\nnicht deine Tabellen.",
+      "Flexible Pläne\nfür jeden Athleten.",
+      "Kenne jeden Kunden,\nwirklich.",
+      "Zahlen, die\nEntscheidungen leiten.",
+    ],
   },
   nl: {
     badge: "Gratis en open source",
@@ -205,9 +221,12 @@ const copy: Record<Lang, Copy> = {
     ctaBody: "De broncode is openbaar beschikbaar op GitHub onder de MIT-licentie. Inspecteer het, draag bij of implementeer het zelf.",
     viewGithub: "Bekijk op GitHub", releases: "Release-notities", footerLicense: "MIT-licentie",
     platforms: [{ name: "macOS", sub: "macOS 12 of hoger" }, { name: "Windows", sub: "Windows 10 of hoger" }, { name: "Linux", sub: "Ubuntu 20.04+" }],
-    screensTitle: "Bekijk het in actie",
-    screensDesc: "Enkele schermen van de desktop-app.",
-    tabDashboard: "Dashboard", tabCalendar: "Agenda", tabClients: "Klanten",
+    spotlightHeadlines: [
+      "Vul je lessen,\nniet je spreadsheets.",
+      "Flexibele plannen\nvoor elk lid.",
+      "Ken elk lid,\necht.",
+      "Cijfers die\nbeslissingen sturen.",
+    ],
   },
   pl: {
     badge: "Bezpłatne i open source",
@@ -231,9 +250,12 @@ const copy: Record<Lang, Copy> = {
     ctaBody: "Kod źródłowy jest publicznie dostępny na GitHub na licencji MIT. Możesz go sprawdzić, wnieść wkład lub wdrożyć samodzielnie.",
     viewGithub: "Zobacz na GitHub", releases: "Informacje o wydaniu", footerLicense: "Licencja MIT",
     platforms: [{ name: "macOS", sub: "macOS 12 lub nowszy" }, { name: "Windows", sub: "Windows 10 lub nowszy" }, { name: "Linux", sub: "Ubuntu 20.04+" }],
-    screensTitle: "Zobacz w działaniu",
-    screensDesc: "Kilka ekranów z aplikacji desktopowej.",
-    tabDashboard: "Dashboard", tabCalendar: "Kalendarz", tabClients: "Klienci",
+    spotlightHeadlines: [
+      "Wypełnij zajęcia,\nnie arkusze.",
+      "Elastyczne plany\ndla każdego sportowca.",
+      "Poznaj każdego klienta,\nnaprawdę.",
+      "Liczby, które\nkierują decyzjami.",
+    ],
   },
   tr: {
     badge: "Ücretsiz ve açık kaynak",
@@ -257,13 +279,16 @@ const copy: Record<Lang, Copy> = {
     ctaBody: "Kaynak kodu GitHub'da MIT lisansı altında kamuya açıktır. İnceleyebilir, katkıda bulunabilir veya kendiniz deploy edebilirsiniz.",
     viewGithub: "GitHub'da görüntüle", releases: "Sürüm notları", footerLicense: "MIT Lisansı",
     platforms: [{ name: "macOS", sub: "macOS 12 veya üzeri" }, { name: "Windows", sub: "Windows 10 veya üzeri" }, { name: "Linux", sub: "Ubuntu 20.04+" }],
-    screensTitle: "Uygulamayı görün",
-    screensDesc: "Masaüstü uygulamasından birkaç ekran.",
-    tabDashboard: "Dashboard", tabCalendar: "Takvim", tabClients: "Müşteriler",
+    spotlightHeadlines: [
+      "Dersleri doldur,\ntabloları değil.",
+      "Her sporcu için\nesnek planlar.",
+      "Her üyeni tanı,\ngerçekten.",
+      "Kararları yönlendiren\nrakamlar.",
+    ],
   },
 };
 
-// ─── Static icons ──────────────────────────────────────────────────────────────
+// ─── Icons ────────────────────────────────────────────────────────────────────
 
 function GithubIcon({ className }: { className?: string }) {
   return (
@@ -313,9 +338,9 @@ const featureIcons = [
   <svg key="bar" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
 ];
 
-// ─── Sidebar nav ───────────────────────────────────────────────────────────────
+// ─── Sidebar nav ─────────────────────────────────────────────────────────────
 
-type NavId = MockScreen | "memberships" | "reports" | "settings";
+type NavId = "dashboard" | "calendar" | "clients" | "memberships" | "reports" | "settings";
 
 const MOCK_NAV: { id: NavId; label: string; icon: React.ReactNode }[] = [
   { id: "dashboard", label: "Dashboard", icon: <svg className="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> },
@@ -326,7 +351,42 @@ const MOCK_NAV: { id: NavId; label: string; icon: React.ReactNode }[] = [
   { id: "settings", label: "Settings", icon: <svg className="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> },
 ];
 
-// ─── Mock screens ──────────────────────────────────────────────────────────────
+// ─── useInView hook ───────────────────────────────────────────────────────────
+
+function useInView(threshold = 0.12) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
+      { threshold }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [threshold]);
+  return [ref, visible] as const;
+}
+
+// ─── MockWindow wrapper ───────────────────────────────────────────────────────
+
+function MockWindow({ height, children }: { height: number; children: React.ReactNode }) {
+  return (
+    <div className="rounded-xl border border-zinc-200 overflow-hidden shadow-xl bg-white">
+      <div className="h-7 bg-zinc-100 border-b border-zinc-200 flex items-center px-3 gap-1.5 flex-shrink-0">
+        <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
+        <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
+        <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
+      </div>
+      <div style={{ height }} className="overflow-hidden">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ─── Mock screens ─────────────────────────────────────────────────────────────
 
 function DashboardMock() {
   const kpis = [
@@ -342,7 +402,7 @@ function DashboardMock() {
     { time: "19:30", name: "CrossFit", info: "Marco Esposito · Outdoor", cap: "15/20", color: "#f59e0b" },
   ];
   return (
-    <div className="p-4 overflow-auto h-full">
+    <div className="p-4 overflow-auto h-full no-scrollbar">
       <div className="mb-4">
         <p className="text-sm font-semibold text-gray-900">Good morning, Marco</p>
         <p className="text-[11px] text-gray-400 mt-0.5">Monday, 7 July 2025</p>
@@ -493,33 +553,51 @@ function ClientsMock() {
   );
 }
 
-// ─── Page ──────────────────────────────────────────────────────────────────────
+function MembershipsMock() {
+  const plans = [
+    { name: "Unlimited Monthly", price: "€89/mo", active: 48, color: "#6366f1" },
+    { name: "10 Class Pack", price: "€75", active: 31, color: "#10b981" },
+    { name: "Drop-in", price: "€12", active: 22, color: "#f59e0b" },
+    { name: "Annual Pass", price: "€750/yr", active: 18, color: "#8b5cf6" },
+    { name: "Student Monthly", price: "€59/mo", active: 15, color: "#06b6d4" },
+  ];
+  return (
+    <div className="p-4">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <p className="text-sm font-semibold text-gray-900">Memberships</p>
+          <p className="text-[10px] text-gray-400 mt-0.5">134 active · €3.2K MRR</p>
+        </div>
+        <button className="text-[9px] font-semibold bg-indigo-600 text-white px-2 py-1 rounded">+ New plan</button>
+      </div>
+      <div className="space-y-2">
+        {plans.map((p) => (
+          <div key={p.name} className="flex items-center gap-3 px-3 py-2.5 bg-white border border-gray-100 rounded-xl">
+            <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: p.color }} />
+            <div className="flex-1 min-w-0">
+              <div className="text-[11px] font-medium text-gray-900 truncate">{p.name}</div>
+              <div className="text-[9px] text-gray-400">{p.active} active members</div>
+            </div>
+            <div className="text-[11px] font-semibold text-gray-700">{p.price}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function Home() {
   const [lang, setLang] = useState<Lang>("en");
-  const [mockScreen, setMockScreen] = useState<MockScreen>("dashboard");
-  const mockRef = useRef<HTMLDivElement>(null);
-  const [mockVisible, setMockVisible] = useState(false);
   const t = copy[lang];
 
-  useEffect(() => {
-    const el = mockRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) { setMockVisible(true); obs.disconnect(); }
-    }, { threshold: 0.12 });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-
-  const SCREEN_TABS: { id: MockScreen; label: string }[] = [
-    { id: "dashboard", label: t.tabDashboard },
-    { id: "calendar", label: t.tabCalendar },
-    { id: "clients", label: t.tabClients },
-  ];
+  const [heroMockRef, heroMockVisible] = useInView(0.05);
+  const [bentoRef, bentoVis] = useInView(0.08);
+  const [featRef, featVis] = useInView(0.05);
 
   return (
-    <main className="min-h-screen bg-white text-zinc-900">
+    <main className="min-h-screen bg-white text-zinc-900 overflow-x-hidden">
 
       {/* ── Nav ── */}
       <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-zinc-100">
@@ -541,76 +619,63 @@ export default function Home() {
       </nav>
 
       {/* ── Hero ── */}
-      <section className="max-w-5xl mx-auto px-6 pt-20 pb-20 text-center">
-        <span className="inline-block text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full mb-6">{t.badge}</span>
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-zinc-900 mb-5 max-w-2xl mx-auto">{t.h1}</h1>
-        <p className="text-lg text-zinc-500 max-w-xl mx-auto mb-10 leading-relaxed">{t.sub}</p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
-          {t.platforms.map(({ name, sub }) => (
-            <a key={name} href={RELEASES} target="_blank" rel="noopener noreferrer"
-              className="group inline-flex items-center gap-3 px-5 py-3 border border-zinc-300 rounded-lg bg-white hover:border-indigo-500 hover:bg-indigo-50 transition-colors text-sm">
-              <span className="text-zinc-400 group-hover:text-indigo-500 transition-colors">{platformIcon(name)}</span>
-              <div className="text-left">
-                <div className="font-semibold text-zinc-800 leading-none">{t.downloadFor(name)}</div>
-                <div className="text-xs text-zinc-400 mt-0.5">{sub}</div>
-              </div>
-            </a>
-          ))}
-        </div>
-        <p className="mt-5 text-sm text-zinc-400">
-          <a href={GITHUB} target="_blank" rel="noopener noreferrer" className="hover:text-zinc-600 underline underline-offset-2 transition-colors">{t.source} ↗</a>
-        </p>
-      </section>
-
-      {/* ── Screenshots ── */}
-      <section className="border-t border-zinc-100 py-20" style={{ background: "linear-gradient(to bottom, #f8f9ff 0%, #ffffff 100%)" }}>
-        <div className="max-w-5xl mx-auto px-6">
-          <div ref={mockRef} className={mockVisible ? "anim-fade-slide-up" : "opacity-0"}>
-            <h2 className="text-2xl font-bold text-zinc-900 mb-2">{t.screensTitle}</h2>
-            <p className="text-zinc-500 text-sm mb-6">{t.screensDesc}</p>
-            <div className="flex gap-1 mb-4">
-              {SCREEN_TABS.map((tab) => (
-                <button key={tab.id} onClick={() => setMockScreen(tab.id)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${mockScreen === tab.id ? "bg-zinc-900 text-white" : "text-zinc-500 hover:bg-zinc-100"}`}>
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-            <div className="overflow-x-auto">
-              <div style={{ minWidth: 680 }} className="rounded-xl border border-zinc-200 overflow-hidden shadow-2xl">
-                <div className="h-8 bg-zinc-100 border-b border-zinc-200 flex items-center px-3 gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
-                  <span className="text-[10px] text-zinc-400 ml-3 font-medium">Agon</span>
+      <section style={{ background: "linear-gradient(180deg, #eef2ff 0%, #f4f6ff 45%, #ffffff 100%)" }} className="pt-20 pb-0">
+        <div className="max-w-5xl mx-auto px-6 text-center pb-12">
+          <span className="inline-block text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full mb-6">{t.badge}</span>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-zinc-900 mb-5 max-w-2xl mx-auto">{t.h1}</h1>
+          <p className="text-lg text-zinc-500 max-w-xl mx-auto mb-10 leading-relaxed">{t.sub}</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
+            {t.platforms.map(({ name, sub }) => (
+              <a key={name} href={RELEASES} target="_blank" rel="noopener noreferrer"
+                className="group inline-flex items-center gap-3 px-5 py-3 border border-zinc-300 rounded-lg bg-white hover:border-indigo-500 hover:bg-indigo-50 transition-colors text-sm">
+                <span className="text-zinc-400 group-hover:text-indigo-500 transition-colors">{platformIcon(name)}</span>
+                <div className="text-left">
+                  <div className="font-semibold text-zinc-800 leading-none">{t.downloadFor(name)}</div>
+                  <div className="text-xs text-zinc-400 mt-0.5">{sub}</div>
                 </div>
-                <div className="flex" style={{ height: 390 }}>
-                  {/* Sidebar */}
-                  <div className="w-40 bg-zinc-50 border-r border-zinc-100 flex flex-col py-3 flex-shrink-0">
-                    <div className="px-3 mb-3">
-                      <div className="text-[10px] font-bold text-zinc-900">FitZone Studio</div>
-                      <div className="text-[8.5px] text-zinc-400 mt-0.5">Milano</div>
-                    </div>
-                    <nav className="flex-1 px-1.5 space-y-0.5">
-                      {MOCK_NAV.map((item) => {
-                        const isActive = mockScreen === item.id;
-                        const isClickable = item.id === "dashboard" || item.id === "calendar" || item.id === "clients";
-                        return (
-                          <button key={item.id}
-                            onClick={() => isClickable && setMockScreen(item.id as MockScreen)}
-                            className={`w-full flex items-center gap-2 px-2 py-1.5 text-[10px] rounded-md transition-colors ${isActive ? "bg-indigo-50 text-indigo-700 font-semibold" : isClickable ? "text-zinc-500 hover:bg-zinc-100" : "text-zinc-400 cursor-default"}`}>
-                            {item.icon}{item.label}
-                          </button>
-                        );
-                      })}
-                    </nav>
+              </a>
+            ))}
+          </div>
+          <p className="mt-5 text-sm text-zinc-400">
+            <a href={GITHUB} target="_blank" rel="noopener noreferrer" className="hover:text-zinc-600 underline underline-offset-2 transition-colors">{t.source} ↗</a>
+          </p>
+        </div>
+
+        {/* ── Hero app mock ── */}
+        <div ref={heroMockRef} className={`max-w-5xl mx-auto px-6 ${heroMockVisible ? "anim-fade-slide-up" : "opacity-0"}`}>
+          <div className="relative">
+            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none" />
+            <div className="rounded-t-2xl border border-zinc-200 border-b-0 overflow-hidden"
+                 style={{
+                   boxShadow: "0 30px 80px -10px rgba(79,70,229,0.2), 0 0 0 1px rgba(79,70,229,0.05)",
+                   transform: "perspective(1400px) rotateX(4deg)",
+                   transformOrigin: "50% 0%",
+                 }}>
+              {/* Window chrome */}
+              <div className="h-8 bg-zinc-100 border-b border-zinc-200 flex items-center px-4 gap-1.5 flex-shrink-0">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
+                <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
+                <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
+                <span className="text-[10px] text-zinc-400 ml-3 font-medium">Agon — FitZone Studio</span>
+              </div>
+              {/* App layout */}
+              <div className="flex" style={{ height: 440 }}>
+                <div className="w-40 bg-zinc-50 border-r border-zinc-100 flex flex-col py-3 flex-shrink-0">
+                  <div className="px-3 mb-3">
+                    <div className="text-[10px] font-bold text-zinc-900">FitZone Studio</div>
+                    <div className="text-[8.5px] text-zinc-400 mt-0.5">Milano</div>
                   </div>
-                  {/* Content */}
-                  <div className="flex-1 overflow-hidden bg-white">
-                    {mockScreen === "dashboard" && <DashboardMock />}
-                    {mockScreen === "calendar" && <CalendarMock />}
-                    {mockScreen === "clients" && <ClientsMock />}
-                  </div>
+                  <nav className="flex-1 px-1.5 space-y-0.5">
+                    {MOCK_NAV.map((item) => (
+                      <div key={item.id}
+                        className={`flex items-center gap-2 px-2 py-1.5 text-[10px] rounded-md ${item.id === "dashboard" ? "bg-indigo-50 text-indigo-700 font-semibold" : "text-zinc-400"}`}>
+                        {item.icon}{item.label}
+                      </div>
+                    ))}
+                  </nav>
+                </div>
+                <div className="flex-1 overflow-hidden bg-white">
+                  <DashboardMock />
                 </div>
               </div>
             </div>
@@ -618,13 +683,42 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Features ── */}
+      {/* ── Bento mocks ── */}
+      <section className="py-20 border-t border-zinc-100">
+        <div ref={bentoRef} className="max-w-5xl mx-auto px-6 space-y-3">
+          {/* Row 1: Calendar full width */}
+          <div className={bentoVis ? "anim-fade-slide-up" : "opacity-0"}>
+            <MockWindow height={330}>
+              <CalendarMock />
+            </MockWindow>
+          </div>
+          {/* Row 2: Memberships + Clients side by side */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className={bentoVis ? "anim-fade-slide-up" : "opacity-0"}
+                 style={bentoVis ? { animationDelay: "120ms" } : undefined}>
+              <MockWindow height={275}>
+                <MembershipsMock />
+              </MockWindow>
+            </div>
+            <div className={bentoVis ? "anim-fade-slide-up" : "opacity-0"}
+                 style={bentoVis ? { animationDelay: "240ms" } : undefined}>
+              <MockWindow height={275}>
+                <ClientsMock />
+              </MockWindow>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Features grid ── */}
       <section className="bg-zinc-50 border-t border-zinc-100">
-        <div className="max-w-5xl mx-auto px-6 py-20">
-          <h2 className="text-2xl font-bold text-zinc-900 mb-10">{t.featuresTitle}</h2>
+        <div ref={featRef} className="max-w-5xl mx-auto px-6 py-20">
+          <h2 className={`text-2xl font-bold text-zinc-900 mb-10 ${featVis ? "anim-fade-slide-up" : "opacity-0"}`}>{t.featuresTitle}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {t.features.map((f, i) => (
-              <div key={f.title} className="bg-white border border-zinc-200 rounded-xl p-5">
+              <div key={f.title}
+                className={`bg-white border border-zinc-200 rounded-xl p-5 ${featVis ? "anim-fade-slide-up" : "opacity-0"}`}
+                style={featVis ? { animationDelay: `${(i + 1) * 80}ms` } : undefined}>
                 <div className="text-indigo-600 mb-3">{featureIcons[i]}</div>
                 <h3 className="font-semibold text-zinc-900 mb-1">{f.title}</h3>
                 <p className="text-sm text-zinc-500 leading-relaxed">{f.desc}</p>

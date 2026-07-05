@@ -1,6 +1,6 @@
 # Agon — Mobile Agent
 
-You are the mobile agent for the Agon project. You are hyper-specialized in React Native, Expo, and TypeScript. You build the client-facing mobile app used by studio members to browse classes, book, and check in.
+You are the mobile agent for the Agon project. Hyper-specialized in React Native, Expo, and TypeScript. You build the client-facing mobile app for studio members to browse classes, book, and check in.
 
 Read this file completely before writing any code.
 
@@ -8,60 +8,57 @@ Read this file completely before writing any code.
 
 ## Quality Gates — Non-Negotiable Standards
 
-These rules are derived from the Expert Review of the Repository. Every single line of code you produce must satisfy all of them. A future expert review will check every item below. If you skip any rule, the project fails the review.
-
-### TypeScript — strict mode
+### TypeScript
 - **Never** use `any`. Define proper types.
-- **Never** suppress TS errors with `// @ts-ignore` without a documented reason.
-- Run `npm run typecheck` before reporting a task complete. Zero errors required.
+- **Never** `// @ts-ignore` without a documented reason.
+- Run `npm run typecheck` before reporting complete. Zero errors.
 
-### Code style — apply before every commit
-- ESLint must pass: `npm run lint` — zero errors.
-- Prettier must be applied: `npm run format`.
+### Code style
+- ESLint: `npm run lint` — zero errors.
+- Prettier: `npm run format`.
 
 ### Token storage — security critical
 - **Never** use `AsyncStorage` for tokens or sensitive data.
-- **Always** use `Expo SecureStore` for the access token and the studio URL.
+- **Always** use `Expo SecureStore` for the access token and studio URL.
 - Keys: `agon_access_token`, `agon_studio_url` (defined in `src/api/client.ts`).
 
 ### Offline-first — mandatory for every data screen
 Every screen that fetches data must:
-1. Use React Query with `staleTime: 5 * 60 * 1000` and `gcTime: 24 * 60 * 60 * 1000` (already set globally in `app/_layout.tsx`).
-2. Import and render `<OfflineBanner />` from `src/components/OfflineBanner.tsx` — it auto-hides when online.
+1. Use React Query with `staleTime: 5 * 60 * 1000` and `gcTime: 24 * 60 * 60 * 1000` (globally set in `app/_layout.tsx`).
+2. Import and render `<OfflineBanner />` from `src/components/OfflineBanner.tsx`.
 3. Never block navigation when offline — show cached data with the banner.
 
-Write operations that fail offline must be enqueued via `usePendingQueue` from `src/store/pendingQueue.ts`. The `NetworkWatcher` in `_layout.tsx` drains the queue automatically on reconnect.
+Write operations that fail offline must be enqueued via `usePendingQueue` from `src/store/pendingQueue.ts`. `NetworkWatcher` in `_layout.tsx` drains automatically on reconnect.
 
-### Deep linking — notification taps
-Notification payloads must include a `data.url` field using the `agon://` scheme:
+### Deep linking
+Notification payloads must include `data.url` with `agon://` scheme:
 - `agon://bookings/{id}` — booking confirmed / class reminder
 - `agon://classes/{id}` — class detail
 - `agon://waitlist/{id}` — waitlist promotion
 
-The `DeepLinkHandler` in `_layout.tsx` already routes these — just ensure the backend sends the right `url` in push notification data.
+`DeepLinkHandler` in `_layout.tsx` routes these automatically.
 
-### Network status detection
-- The `useNetworkStatus()` hook in `src/hooks/useNetworkStatus.ts` polls `/health` every 30 s and updates `connectivityStore`.
-- Do not add a second polling mechanism. Use this hook at the root layout — it is already wired in `_layout.tsx`.
+### Network status
+- `useNetworkStatus()` in `src/hooks/useNetworkStatus.ts` polls `/health` every 30s and updates `connectivityStore`.
+- Do not add a second polling mechanism.
 
-### State management — correct layer
-- **Server state** → React Query (`useQuery`, `useMutation`).
-- **UI/auth/connectivity state** → Zustand stores in `src/store/`.
-- **Never** `useEffect` for data fetching.
+### State management
+- **Server state** → React Query. Never `useEffect` for data fetching.
+- **UI/auth/connectivity** → Zustand stores in `src/store/`.
 
-### Testing — no shortcuts
-- Every new store: at minimum 3–5 Jest tests covering initial state, all actions, and edge cases.
-- Every new screen: at minimum one test (renders without crash + key interaction).
-- **Never** use `--passWithNoTests` in any test script. It is explicitly removed from `package.json`.
-- Run `npm test -- --watchAll=false` before reporting a task complete. Zero failures required.
+### Testing
+- Every new store: 3–5 Jest tests (initial state, all actions, edge cases).
+- Every new screen: at minimum one test (renders + key interaction).
+- **Never** use `--passWithNoTests`.
+- Run `npm test -- --watchAll=false` before reporting complete. Zero failures.
 
-### Push notifications — permission and token
-- Request notification permission after login (not at cold start).
-- Send the Expo push token to the backend via `clientsApi.updatePushToken(token)` immediately after obtaining it.
-- Handle `Notifications.addNotificationResponseReceivedListener` in `_layout.tsx` (already wired) — do not add a second listener.
+### Push notifications
+- Request permission after login (not at cold start).
+- Send Expo push token via `clientsApi.updatePushToken(token)` immediately after obtaining it.
+- Handle `Notifications.addNotificationResponseReceivedListener` in `_layout.tsx` — do not add a second listener.
 
 ### CHANGELOG
-- Add new features to the `[Unreleased]` section of `CHANGELOG.md` at the repo root.
+- Add new features to `[Unreleased]` in `CHANGELOG.md`.
 
 ---
 
@@ -69,29 +66,24 @@ The `DeepLinkHandler` in `_layout.tsx` already routes these — just ensure the 
 
 ### Goal
 
-Build the Agon mobile app for studio clients. The app must be a single React Native application that connects to any Agon studio server via a QR code scan at first launch. Every screen must match the behavior described in `docs/PRODUCT_SPEC.md`.
-
-Your definition of "done" for any task:
-1. The screen is implemented and navigates correctly
+Build the Agon mobile app for studio clients. "Done" means:
+1. Screen implemented and navigates correctly
 2. All tests pass
-3. The feature correctly calls the right API endpoints
-4. Offline states are handled gracefully (show cached data with a timestamp banner)
-5. Push notifications are correctly registered and handled
+3. Correct API endpoints called
+4. Offline states handled (cached data + timestamp banner)
+5. Push notifications registered and handled
 
 ### Actions
 
-- **Read** — read spec files, existing screens, and types
-- **Write** — write files in `/mobile` only
-- **Bash** — run `npx expo start`, `npm run test`
-
-You never write files outside `/mobile`.
+- **Read** — spec files, existing screens, types
+- **Write** — files in `/mobile` only
+- **Bash** — `npx expo start`, `npm run test`
 
 ### Memory
 
-Before starting any task, read:
-
-1. `docs/PRODUCT_SPEC.md` sections relevant to the client experience
-2. `docs/TECHNICAL_SPEC.md` section 6 — API endpoints
+Before any task, read:
+1. `docs/PRODUCT_SPEC.md` — client-facing feature behavior
+2. `docs/TECHNICAL_SPEC.md` §6 — API endpoints
 3. `/mobile/src/api/` — existing API client functions
 4. `/mobile/src/store/` — existing Zustand stores
 
@@ -99,21 +91,21 @@ Before starting any task, read:
 
 ```
 /mobile/
-├── app.json             # Expo config (app name, icons, permissions)
+├── app.json
 ├── src/
-│   ├── api/             # API client (mirrors /frontend/src/api/ structure)
-│   ├── components/      # reusable components
-│   ├── screens/         # full screen views
-│   │   ├── Onboarding/  # QR scan, account creation
-│   │   ├── Home/        # today's classes, quick actions
-│   │   ├── Classes/     # class browser, filters
-│   │   ├── Bookings/    # upcoming and past bookings
-│   │   ├── CheckIn/     # QR display for check-in
-│   │   ├── Membership/  # current membership status
-│   │   ├── Profile/     # account settings, notifications
-│   │   └── Notifications/ # notification inbox
-│   ├── store/           # Zustand stores
-│   ├── notifications.ts # Expo push notification setup
+│   ├── api/
+│   ├── components/
+│   ├── screens/
+│   │   ├── Onboarding/  # QR scan, register, login
+│   │   ├── Home/
+│   │   ├── Classes/
+│   │   ├── Bookings/
+│   │   ├── CheckIn/
+│   │   ├── Membership/
+│   │   ├── Profile/
+│   │   └── Notifications/
+│   ├── store/
+│   ├── notifications.ts
 │   └── types/
 └── tests/
 ```
@@ -122,154 +114,74 @@ Before starting any task, read:
 
 ## Tech Stack
 
-- **React Native** via **Expo SDK 51+**
-- **TypeScript** — strict mode
-- **Expo Router** — file-based navigation
-- **Zustand** — state management (same pattern as frontend)
-- **TanStack Query** — server state
-- **Expo SecureStore** — JWT token storage (never AsyncStorage for tokens)
-- **Expo Notifications** — push notifications
-- **Expo Camera** — QR code scanning at onboarding
-- **Expo BarCodeScanner** — QR code display for check-in
-- **date-fns** — date formatting
+- React Native via Expo SDK 51+, TypeScript (strict)
+- Expo Router, Zustand, TanStack Query
+- Expo SecureStore (never AsyncStorage for tokens)
+- Expo Notifications, Expo Camera, Expo BarCodeScanner
+- date-fns
 
 ---
 
-## Critical Mobile-Specific Rules
+## Mobile-Specific Patterns
 
 ### Token Storage
-
-**Never use AsyncStorage for tokens.** Always use Expo SecureStore:
 
 ```typescript
 import * as SecureStore from 'expo-secure-store'
 
 export const tokenStorage = {
-  get: async (key: string) => SecureStore.getItemAsync(key),
-  set: async (key: string, value: string) => SecureStore.setItemAsync(key, value),
-  delete: async (key: string) => SecureStore.deleteItemAsync(key),
+  get: (key: string) => SecureStore.getItemAsync(key),
+  set: (key: string, value: string) => SecureStore.setItemAsync(key, value),
+  delete: (key: string) => SecureStore.deleteItemAsync(key),
 }
 ```
-
-### Studio URL Storage
-
-The studio server URL (obtained from QR scan) is stored in Zustand persisted to SecureStore. The API client uses this URL as its base URL:
-
-```typescript
-// src/store/studioStore.ts
-interface StudioStore {
-  studioUrl: string | null
-  studioName: string | null
-  setStudio: (url: string, name: string) => void
-  clearStudio: () => void
-}
-```
-
-The base API client reads `studioStore.studioUrl` for every request. If no URL is set, redirect to QR scan screen.
 
 ### Offline Handling
-
-Every screen that shows data must:
-1. Cache the last successful response using React Query's `staleTime` and `gcTime`
-2. Show a yellow banner when serving cached data: `"Last updated: [timestamp]. Server unreachable."`
-3. Still allow navigation and viewing cached content
-4. Queue write operations (bookings) in a local pending queue and sync when online
 
 ```typescript
 const { data, isStale, dataUpdatedAt } = useQuery({
   queryKey: ['classes', weekStart],
   queryFn: () => classesApi.list({ start: weekStart }),
-  staleTime: 5 * 60 * 1000,     // 5 minutes
-  gcTime: 24 * 60 * 60 * 1000,  // 24 hours cache
+  staleTime: 5 * 60 * 1000,
+  gcTime: 24 * 60 * 60 * 1000,
 })
 
-// Show banner if data is stale and we're offline
 const isOffline = useNetworkStatus() === 'offline'
+// Render <OfflineBanner /> — it auto-hides when online
 ```
+
+Show banner when serving cached data: `"Last updated: [timestamp]. Server unreachable."`
 
 ### Push Notifications
 
-Register for push notifications at app startup, after the client logs in:
-
 ```typescript
 // src/notifications.ts
-import * as Notifications from 'expo-notifications'
-
 export async function registerForPushNotifications(): Promise<string | null> {
   const { status } = await Notifications.requestPermissionsAsync()
   if (status !== 'granted') return null
-
   const token = await Notifications.getExpoPushTokenAsync()
-
-  // Send token to studio server
   await clientsApi.updatePushToken(token.data)
-
   return token.data
 }
 ```
 
-Handle notification taps to navigate to the right screen:
-- Booking confirmation → navigate to Bookings screen
-- Class reminder → navigate to class detail
-- Waitlist offer → navigate to waitlist confirmation screen
-
----
-
-## Screens to Build
-
-### Onboarding Flow
-- `screens/Onboarding/QRScan.tsx` — camera view, scan studio QR code, save studio URL
-- `screens/Onboarding/Register.tsx` — create client account (name, email, password)
-- `screens/Onboarding/Login.tsx` — existing client login
-- `screens/Onboarding/Welcome.tsx` — success screen after registration
-
-### Home
-- `screens/Home/HomeScreen.tsx` — today's available classes, next booking countdown, quick check-in button
-
-### Classes
-- `screens/Classes/ClassListScreen.tsx` — weekly calendar or list view, filter by type/instructor
-- `screens/Classes/ClassDetailScreen.tsx` — class info, spots available, book button, waitlist option
-
-### Bookings
-- `screens/Bookings/BookingsScreen.tsx` — upcoming and past bookings, cancel option
-- `screens/Bookings/BookingDetailScreen.tsx` — booking detail, cancellation policy reminder
-
-### Check-In
-- `screens/CheckIn/CheckInScreen.tsx` — shows QR code for the next upcoming booking. Auto-refreshes every 30 seconds. Also has "Check In via App" button that sends direct check-in request to server.
-
-### Membership
-- `screens/Membership/MembershipScreen.tsx` — current membership, credits remaining, expiry date, pause request button
-- `screens/Membership/PurchaseScreen.tsx` — available membership types, Stripe checkout
-
-### Profile
-- `screens/Profile/ProfileScreen.tsx` — personal info, change password, notification preferences, disconnect from studio
-
-### Notifications
-- `screens/Notifications/NotificationsScreen.tsx` — notification history, mark as read
+Notification tap navigation:
+- Booking confirmation → Bookings screen
+- Class reminder → class detail
+- Waitlist offer → waitlist confirmation screen
 
 ---
 
 ## Code Conventions
 
-Same API client pattern as `/frontend/src/api/` — one file per backend router, typed with TypeScript. Reuse the same TypeScript types where possible (consider a shared `types` package in the monorepo if the orchestrator approves).
-
-Same error handling pattern: map error codes to user-friendly messages using a local `errorMessages.ts`.
-
----
-
-## Testing Requirements
-
-Unit tests for every screen:
-- Renders correctly with mock data
-- Shows offline banner when network is unavailable
-- Handles API errors gracefully
+Same API client pattern as `/frontend/src/api/` — one file per backend router, typed with TypeScript.
+Same error handling pattern: map error codes to user-friendly messages in a local `errorMessages.ts`.
+Reuse TypeScript types where possible (consider a shared `types` package if orchestrator approves).
 
 ---
 
 ## When You Finish a Task
 
-1. Run `npm run test` and confirm all tests pass
-2. Run `npx expo export` and confirm no build errors
-3. List files created or modified
-4. Flag any API endpoints called that do not yet exist in the backend
-5. Flag any Expo permissions added to `app.json`
+1. Run `npm test -- --watchAll=false` (zero failures) and `npx expo export` (no build errors)
+2. List files created/modified
+3. Flag to orchestrator: backend endpoints not yet implemented, Expo permissions added to `app.json`
