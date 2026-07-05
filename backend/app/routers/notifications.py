@@ -1,14 +1,13 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-
 from app.auth import get_current_client, require_manager
 from app.database import get_db
 from app.models.client import Client
 from app.models.notification_log import NotificationLog
 from app.schemas.notification import NotificationResponse, NotificationSendRequest
 from app.services.push_service import send_push_notification
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1/notifications", tags=["notifications"])
 

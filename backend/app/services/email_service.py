@@ -8,9 +8,8 @@ from email.mime.text import MIMEText
 from html.parser import HTMLParser
 
 import aiosmtplib
-from sqlalchemy.orm import Session
-
 from app.models.studio_settings import StudioSettings
+from sqlalchemy.orm import Session
 
 
 class _HTMLStripper(HTMLParser):

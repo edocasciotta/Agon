@@ -1,9 +1,6 @@
 import uuid
 from datetime import timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from sqlalchemy.orm import Session
-
 from app.auth import (
     ACCESS_TOKEN_EXPIRE_CLIENT,
     ACCESS_TOKEN_EXPIRE_MANAGER,
@@ -31,6 +28,8 @@ from app.schemas.auth import (
     TokenResponse,
 )
 from app.utils import utcnow
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 

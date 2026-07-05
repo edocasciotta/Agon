@@ -4,9 +4,6 @@ Email Templates CRUD — /api/v1/email/templates
 
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-
 from app.auth import require_manager
 from app.database import get_db
 from app.models.email_event_assignment import EmailEventAssignment
@@ -17,6 +14,8 @@ from app.schemas.email_template import (
     EmailTemplateResponse,
     EmailTemplateUpdate,
 )
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1/email/templates", tags=["email-templates"])
 

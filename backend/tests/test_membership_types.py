@@ -1,5 +1,3 @@
-
-
 def test_create_membership_type(client, manager_auth_headers):
     response = client.post(
         "/api/v1/membership-types",

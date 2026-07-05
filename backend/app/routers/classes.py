@@ -2,9 +2,6 @@ import uuid
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
-
 from app.auth import get_current_user, require_manager
 from app.database import get_db
 from app.models.booking import Booking
@@ -19,6 +16,8 @@ from app.schemas.scheduled_class import (
     ScheduledClassUpdate,
 )
 from app.utils import utcnow
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1/classes", tags=["classes"])
 

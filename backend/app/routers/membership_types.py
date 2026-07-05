@@ -1,8 +1,5 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-
 from app.auth import get_current_user, require_manager
 from app.database import get_db
 from app.models.membership_type import MembershipType
@@ -11,6 +8,8 @@ from app.schemas.membership_type import (
     MembershipTypeResponse,
     MembershipTypeUpdate,
 )
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1", tags=["membership-types"])
 

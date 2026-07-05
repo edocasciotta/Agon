@@ -1,7 +1,6 @@
+from app.database import Base
 from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.sql import func
-
-from app.database import Base
 
 
 class Payment(Base):

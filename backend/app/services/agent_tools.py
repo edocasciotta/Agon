@@ -16,8 +16,6 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 from typing import Any, Generic, Optional, TypeVar
 
-from sqlalchemy.orm import Session
-
 from app.models.booking import Booking
 from app.models.checkin import Checkin
 from app.models.class_template import ClassTemplate
@@ -29,6 +27,7 @@ from app.models.membership_type import MembershipType
 from app.models.scheduled_class import ScheduledClass
 from app.models.user import User
 from app.utils import utcnow
+from sqlalchemy.orm import Session
 
 T = TypeVar("T")
 

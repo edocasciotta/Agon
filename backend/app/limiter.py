@@ -18,9 +18,8 @@ def get_jwt_sub(request: Request) -> str:
     auth_header = request.headers.get("Authorization", "")
     if auth_header.startswith("Bearer "):
         try:
-            from jose import jwt as _jwt
-
             from app.config import settings
+            from jose import jwt as _jwt
 
             token = auth_header.split(" ", 1)[1]
             payload = _jwt.decode(token, settings.AGON_JWT_SECRET, algorithms=["HS256"])

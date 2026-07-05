@@ -7,14 +7,13 @@ POST /api/v1/studio/email/test   → send test email to current manager
 
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
-from sqlalchemy.orm import Session
-
 from app.auth import require_manager
 from app.database import get_db
 from app.models.studio_settings import StudioSettings
 from app.models.user import User
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1/studio/email", tags=["email-settings"])
 

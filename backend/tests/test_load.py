@@ -11,8 +11,6 @@ same code paths as concurrent requests without SQLite deadlock issues.
 import datetime
 
 import pytest
-from fastapi.testclient import TestClient
-
 from app.auth import hash_password
 from app.database import Base, get_db
 from app.models.booking import Booking
@@ -21,11 +19,11 @@ from app.models.client import Client
 from app.models.membership import Membership
 from app.models.membership_type import MembershipType
 from app.models.scheduled_class import ScheduledClass
+from fastapi.testclient import TestClient
 from main import app
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-
 
 CLASS_CAPACITY = 50
 TOTAL_CLIENTS = 100
@@ -51,7 +49,9 @@ def load_client():
     db.flush()
 
     # Class template + scheduled class (capacity 50)
-    tmpl = ClassTemplate(name="Spin", duration_minutes=45, default_capacity=CLASS_CAPACITY, color="#000")
+    tmpl = ClassTemplate(
+        name="Spin", duration_minutes=45, default_capacity=CLASS_CAPACITY, color="#000"
+    )
     db.add(tmpl)
     db.flush()
     future = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
@@ -123,18 +123,21 @@ def test_no_overbooking_under_load(load_client):
         )
         if resp.status_code in (200, 201):
             confirmed += 1
-        elif resp.status_code == 409 and resp.json().get("detail", {}).get("error", {}).get("code") == "BOOKING_CLASS_FULL":
+        elif (
+            resp.status_code == 409
+            and resp.json().get("detail", {}).get("error", {}).get("code") == "BOOKING_CLASS_FULL"
+        ):
             full_errors += 1
         else:
             other_errors.append((c.email, resp.status_code, resp.text))
 
     assert not other_errors, f"Unexpected errors: {other_errors}"
-    assert confirmed == CLASS_CAPACITY, (
-        f"Expected {CLASS_CAPACITY} confirmed bookings, got {confirmed}"
-    )
-    assert full_errors == TOTAL_CLIENTS - CLASS_CAPACITY, (
-        f"Expected {TOTAL_CLIENTS - CLASS_CAPACITY} class-full rejections, got {full_errors}"
-    )
+    assert (
+        confirmed == CLASS_CAPACITY
+    ), f"Expected {CLASS_CAPACITY} confirmed bookings, got {confirmed}"
+    assert (
+        full_errors == TOTAL_CLIENTS - CLASS_CAPACITY
+    ), f"Expected {TOTAL_CLIENTS - CLASS_CAPACITY} class-full rejections, got {full_errors}"
 
 
 def test_db_booking_count_matches_capacity(load_client):
@@ -150,9 +153,9 @@ def test_db_booking_count_matches_capacity(load_client):
         )
         .count()
     )
-    assert confirmed_in_db == CLASS_CAPACITY, (
-        f"DB has {confirmed_in_db} confirmed bookings, expected {CLASS_CAPACITY}"
-    )
+    assert (
+        confirmed_in_db == CLASS_CAPACITY
+    ), f"DB has {confirmed_in_db} confirmed bookings, expected {CLASS_CAPACITY}"
 
 
 def test_no_duplicate_bookings_for_same_client(load_client):
@@ -169,4 +172,6 @@ def test_no_duplicate_bookings_for_same_client(load_client):
         .all()
     )
     client_ids = [b.client_id for b in bookings]
-    assert len(client_ids) == len(set(client_ids)), "Duplicate bookings detected for the same client"
+    assert len(client_ids) == len(
+        set(client_ids)
+    ), "Duplicate bookings detected for the same client"

@@ -4,13 +4,12 @@ from datetime import date, datetime, timedelta
 from io import StringIO
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query
-from fastapi.responses import StreamingResponse
-from sqlalchemy.orm import Session
-
 from app.auth import require_manager
 from app.database import get_db
 from app.utils import utcnow
+from fastapi import APIRouter, Depends, Query
+from fastapi.responses import StreamingResponse
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1/reports", tags=["reports"])
 

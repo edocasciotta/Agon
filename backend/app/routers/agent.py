@@ -17,11 +17,6 @@ from datetime import date, datetime, timezone
 from typing import Any
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from fastapi import APIRouter, Depends
-from litellm import completion
-from pydantic import BaseModel, field_validator
-from sqlalchemy.orm import Session
-
 from app.auth import require_manager
 from app.config import settings
 from app.database import get_db
@@ -40,6 +35,10 @@ from app.services.agent_tools import (
     handle_get_report,
     load_studio_data_summary,
 )
+from fastapi import APIRouter, Depends
+from litellm import completion
+from pydantic import BaseModel, field_validator
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

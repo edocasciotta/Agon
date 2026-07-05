@@ -1,5 +1,3 @@
-
-
 def test_get_studio_not_configured(client, manager_auth_headers):
     """GET /studio with no row → 404"""
     response = client.get("/api/v1/studio", headers=manager_auth_headers)

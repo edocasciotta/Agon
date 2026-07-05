@@ -5,13 +5,12 @@ db.commit() is never called here — that belongs in the router layer.
 
 from datetime import timedelta
 
-from sqlalchemy import exists
-from sqlalchemy.orm import Session
-
 from app.models.booking import Booking
 from app.models.client import Client
 from app.models.membership import Membership
 from app.utils import utcnow
+from sqlalchemy import exists
+from sqlalchemy.orm import Session
 
 
 def apply_filters(db: Session, filters: dict) -> list:

@@ -1,8 +1,5 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
-
 from app.auth import get_current_user, require_manager
 from app.database import get_db
 from app.models.class_template import ClassTemplate
@@ -11,6 +8,8 @@ from app.schemas.class_template import (
     ClassTemplateResponse,
     ClassTemplateUpdate,
 )
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1/class-templates", tags=["class-templates"])
 

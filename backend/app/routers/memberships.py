@@ -1,9 +1,6 @@
 from datetime import timedelta
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-
 from app.auth import decode_token, oauth2_scheme, require_manager
 from app.database import get_db
 from app.models.client import Client
@@ -16,6 +13,8 @@ from app.schemas.membership import (
     MembershipUpdate,
 )
 from app.utils import utcnow
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1", tags=["memberships"])
 
