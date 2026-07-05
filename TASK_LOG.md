@@ -79,12 +79,12 @@ Spec: `~/Downloads/agon-stripe-billing-spec.md`
 | Phase | Status | Notes |
 |---|---|---|
 | 1 — Schema + config | ✅ done | Migration `9c30bc2887eb`; 5 new tables; `sellable_online` on `membership_types`; `STRIPE_PUBLISHABLE_KEY` in config; 256 tests pass |
-| 2 — Config endpoint + settings screen | pending | `POST /api/billing/settings`; validate key with `stripe.Account.retrieve()` |
-| 3 — Checkout (one-off payments) | pending | `POST /api/billing/checkout-session` mode=payment + webhook |
-| 4 — Subscriptions | pending | mode=subscription + subscription webhook handlers |
-| 5 — Dashboard surfacing (Electron) | pending | Reuse existing UI patterns |
-| 6 — Mobile "pay/subscribe" button | pending | Open Checkout URL in-app browser |
-| 7 — Cancellation + manual override | pending | `POST /api/billing/members/{id}/subscription/cancel` |
+| 2 — Config endpoint + settings screen | ✅ done | `POST /api/billing/settings` + `GET /api/billing/settings`; validates key, writes .env atomically, sets `stripe_connected`; 261 tests pass |
+| 3 — Checkout (one-off payments) | ✅ done | `POST /api/billing/checkout-session` + `POST /api/billing/webhook`; idempotency, grants Membership+Payment; 268 tests pass |
+| 4 — Subscriptions | ✅ done | mode=subscription checkout; handlers for subscription.created/updated/deleted, invoice.paid/failed; GET+POST /members/{id}/subscription[/cancel]; 278 tests pass |
+| 5 — Dashboard surfacing (Electron) | ✅ done | Billing tab in Settings (key config + status); subscription card in ClientDetail; billingApi module; billing i18n in 7 locales; 44/44 frontend tests pass |
+| 6 — Mobile "pay/subscribe" button | ✅ done | Purchase screen calls checkout-session, opens Stripe URL via Linking.openURL; sellable_online filter; OfflineBanner; 26/26 mobile tests pass |
+| 7 — Cancellation + manual override | ✅ done | Override endpoint (no Stripe calls) + mobile cancel card with confirmation; 280 backend + 31 mobile tests pass |
 
 ## Next Task
 
