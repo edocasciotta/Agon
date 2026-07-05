@@ -4,6 +4,12 @@ from typing import Optional
 from pydantic import BaseModel
 
 
+class StudioBrandingResponse(BaseModel):
+    studio_name: str
+    primary_color: Optional[str] = None
+    secondary_color: Optional[str] = None
+
+
 class StudioSettingsUpdate(BaseModel):
     studio_name: Optional[str] = None
     address: Optional[str] = None

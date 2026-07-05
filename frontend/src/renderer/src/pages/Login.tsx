@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useQuery } from '@tanstack/react-query'
 import { authApi } from '../api/auth'
+import { studioApi } from '../api/studio'
 import { useAuthStore } from '../store/authStore'
 import { getErrorMessage } from '../lib/errorMessages'
 import type { ApiError } from '../api/client'
@@ -10,6 +12,12 @@ export function Login() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const setAuth = useAuthStore((s) => s.setAuth)
+  const { data: branding } = useQuery({
+    queryKey: ['studio-branding'],
+    queryFn: studioApi.getBranding,
+    staleTime: 5 * 60 * 1000,
+  })
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -37,7 +45,7 @@ export function Login() {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
           <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold text-indigo-600">Agon</h1>
+            <h1 className="text-3xl font-bold text-indigo-600">{branding?.studio_name ?? 'Agon'}</h1>
             <p className="text-gray-500 mt-1">{t('login.subtitle')}</p>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">

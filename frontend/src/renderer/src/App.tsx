@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { useAuthStore } from './store/authStore'
-import { studioApi } from './api/studio'
+import { studioApi, type StudioBranding } from './api/studio'
 import { Layout } from './components/Layout'
 import { Login } from './pages/Login'
 import { Dashboard } from './pages/Dashboard'
@@ -39,12 +39,22 @@ function lighten(hex: string, amount = 0.35): string {
 
 function ThemeInjector() {
   const token = useAuthStore((s) => s.accessToken)
-  const { data: settings } = useQuery({
+
+  // When authenticated, fetch full settings; otherwise fetch public branding.
+  // Different queryKeys so React Query doesn't mix the two responses.
+  const { data: fullSettings } = useQuery({
     queryKey: ['studio'],
-    queryFn: () => studioApi.get(),
+    queryFn: studioApi.get,
     enabled: !!token,
   })
+  const { data: branding } = useQuery<StudioBranding>({
+    queryKey: ['studio-branding'],
+    queryFn: studioApi.getBranding,
+    enabled: !token,
+    staleTime: 5 * 60 * 1000,
+  })
 
+  const settings = token ? fullSettings : branding
   const primary = settings?.primary_color
   const secondary = settings?.secondary_color
 

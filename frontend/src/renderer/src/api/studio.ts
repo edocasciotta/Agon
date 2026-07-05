@@ -1,7 +1,17 @@
 import { apiClient } from './client'
 import type { StudioSettings, EmailSettings } from '../types'
 
+export interface StudioBranding {
+  studio_name: string
+  primary_color: string | null
+  secondary_color: string | null
+}
+
 export const studioApi = {
+  getBranding: async (): Promise<StudioBranding> => {
+    const res = await apiClient.get('/api/v1/studio/branding')
+    return res.data
+  },
   get: async (): Promise<StudioSettings> => {
     const res = await apiClient.get('/api/v1/studio')
     return res.data
