@@ -1,12 +1,13 @@
-"""Stripe Billing Settings router — Phase 2 + Phase 3.
+"""Stripe Billing Settings router — Phase 2 + Phase 3 + Phase 4.
 
 Admin-only settings endpoints (Phase 2) plus checkout-session and webhook
-endpoints for one-off (mode="payment") purchases (Phase 3).
+endpoints for one-off (mode="payment") purchases (Phase 3) and recurring
+subscription support (Phase 4).
 """
 
 import os
 import tempfile
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 import stripe
 from fastapi import APIRouter, Depends, Request
@@ -23,6 +24,7 @@ from app.models.payment import Payment
 from app.models.stripe_checkout_session import StripeCheckoutSession
 from app.models.stripe_customer import StripeCustomer
 from app.models.stripe_price import StripePrice
+from app.models.stripe_subscription import StripeSubscription
 from app.models.stripe_webhook_event import StripeWebhookEvent
 from app.models.studio_settings import StudioSettings
 from app.utils import raise_api_error, utcnow
@@ -31,6 +33,13 @@ router = APIRouter(prefix="/api/billing", tags=["stripe-billing"])
 
 # Path to the .env file (backend/.env)
 _ENV_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
+
+# Billing interval mapping: Agon → Stripe
+_BILLING_INTERVAL_MAP = {
+    "weekly": "week",
+    "monthly": "month",
+    "annual": "year",
+}
 
 
 class StripeBillingSettingsRequest(BaseModel):
@@ -170,7 +179,7 @@ def get_billing_settings(
 
 
 # ---------------------------------------------------------------------------
-# POST /api/billing/checkout-session  (Phase 3)
+# POST /api/billing/checkout-session  (Phase 3 + Phase 4)
 # ---------------------------------------------------------------------------
 
 
@@ -189,7 +198,10 @@ def create_checkout_session(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
 ):
-    """Create a Stripe Checkout Session for a one-off membership purchase.
+    """Create a Stripe Checkout Session for a membership purchase.
+
+    Supports both one-off (mode="payment") and recurring (mode="subscription")
+    purchases depending on the membership type.
 
     Accessible by authenticated clients (who may only purchase for themselves)
     and by managers (who may initiate on behalf of any client).
@@ -218,6 +230,10 @@ def create_checkout_session(
             status_code=400,
         )
 
+    # Determine checkout mode and Stripe interval (recurring types only)
+    is_recurring = mt.type == "recurring"
+    stripe_interval = _BILLING_INTERVAL_MAP.get(mt.billing_interval or "", "month")
+
     # 4. Stripe must be configured
     if not settings.STRIPE_SECRET_KEY:
         raise_api_error(
@@ -245,12 +261,12 @@ def create_checkout_session(
             )
             db.add(sc_row)
 
-        # 7. Look up or create StripePrice (one-off)
+        # 7. Look up or create StripePrice (recurring or one-off)
         sp_row = (
             db.query(StripePrice)
             .filter(
                 StripePrice.membership_type_id == mt.id,
-                StripePrice.is_recurring == False,  # noqa: E712
+                StripePrice.is_recurring == is_recurring,  # noqa: E712
             )
             .first()
         )
@@ -258,32 +274,49 @@ def create_checkout_session(
             stripe_price_id = sp_row.stripe_price_id
         else:
             product = stripe.Product.create(name=mt.name)
-            price = stripe.Price.create(
-                unit_amount=int(mt.price * 100),
-                currency=mt.currency.lower(),
-                product=product.id,
-            )
+            if is_recurring:
+                price = stripe.Price.create(
+                    unit_amount=int(mt.price * 100),
+                    currency=mt.currency.lower(),
+                    product=product.id,
+                    recurring={"interval": stripe_interval},
+                )
+                sp_row = StripePrice(
+                    membership_type_id=mt.id,
+                    stripe_product_id=product.id,
+                    stripe_price_id=price.id,
+                    is_recurring=True,
+                    billing_interval=stripe_interval,
+                )
+            else:
+                price = stripe.Price.create(
+                    unit_amount=int(mt.price * 100),
+                    currency=mt.currency.lower(),
+                    product=product.id,
+                )
+                sp_row = StripePrice(
+                    membership_type_id=mt.id,
+                    stripe_product_id=product.id,
+                    stripe_price_id=price.id,
+                    is_recurring=False,
+                    billing_interval=None,
+                )
             stripe_price_id = price.id
-            sp_row = StripePrice(
-                membership_type_id=mt.id,
-                stripe_product_id=product.id,
-                stripe_price_id=stripe_price_id,
-                is_recurring=False,
-                billing_interval=None,
-            )
             db.add(sp_row)
 
         # 8. Create Stripe Checkout Session
+        # NOTE: payment_intent_data must NOT be passed for mode="subscription"
+        checkout_mode = "subscription" if is_recurring else "payment"
         session = stripe.checkout.Session.create(
             customer=stripe_customer_id,
             line_items=[{"price": stripe_price_id, "quantity": 1}],
-            mode="payment",
+            mode=checkout_mode,
             success_url=body.success_url,
             cancel_url=body.cancel_url,
             metadata={
                 "client_id": str(client.id),
                 "membership_type_id": str(mt.id),
-                "agon_mode": "payment",
+                "agon_mode": checkout_mode,
             },
         )
 
@@ -292,7 +325,7 @@ def create_checkout_session(
             client_id=client.id,
             stripe_session_id=session.id,
             membership_type_id=mt.id,
-            mode="payment",
+            mode=checkout_mode,
             status="open",
         )
         db.add(cs_row)
@@ -309,7 +342,7 @@ def create_checkout_session(
 
 
 # ---------------------------------------------------------------------------
-# Private helper — called from webhook handler only
+# Private helpers — called from webhook handler only
 # ---------------------------------------------------------------------------
 
 
@@ -364,11 +397,212 @@ def _handle_checkout_completed(session_obj: dict, db: Session) -> None:
         db.add(payment)
         # caller commits
 
-    # mode == "subscription" → Phase 4, nothing to do here
+    # mode == "subscription" → membership granted when customer.subscription.created fires
+
+
+def _handle_subscription_upsert(sub_obj: dict, db: Session) -> None:
+    """Handle customer.subscription.created and customer.subscription.updated.
+
+    Upserts a StripeSubscription row and, when the subscription is active,
+    grants a Membership if one does not already exist for this subscription.
+    Does NOT commit — caller commits.
+    """
+    # 1. Find StripeCustomer
+    sc_row = (
+        db.query(StripeCustomer)
+        .filter(StripeCustomer.stripe_customer_id == sub_obj["customer"])
+        .first()
+    )
+    if sc_row is None:
+        return  # unknown customer — not one of our clients
+
+    client_id = sc_row.client_id
+    status = sub_obj["status"]
+    current_period_end = datetime.utcfromtimestamp(sub_obj["current_period_end"])
+    stripe_price_id = sub_obj["items"]["data"][0]["price"]["id"]
+
+    # 2. Upsert StripeSubscription
+    stripe_sub_row = (
+        db.query(StripeSubscription)
+        .filter(StripeSubscription.stripe_subscription_id == sub_obj["id"])
+        .first()
+    )
+    if stripe_sub_row:
+        stripe_sub_row.status = status
+        stripe_sub_row.current_period_end = current_period_end
+        stripe_sub_row.updated_at = utcnow()
+    else:
+        stripe_sub_row = StripeSubscription(
+            client_id=client_id,
+            stripe_subscription_id=sub_obj["id"],
+            stripe_price_id=stripe_price_id,
+            status=status,
+            current_period_end=current_period_end,
+        )
+        db.add(stripe_sub_row)
+        db.flush()  # populate id
+
+    # 3. Grant membership when subscription becomes active
+    if status == "active":
+        existing_membership = (
+            db.query(Membership)
+            .filter(
+                Membership.client_id == client_id,
+                Membership.stripe_subscription_id == sub_obj["id"],
+                Membership.status == "active",
+            )
+            .first()
+        )
+        if existing_membership is None:
+            # Find the most recent complete checkout session for this client
+            cs_row = (
+                db.query(StripeCheckoutSession)
+                .filter(
+                    StripeCheckoutSession.client_id == client_id,
+                    StripeCheckoutSession.mode == "subscription",
+                    StripeCheckoutSession.status == "complete",
+                )
+                .order_by(StripeCheckoutSession.created_at.desc())
+                .first()
+            )
+            if cs_row is not None:
+                mt = (
+                    db.query(MembershipType)
+                    .filter(MembershipType.id == cs_row.membership_type_id)
+                    .first()
+                )
+                if mt is not None:
+                    new_membership = Membership(
+                        client_id=client_id,
+                        membership_type_id=cs_row.membership_type_id,
+                        status="active",
+                        starts_at=date.today(),
+                        expires_at=None,  # subscription — no fixed expiry
+                        credits_remaining=mt.credits_included,
+                        credits_used=0,
+                        stripe_subscription_id=sub_obj["id"],
+                    )
+                    db.add(new_membership)
+
+    # 4. Cancel membership when subscription is canceled or unpaid
+    elif status in ("canceled", "unpaid"):
+        active_membership = (
+            db.query(Membership)
+            .filter(
+                Membership.stripe_subscription_id == sub_obj["id"],
+                Membership.status == "active",
+            )
+            .first()
+        )
+        if active_membership is not None:
+            active_membership.status = "cancelled"
+
+
+def _handle_subscription_deleted(sub_obj: dict, db: Session) -> None:
+    """Handle customer.subscription.deleted.
+
+    Marks the StripeSubscription and any active Membership as cancelled.
+    Does NOT commit — caller commits.
+    """
+    stripe_sub_row = (
+        db.query(StripeSubscription)
+        .filter(StripeSubscription.stripe_subscription_id == sub_obj["id"])
+        .first()
+    )
+    if stripe_sub_row is None:
+        return
+
+    stripe_sub_row.status = "canceled"
+    stripe_sub_row.updated_at = utcnow()
+
+    active_membership = (
+        db.query(Membership)
+        .filter(
+            Membership.stripe_subscription_id == sub_obj["id"],
+            Membership.status == "active",
+        )
+        .first()
+    )
+    if active_membership is not None:
+        active_membership.status = "cancelled"
+
+
+def _handle_invoice_paid(invoice_obj: dict, db: Session) -> None:
+    """Handle invoice.paid.
+
+    Skips one-off invoices (no subscription). Records a Payment and
+    refreshes membership expiry for subscription invoices.
+    Does NOT commit — caller commits.
+    """
+    # 1. Skip one-off invoices (not tied to a subscription)
+    if invoice_obj.get("subscription") is None:
+        return
+
+    # 2. Find the StripeSubscription row
+    stripe_sub_row = (
+        db.query(StripeSubscription)
+        .filter(StripeSubscription.stripe_subscription_id == invoice_obj["subscription"])
+        .first()
+    )
+    if stripe_sub_row is None:
+        return
+
+    # 3. Update active membership expiry / status
+    active_membership = (
+        db.query(Membership)
+        .filter(
+            Membership.stripe_subscription_id == invoice_obj["subscription"],
+            Membership.status == "active",
+        )
+        .first()
+    )
+    if active_membership is not None:
+        lines_data = invoice_obj.get("lines", {}).get("data", [])
+        if lines_data:
+            period_end_ts = lines_data[0].get("period", {}).get("end")
+            if period_end_ts is not None:
+                active_membership.expires_at = datetime.utcfromtimestamp(period_end_ts).date()
+        active_membership.status = "active"
+
+    # 4. Record payment
+    payment = Payment(
+        client_id=stripe_sub_row.client_id,
+        amount=invoice_obj["amount_paid"] / 100,
+        currency=invoice_obj["currency"].upper(),
+        status="completed",
+        provider="stripe",
+        provider_payment_id=invoice_obj.get("payment_intent"),
+        provider_invoice_id=invoice_obj.get("id"),
+        paid_at=utcnow(),
+    )
+    db.add(payment)
+
+
+def _handle_invoice_payment_failed(invoice_obj: dict, db: Session) -> None:
+    """Handle invoice.payment_failed.
+
+    Flags the active membership as payment_overdue. Does NOT revoke access.
+    Does NOT commit — caller commits.
+    """
+    # 1. Skip one-off invoices
+    if invoice_obj.get("subscription") is None:
+        return
+
+    # 2. Flag active membership
+    active_membership = (
+        db.query(Membership)
+        .filter(
+            Membership.stripe_subscription_id == invoice_obj["subscription"],
+            Membership.status == "active",
+        )
+        .first()
+    )
+    if active_membership is not None:
+        active_membership.status = "payment_overdue"
 
 
 # ---------------------------------------------------------------------------
-# POST /api/billing/webhook  (Phase 3)
+# POST /api/billing/webhook  (Phase 3 + Phase 4)
 # ---------------------------------------------------------------------------
 
 
@@ -401,12 +635,126 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
     if existing:
         return {"status": "already_processed"}
 
-    # Dispatch
-    if event["type"] == "checkout.session.completed":
-        _handle_checkout_completed(event["data"]["object"], db)
+    # Dispatch to the appropriate handler
+    handlers = {
+        "checkout.session.completed": _handle_checkout_completed,
+        "customer.subscription.created": _handle_subscription_upsert,
+        "customer.subscription.updated": _handle_subscription_upsert,
+        "customer.subscription.deleted": _handle_subscription_deleted,
+        "invoice.paid": _handle_invoice_paid,
+        "invoice.payment_failed": _handle_invoice_payment_failed,
+    }
+    handler = handlers.get(event["type"])
+    if handler:
+        handler(event["data"]["object"], db)
 
     # Record the event (idempotency ledger) and commit
     db.add(StripeWebhookEvent(stripe_event_id=event["id"], event_type=event["type"]))
     db.commit()
 
     return {"status": "ok"}
+
+
+# ---------------------------------------------------------------------------
+# GET /api/billing/members/{client_id}/subscription  (Phase 4)
+# ---------------------------------------------------------------------------
+
+
+@router.get("/members/{client_id}/subscription", status_code=200)
+def get_subscription_status(
+    client_id: int,
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+):
+    """Return the most recent Stripe subscription for a client.
+
+    Accessible by managers or the client themselves.
+    """
+    payload = decode_token(token)
+    if payload.get("type") != "access":
+        raise_api_error("AUTH_TOKEN_INVALID", "Invalid token type", status_code=401)
+
+    # Clients may only query their own subscription
+    caller_role = payload.get("role", "client")
+    if caller_role != "manager":
+        caller_id = payload.get("sub")
+        # sub is stored as string in JWT
+        target_client = db.query(Client).filter(Client.id == client_id).first()
+        if not target_client or str(target_client.id) != str(caller_id):
+            raise_api_error(
+                "FORBIDDEN",
+                "You may only view your own subscription.",
+                status_code=403,
+            )
+
+    stripe_sub_row = (
+        db.query(StripeSubscription)
+        .filter(StripeSubscription.client_id == client_id)
+        .order_by(StripeSubscription.created_at.desc())
+        .first()
+    )
+
+    if stripe_sub_row is None:
+        return {"subscription": None}
+
+    return {
+        "subscription": {
+            "stripe_subscription_id": stripe_sub_row.stripe_subscription_id,
+            "status": stripe_sub_row.status,
+            "current_period_end": (
+                stripe_sub_row.current_period_end.isoformat()
+                if stripe_sub_row.current_period_end
+                else None
+            ),
+            "stripe_price_id": stripe_sub_row.stripe_price_id,
+        }
+    }
+
+
+# ---------------------------------------------------------------------------
+# POST /api/billing/members/{client_id}/subscription/cancel  (Phase 4)
+# ---------------------------------------------------------------------------
+
+
+@router.post("/members/{client_id}/subscription/cancel", status_code=200)
+def cancel_subscription(
+    client_id: int,
+    db: Session = Depends(get_db),
+    _current_user=Depends(require_manager),
+):
+    """Cancel a client's active subscription at period end. Manager-only."""
+    # Find active (non-canceled) subscription
+    stripe_sub_row = (
+        db.query(StripeSubscription)
+        .filter(
+            StripeSubscription.client_id == client_id,
+            StripeSubscription.status != "canceled",
+        )
+        .order_by(StripeSubscription.created_at.desc())
+        .first()
+    )
+    if stripe_sub_row is None:
+        raise_api_error(
+            "SUBSCRIPTION_NOT_FOUND",
+            "No active subscription found for this client.",
+            status_code=404,
+        )
+
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+
+    try:
+        stripe.Subscription.modify(
+            stripe_sub_row.stripe_subscription_id,
+            cancel_at_period_end=True,
+        )
+    except stripe.error.StripeError:
+        raise_api_error(
+            "STRIPE_API_ERROR",
+            "A Stripe API error occurred while cancelling the subscription.",
+            status_code=502,
+        )
+
+    stripe_sub_row.status = "canceled"
+    db.commit()
+
+    return {"status": "ok", "cancel_at_period_end": True}
