@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { membershipTypesApi, membershipsApi } from '../api/memberships'
+import { clientsApi } from '../api/clients'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { PageHeader } from '../components/PageHeader'
 import { EmptyState } from '../components/EmptyState'
@@ -12,6 +14,7 @@ import { membershipTypeSchema } from '../lib/formSchemas'
 export function MembershipsPage() {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const [statusFilter, setStatusFilter] = useState('')
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
@@ -33,6 +36,18 @@ export function MembershipsPage() {
     queryKey: ['memberships', statusFilter],
     queryFn: () => membershipsApi.list(),
   })
+
+  const { data: clientsPage } = useQuery({
+    queryKey: ['clients', 'all-for-memberships'],
+    queryFn: () => clientsApi.list(undefined, 1, 1000),
+  })
+
+  const clientMap: Record<number, string> = Object.fromEntries(
+    (clientsPage?.items ?? []).map((c) => [c.id, c.full_name])
+  )
+  const typeMap: Record<number, string> = Object.fromEntries(
+    (membershipTypes ?? []).map((mt) => [mt.id, mt.name])
+  )
 
   const createTypeMutation = useMutation({
     mutationFn: (data: Partial<MembershipType>) => membershipTypesApi.create(data),
@@ -113,7 +128,9 @@ export function MembershipsPage() {
                 {membershipTypes.map((mt) => (
                   <tr key={mt.id}>
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">{mt.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{mt.type}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {mt.type === 'recurring' ? t('memberships.recurring') : t('memberships.creditPack')}
+                    </td>
                     <td className="px-6 py-4 text-sm text-gray-500">{mt.currency} {mt.price.toFixed(2)}</td>
                     <td className="px-6 py-4 text-sm text-gray-500">
                       {mt.unlimited ? t('memberships.unlimited') : (mt.credits_included ?? '—')}
@@ -155,17 +172,25 @@ export function MembershipsPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('memberships.clientId')}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('memberships.typeId')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('memberships.member')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('memberships.type')}</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('memberships.status')}</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('memberships.creditsRemaining')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {filteredMemberships.map((m: { id: number; client_id: number; membership_type_id: number; status: string; credits_remaining?: number }) => (
-                  <tr key={m.id}>
-                    <td className="px-6 py-4 text-sm text-gray-900">#{m.client_id}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">#{m.membership_type_id}</td>
+                  <tr
+                    key={m.id}
+                    className="hover:bg-gray-50 cursor-pointer"
+                    onClick={() => navigate(`/clients/${m.client_id}`)}
+                  >
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                      {clientMap[m.client_id] ?? `#${m.client_id}`}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {typeMap[m.membership_type_id] ?? `#${m.membership_type_id}`}
+                    </td>
                     <td className="px-6 py-4 text-sm text-gray-500">{m.status}</td>
                     <td className="px-6 py-4 text-sm text-gray-500">{m.credits_remaining ?? '∞'}</td>
                   </tr>

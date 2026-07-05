@@ -16,8 +16,6 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 from typing import Any, Generic, Optional, TypeVar
 
-from sqlalchemy.orm import Session
-
 from app.models.booking import Booking
 from app.models.checkin import Checkin
 from app.models.class_template import ClassTemplate
@@ -29,6 +27,7 @@ from app.models.membership_type import MembershipType
 from app.models.scheduled_class import ScheduledClass
 from app.models.user import User
 from app.utils import utcnow
+from sqlalchemy.orm import Session
 
 T = TypeVar("T")
 
@@ -103,13 +102,13 @@ _MSG: dict[str, dict[str, str]] = {
         "nl": "Voor welke datum wilt u de les? (bijv. 'volgende woensdag' of een exacte datum)",
     },
     "time_missing": {
-        "en": "What time should the class start?",
-        "it": "A che ora deve iniziare la classe?",
-        "fr": "À quelle heure le cours doit-il commencer ?",
-        "de": "Um wie viel Uhr soll der Kurs beginnen?",
-        "es": "¿A qué hora debe empezar la clase?",
-        "pt": "A que horas deve começar a aula?",
-        "nl": "Hoe laat moet de les beginnen?",
+        "en": "What time should the class start? (e.g. 18:00)",
+        "it": "A che ora deve iniziare la classe? (es. 18:00)",
+        "fr": "À quelle heure le cours doit-il commencer ? (ex. 18:00)",
+        "de": "Um wie viel Uhr soll der Kurs beginnen? (z.B. 18:00)",
+        "es": "¿A qué hora debe empezar la clase? (p. ej. 18:00)",
+        "pt": "A que horas deve começar a aula? (ex. 18:00)",
+        "nl": "Hoe laat moet de les beginnen? (bijv. 18:00)",
     },
     "date_in_past": {
         "en": "The date/time you specified is in the past. Can you provide a future one?",
@@ -443,6 +442,10 @@ CREATE_CLASS_TOOL_SCHEMA = {
                     "type": "string",
                     "description": "Maximum number of clients. Omit if not mentioned.",
                 },
+                "notes": {
+                    "type": "string",
+                    "description": "Free-text notes for this class (e.g. 'bring a mat'). Omit if not mentioned.",
+                },
             },
             "required": [],
         },
@@ -663,6 +666,8 @@ def handle_create_class(
     except (ValueError, TypeError):
         capacity = template.default_capacity
 
+    notes: str | None = args.get("notes") or None
+
     starts_at = datetime.combine(resolved_date, datetime.min.time()).replace(
         hour=resolved_time[0], minute=resolved_time[1]
     )
@@ -681,6 +686,7 @@ def handle_create_class(
         starts_at=starts_at,
         ends_at=ends_at,
         capacity=capacity,
+        notes=notes,
         status="scheduled",
     )
     db.add(scheduled_class)
@@ -705,6 +711,8 @@ def handle_create_class(
         instructor=instr_suffix,
         capacity=str(capacity),
     )
+    if notes:
+        summary += f" Notes: {notes}"
     return AgentActionResult(status="executed", message=summary, scheduled_class=scheduled_class)
 
 

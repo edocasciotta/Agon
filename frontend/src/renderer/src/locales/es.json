@@ -175,7 +175,8 @@
     "editClass": "Edit",
     "zoom15m": "15 min",
     "zoom30m": "30 min",
-    "zoom1h": "1 hora"
+    "zoom1h": "1 hora",
+    "allEstablishments": "Todos los establecimientos"
   },
   "classTypes": {
     "title": "Tipos de clase",
@@ -200,12 +201,18 @@
     "updateClassType": "Actualizar tipo de clase",
     "minLabel": "min",
     "maxLabel": "Máx",
-    "emptyDesc": "Crea tu primer tipo de clase para empezar a programar sesiones."
+    "emptyDesc": "Crea tu primer tipo de clase para empezar a programar sesiones.",
+    "sectionBookingWindows": "Ventanas de reserva",
+    "cancellationWindow": "Ventana de cancelación (h)",
+    "bookingOpenBefore": "Apertura reservas (h antes)",
+    "bookingCloseBefore": "Cierre reservas (h antes)",
+    "bookingWindowsHint": "Dejar en blanco para usar los valores del estudio",
+    "bookingWindowPlaceholder": "ej. 24"
   },
   "clients": {
     "title": "Clientes",
     "addClient": "+ Añadir cliente",
-    "searchPlaceholder": "Buscar por nombre o email...",
+    "searchPlaceholder": "Buscar por nombre, correo o ID...",
     "name": "Nombre",
     "email": "Email",
     "phone": "Teléfono",
@@ -224,7 +231,8 @@
     "phoneOptional": "Teléfono (opcional)",
     "inviteSent": "Email de invitación enviado a {{email}}",
     "inviteNotSent": "Cliente creado pero no se pudo enviar el email — comprueba la configuración de email",
-    "emptyDesc": "Añade tu primer cliente para gestionar reservas y membresías."
+    "emptyDesc": "Añade tu primer cliente para gestionar reservas y membresías.",
+    "id": "ID"
   },
   "clientDetail": {
     "editName": "Nombre",
@@ -301,7 +309,9 @@
     "emptyDescTypes": "Crea un plan de membresía para ofrecer a tus clientes.",
     "currencyPlaceholder": "EUR",
     "pricePlaceholder": "ej. 49.99",
-    "creditsPlaceholder": "ej. 10"
+    "creditsPlaceholder": "ej. 10",
+    "currency": "Moneda",
+    "member": "Miembro"
   },
   "reports": {
     "title": "Informes",
@@ -349,6 +359,9 @@
     "sectionWaitlist": "Lista de espera y notificaciones",
     "waitlistConfirmWindow": "Ventana de confirmación (minutos)",
     "reminderHoursBefore": "Recordatorio X horas antes de la clase",
+    "sectionCalendar": "Calendario",
+    "calendarStartHour": "Hora de inicio",
+    "calendarEndHour": "Hora de fin",
     "saveSettings": "Guardar configuración",
     "saving": "Guardando...",
     "savedSuccess": "Configuración guardada correctamente.",
@@ -368,7 +381,11 @@
     "testEmailSent": "¡Email de prueba enviado!",
     "testEmailFailed": "Error al enviar el email de prueba",
     "saveBeforeTest": "Guarda los ajustes antes de enviar un correo de prueba",
-    "smtpHostPlaceholder": "ej. smtp.gmail.com"
+    "smtpHostPlaceholder": "ej. smtp.gmail.com",
+    "sectionColors": "Apariencia",
+    "primaryColor": "Color primario",
+    "secondaryColor": "Color secundario",
+    "resetDefault": "Restaurar predeterminado"
   },
   "scheduleModal": {
     "title": "Programar clase",
@@ -402,7 +419,8 @@
     "capacityPositive": "La capacidad debe ser positiva.",
     "selectOneDay": "Selecciona al menos un día.",
     "endDateRequired": "La fecha de fin es obligatoria.",
-    "location": "Sede"
+    "location": "Sede",
+    "noLocation": "Sin sede"
   },
   "marketing": {
     "sectionTitle": "Marketing",
@@ -449,7 +467,7 @@
   "establishments": {
     "title": "Sedes",
     "subtitle": "Gestiona las sedes de tu estudio",
-    "searchPlaceholder": "Buscar por nombre...",
+    "searchPlaceholder": "Buscar por nombre o ID...",
     "add": "+ Añadir sede",
     "addTitle": "Nueva Sede",
     "editTitle": "Editar Sede",
@@ -469,12 +487,13 @@
     "hasClasses": "No se puede eliminar: este establecimiento tiene clases programadas.",
     "namePlaceholder": "ej. Estudio Principal",
     "addressPlaceholder": "Calle Mayor 1, Madrid",
-    "noResults": "Ningún establecimiento coincide con tu búsqueda."
+    "noResults": "Ningún establecimiento coincide con tu búsqueda.",
+    "reactivate": "Reactivar"
   },
   "instructors": {
     "title": "Instructores",
     "subtitle": "Gestiona tu personal docente",
-    "searchPlaceholder": "Buscar por nombre o email...",
+    "searchPlaceholder": "Buscar por nombre, correo o ID...",
     "add": "+ Añadir instructor",
     "addTitle": "Nuevo Instructor",
     "editTitle": "Editar Instructor",
@@ -501,7 +520,8 @@
     "hasClasses": "No se puede eliminar: este instructor tiene clases programadas.",
     "fullNamePlaceholder": "ej. María García",
     "emailPlaceholder": "ej. jane@studio.com",
-    "noResults": "Ningún instructor coincide con tu búsqueda."
+    "noResults": "Ningún instructor coincide con tu búsqueda.",
+    "reactivate": "Reactivar"
   },
   "editModal": {
     "title": "Edit Class",

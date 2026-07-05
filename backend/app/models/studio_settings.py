@@ -20,6 +20,10 @@ class StudioSettings(Base):
     guest_bookings_enabled = Column(Boolean, nullable=False, default=False)
     self_service_purchases_enabled = Column(Boolean, nullable=False, default=True)
     reminder_hours_before = Column(Integer, nullable=False, default=2)
+    calendar_start_hour = Column(Integer, nullable=False, default=7)
+    calendar_end_hour = Column(Integer, nullable=False, default=21)
+    primary_color = Column(String)
+    secondary_color = Column(String)
     stripe_account_id = Column(String)
     stripe_connected = Column(Boolean, nullable=False, default=False)
     backup_provider = Column(String)  # 'google_drive' | 'dropbox' | 'local' | None

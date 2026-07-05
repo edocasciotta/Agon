@@ -175,7 +175,8 @@
     "editClass": "Edit",
     "zoom15m": "15 min",
     "zoom30m": "30 min",
-    "zoom1h": "1 hora"
+    "zoom1h": "1 hora",
+    "allEstablishments": "Todos os estabelecimentos"
   },
   "classTypes": {
     "title": "Tipos de aula",
@@ -200,12 +201,18 @@
     "updateClassType": "Atualizar tipo de aula",
     "minLabel": "min",
     "maxLabel": "Máx",
-    "emptyDesc": "Crie o seu primeiro tipo de aula para começar a agendar."
+    "emptyDesc": "Crie o seu primeiro tipo de aula para começar a agendar.",
+    "sectionBookingWindows": "Janelas de reserva",
+    "cancellationWindow": "Janela de cancelamento (h)",
+    "bookingOpenBefore": "Abertura de reservas (h antes)",
+    "bookingCloseBefore": "Fechamento de reservas (h antes)",
+    "bookingWindowsHint": "Deixar em branco para usar os padrões do estúdio",
+    "bookingWindowPlaceholder": "ex. 24"
   },
   "clients": {
     "title": "Clientes",
     "addClient": "+ Adicionar cliente",
-    "searchPlaceholder": "Buscar por nome ou email...",
+    "searchPlaceholder": "Pesquisar por nome, e-mail ou ID...",
     "name": "Nome",
     "email": "Email",
     "phone": "Telefone",
@@ -224,7 +231,8 @@
     "phoneOptional": "Telefone (opcional)",
     "inviteSent": "E-mail de convite enviado para {{email}}",
     "inviteNotSent": "Cliente criado mas o e-mail não pôde ser enviado — verifique as configurações de e-mail",
-    "emptyDesc": "Adicione o seu primeiro cliente para gerir reservas e associações."
+    "emptyDesc": "Adicione o seu primeiro cliente para gerir reservas e associações.",
+    "id": "ID"
   },
   "clientDetail": {
     "editName": "Nome",
@@ -301,7 +309,9 @@
     "emptyDescTypes": "Crie um plano de associação para oferecer aos seus clientes.",
     "currencyPlaceholder": "EUR",
     "pricePlaceholder": "ex. 49.99",
-    "creditsPlaceholder": "ex. 10"
+    "creditsPlaceholder": "ex. 10",
+    "currency": "Moeda",
+    "member": "Membro"
   },
   "reports": {
     "title": "Relatórios",
@@ -349,6 +359,9 @@
     "sectionWaitlist": "Lista de espera e notificações",
     "waitlistConfirmWindow": "Janela de confirmação (minutos)",
     "reminderHoursBefore": "Lembrete X horas antes da aula",
+    "sectionCalendar": "Calendário",
+    "calendarStartHour": "Hora de início",
+    "calendarEndHour": "Hora de fim",
     "saveSettings": "Salvar configurações",
     "saving": "Salvando...",
     "savedSuccess": "Configurações salvas com sucesso.",
@@ -368,7 +381,11 @@
     "testEmailSent": "E-mail de teste enviado!",
     "testEmailFailed": "Falha ao enviar e-mail de teste",
     "saveBeforeTest": "Guarda as definições antes de enviar um e-mail de teste",
-    "smtpHostPlaceholder": "ex. smtp.gmail.com"
+    "smtpHostPlaceholder": "ex. smtp.gmail.com",
+    "sectionColors": "Aparência",
+    "primaryColor": "Cor primária",
+    "secondaryColor": "Cor secundária",
+    "resetDefault": "Restaurar padrão"
   },
   "scheduleModal": {
     "title": "Agendar aula",
@@ -402,7 +419,8 @@
     "capacityPositive": "A capacidade deve ser positiva.",
     "selectOneDay": "Selecione pelo menos um dia.",
     "endDateRequired": "A data de término é obrigatória.",
-    "location": "Local"
+    "location": "Local",
+    "noLocation": "Sem localização"
   },
   "marketing": {
     "sectionTitle": "Marketing",
@@ -449,7 +467,7 @@
   "establishments": {
     "title": "Estabelecimentos",
     "subtitle": "Gerencie as sedes do seu estúdio",
-    "searchPlaceholder": "Buscar por nome...",
+    "searchPlaceholder": "Pesquisar por nome ou ID...",
     "add": "+ Adicionar sede",
     "addTitle": "Novo Estabelecimento",
     "editTitle": "Editar Estabelecimento",
@@ -469,12 +487,13 @@
     "hasClasses": "Não é possível remover: este estabelecimento tem aulas agendadas.",
     "namePlaceholder": "ex. Estúdio Principal",
     "addressPlaceholder": "Rua Augusta 1, Lisboa",
-    "noResults": "Nenhum estabelecimento corresponde à sua pesquisa."
+    "noResults": "Nenhum estabelecimento corresponde à sua pesquisa.",
+    "reactivate": "Reativar"
   },
   "instructors": {
     "title": "Instrutores",
     "subtitle": "Gerencie seu corpo docente",
-    "searchPlaceholder": "Buscar por nome o email...",
+    "searchPlaceholder": "Pesquisar por nome, e-mail ou ID...",
     "add": "+ Adicionar instrutor",
     "addTitle": "Novo Instrutor",
     "editTitle": "Editar Instrutor",
@@ -501,7 +520,8 @@
     "hasClasses": "Não é possível remover: este instrutor tem aulas agendadas.",
     "fullNamePlaceholder": "ex. Ana Silva",
     "emailPlaceholder": "ex. jane@studio.com",
-    "noResults": "Nenhum instrutor corresponde à sua pesquisa."
+    "noResults": "Nenhum instrutor corresponde à sua pesquisa.",
+    "reactivate": "Reativar"
   },
   "editModal": {
     "title": "Edit Class",

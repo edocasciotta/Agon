@@ -175,7 +175,8 @@
     "editClass": "Edit",
     "zoom15m": "15 min",
     "zoom30m": "30 min",
-    "zoom1h": "1 heure"
+    "zoom1h": "1 heure",
+    "allEstablishments": "Tous les établissements"
   },
   "classTypes": {
     "title": "Types de cours",
@@ -200,12 +201,18 @@
     "updateClassType": "Mettre à jour le type de cours",
     "minLabel": "min",
     "maxLabel": "Max",
-    "emptyDesc": "Créez votre premier type de cours pour commencer à planifier."
+    "emptyDesc": "Créez votre premier type de cours pour commencer à planifier.",
+    "sectionBookingWindows": "Fenêtres de réservation",
+    "cancellationWindow": "Délai d'annulation (h)",
+    "bookingOpenBefore": "Ouverture réservations (h avant)",
+    "bookingCloseBefore": "Fermeture réservations (h avant)",
+    "bookingWindowsHint": "Laisser vide pour les paramètres du studio",
+    "bookingWindowPlaceholder": "ex. 24"
   },
   "clients": {
     "title": "Clients",
     "addClient": "+ Ajouter un client",
-    "searchPlaceholder": "Rechercher par nom ou email...",
+    "searchPlaceholder": "Rechercher par nom, e-mail ou ID...",
     "name": "Nom",
     "email": "Email",
     "phone": "Téléphone",
@@ -224,7 +231,8 @@
     "phoneOptional": "Téléphone (optionnel)",
     "inviteSent": "E-mail d’invitation envoyé à {{email}}",
     "inviteNotSent": "Client créé mais l’e-mail n’a pas pu être envoyé — vérifiez les paramètres e-mail",
-    "emptyDesc": "Ajoutez votre premier client pour gérer les réservations et abonnements."
+    "emptyDesc": "Ajoutez votre premier client pour gérer les réservations et abonnements.",
+    "id": "ID"
   },
   "clientDetail": {
     "editName": "Nom",
@@ -301,7 +309,9 @@
     "emptyDescTypes": "Créez un plan d'abonnement à proposer à vos clients.",
     "currencyPlaceholder": "EUR",
     "pricePlaceholder": "ex. 49.99",
-    "creditsPlaceholder": "ex. 10"
+    "creditsPlaceholder": "ex. 10",
+    "currency": "Devise",
+    "member": "Membre"
   },
   "reports": {
     "title": "Rapports",
@@ -349,6 +359,9 @@
     "sectionWaitlist": "Liste d'attente et notifications",
     "waitlistConfirmWindow": "Fenêtre de confirmation (minutes)",
     "reminderHoursBefore": "Rappel X heures avant le cours",
+    "sectionCalendar": "Calendrier",
+    "calendarStartHour": "Heure de début",
+    "calendarEndHour": "Heure de fin",
     "saveSettings": "Enregistrer les paramètres",
     "saving": "Enregistrement...",
     "savedSuccess": "Paramètres enregistrés avec succès.",
@@ -368,7 +381,11 @@
     "testEmailSent": "E-mail de test envoyé !",
     "testEmailFailed": "Échec de l’envoi de l’e-mail de test",
     "saveBeforeTest": "Enregistre les paramètres avant d'envoyer un e-mail de test",
-    "smtpHostPlaceholder": "ex. smtp.gmail.com"
+    "smtpHostPlaceholder": "ex. smtp.gmail.com",
+    "sectionColors": "Apparence",
+    "primaryColor": "Couleur primaire",
+    "secondaryColor": "Couleur secondaire",
+    "resetDefault": "Réinitialiser"
   },
   "scheduleModal": {
     "title": "Planifier un cours",
@@ -402,7 +419,8 @@
     "capacityPositive": "La capacité doit être positive.",
     "selectOneDay": "Sélectionnez au moins un jour.",
     "endDateRequired": "La date de fin est requise.",
-    "location": "Lieu"
+    "location": "Lieu",
+    "noLocation": "Aucun emplacement"
   },
   "marketing": {
     "sectionTitle": "Marketing",
@@ -449,7 +467,7 @@
   "establishments": {
     "title": "Établissements",
     "subtitle": "Gérez vos lieux de studio",
-    "searchPlaceholder": "Rechercher par nom...",
+    "searchPlaceholder": "Rechercher par nom ou ID...",
     "add": "+ Ajouter un lieu",
     "addTitle": "Nouvel établissement",
     "editTitle": "Modifier l'établissement",
@@ -469,12 +487,13 @@
     "hasClasses": "Impossible de supprimer : cet établissement a des cours planifiés.",
     "namePlaceholder": "ex. Studio Principal",
     "addressPlaceholder": "1 Rue de la Paix, Paris",
-    "noResults": "Aucun établissement ne correspond à votre recherche."
+    "noResults": "Aucun établissement ne correspond à votre recherche.",
+    "reactivate": "Réactiver"
   },
   "instructors": {
     "title": "Instructeurs",
     "subtitle": "Gérez votre personnel enseignant",
-    "searchPlaceholder": "Rechercher par nom ou email...",
+    "searchPlaceholder": "Rechercher par nom, e-mail ou ID...",
     "add": "+ Ajouter un instructeur",
     "addTitle": "Nouvel instructeur",
     "editTitle": "Modifier l'instructeur",
@@ -501,7 +520,8 @@
     "hasClasses": "Impossible de supprimer : cet instructeur a des cours planifiés.",
     "fullNamePlaceholder": "ex. Marie Dupont",
     "emailPlaceholder": "ex. jane@studio.com",
-    "noResults": "Aucun instructeur ne correspond à votre recherche."
+    "noResults": "Aucun instructeur ne correspond à votre recherche.",
+    "reactivate": "Réactiver"
   },
   "editModal": {
     "title": "Edit Class",

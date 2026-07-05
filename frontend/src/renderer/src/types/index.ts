@@ -11,6 +11,10 @@ export interface StudioSettings {
   guest_bookings_enabled: boolean
   self_service_purchases_enabled: boolean
   reminder_hours_before: number
+  calendar_start_hour: number
+  calendar_end_hour: number
+  primary_color?: string
+  secondary_color?: string
   stripe_connected: boolean
   tunnel_url?: string
   last_backup_at?: string
@@ -45,6 +49,9 @@ export interface ClassTemplate {
   default_capacity: number
   default_instructor_id?: number
   color: string
+  cancellation_window_hours?: number | null
+  booking_open_hours_before?: number | null
+  booking_close_hours_before?: number | null
   is_active: boolean
 }
 

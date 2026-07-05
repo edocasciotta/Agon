@@ -5,9 +5,6 @@ Smart Lists — /api/v1/smartlists
 import json
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-
 from app.auth import require_manager
 from app.database import get_db
 from app.models.smart_list import SmartList
@@ -17,6 +14,8 @@ from app.schemas.smart_list import (
     SmartListUpdate,
 )
 from app.services import smart_list_service
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1/smartlists", tags=["smart-lists"])
 

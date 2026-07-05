@@ -5,9 +5,6 @@ from io import BytesIO
 from typing import List
 
 import qrcode
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-
 from app.auth import create_qr_token, decode_qr_token, decode_token, oauth2_scheme
 from app.database import get_db
 from app.models.booking import Booking
@@ -17,6 +14,8 @@ from app.models.scheduled_class import ScheduledClass
 from app.schemas.checkin import CheckinCreate, CheckinResponse, QRCodeResponse
 from app.services.booking_service import get_studio_settings
 from app.utils import utcnow
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

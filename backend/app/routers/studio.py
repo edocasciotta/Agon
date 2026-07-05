@@ -1,18 +1,29 @@
 import os
 import tempfile
 
+from app.auth import get_current_user, require_manager
+from app.config import settings as app_settings
+from app.database import get_db
+from app.models.studio_settings import StudioSettings
+from app.schemas.studio import StudioBrandingResponse, StudioSettingsResponse, StudioSettingsUpdate
 from fastapi import APIRouter, Depends, HTTPException
 from litellm import completion
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.auth import get_current_user, require_manager
-from app.config import settings as app_settings
-from app.database import get_db
-from app.models.studio_settings import StudioSettings
-from app.schemas.studio import StudioSettingsResponse, StudioSettingsUpdate
-
 router = APIRouter(prefix="/api/v1/studio", tags=["studio"])
+
+
+@router.get("/branding", response_model=StudioBrandingResponse)
+def get_studio_branding(db: Session = Depends(get_db)):
+    settings = db.query(StudioSettings).filter(StudioSettings.id == 1).first()
+    if not settings:
+        return StudioBrandingResponse(studio_name="Agon")
+    return StudioBrandingResponse(
+        studio_name=settings.studio_name or "Agon",
+        primary_color=settings.primary_color,
+        secondary_color=settings.secondary_color,
+    )
 
 
 @router.get("", response_model=StudioSettingsResponse)

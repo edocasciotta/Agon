@@ -4,11 +4,6 @@ import json
 import os
 from typing import Optional
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
-from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
-from sqlalchemy.orm import Session
-
 from app.auth import require_manager
 from app.database import get_db
 from app.models.client import Client
@@ -27,6 +22,10 @@ from app.services.migration_service import (
     parse_csv_rows,
 )
 from app.utils import utcnow
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1/migration", tags=["migration"])
 

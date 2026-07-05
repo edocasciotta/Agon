@@ -5,11 +5,9 @@ data it does not own or lacks the privilege to access.
 """
 
 import pytest
-
 from app.auth import hash_password
 from app.models.booking import Booking
 from app.models.user import User
-
 
 # ── Extra fixtures ────────────────────────────────────────────────────────────
 
@@ -72,18 +70,14 @@ def booking_for_client_a(db_session, registered_client, client_membership, sched
 
 def test_client_b_cannot_read_client_a_booking(client, booking_for_client_a, client_b_headers):
     """Client B must receive 403 when reading Client A's booking."""
-    resp = client.get(
-        f"/api/v1/bookings/{booking_for_client_a.id}", headers=client_b_headers
-    )
+    resp = client.get(f"/api/v1/bookings/{booking_for_client_a.id}", headers=client_b_headers)
     assert resp.status_code == 403
     assert resp.json()["detail"]["error"]["code"] == "AUTH_INSUFFICIENT_PERMISSIONS"
 
 
 def test_client_b_cannot_cancel_client_a_booking(client, booking_for_client_a, client_b_headers):
     """Client B must receive 403 when cancelling Client A's booking."""
-    resp = client.delete(
-        f"/api/v1/bookings/{booking_for_client_a.id}", headers=client_b_headers
-    )
+    resp = client.delete(f"/api/v1/bookings/{booking_for_client_a.id}", headers=client_b_headers)
     assert resp.status_code == 403
 
 
@@ -138,9 +132,7 @@ def test_client_cannot_update_studio_settings(client, client_auth_headers):
     assert resp.status_code == 403
 
 
-def test_client_cannot_view_client_bookings_by_id(
-    client, client_b_headers, booking_for_client_a
-):
+def test_client_cannot_view_client_bookings_by_id(client, client_b_headers, booking_for_client_a):
     """Client must not be able to read another client's booking list via /clients/{id}/bookings."""
     resp = client.get(
         f"/api/v1/clients/{booking_for_client_a.client_id}/bookings",

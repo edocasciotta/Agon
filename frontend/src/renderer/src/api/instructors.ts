@@ -24,9 +24,9 @@ export interface InstructorUpdate {
 }
 
 export const instructorsApi = {
-  list: async (search?: string): Promise<Instructor[]> => {
+  list: async (search?: string, includeInactive = false): Promise<Instructor[]> => {
     const res = await apiClient.get('/api/v1/instructors', {
-      params: search ? { search } : {},
+      params: { ...(search ? { search } : {}), ...(includeInactive ? { include_inactive: true } : {}) },
     })
     return res.data
   },
@@ -36,6 +36,10 @@ export const instructorsApi = {
   },
   update: async (id: number, data: InstructorUpdate): Promise<Instructor> => {
     const res = await apiClient.put(`/api/v1/instructors/${id}`, data)
+    return res.data
+  },
+  reactivate: async (id: number): Promise<Instructor> => {
+    const res = await apiClient.patch(`/api/v1/instructors/${id}/reactivate`)
     return res.data
   },
   deactivate: async (id: number): Promise<void> => {

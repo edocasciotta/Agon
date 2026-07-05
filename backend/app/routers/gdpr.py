@@ -1,10 +1,8 @@
-
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-
 from app.auth import decode_token, oauth2_scheme
 from app.database import get_db
 from app.schemas.gdpr import ConsentRequest, ConsentResponse
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1/gdpr", tags=["gdpr"])
 

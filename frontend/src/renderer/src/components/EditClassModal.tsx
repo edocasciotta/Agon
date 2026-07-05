@@ -63,8 +63,8 @@ export function EditClassModal({ isOpen, onClose, onSuccess, editClass, onCancel
   }, [isOpen, editClass])
 
   const { data: instructors = [] } = useQuery({
-    queryKey: ['instructors'],
-    queryFn: () => instructorsApi.list(),
+    queryKey: ['instructors', 'active-only'],
+    queryFn: () => instructorsApi.list(undefined, false),
     enabled: isOpen,
   })
 
@@ -219,7 +219,7 @@ export function EditClassModal({ isOpen, onClose, onSuccess, editClass, onCancel
                   onChange={(e) => setForm((f) => ({ ...f, location_id: e.target.value }))}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
-                  <option value="">{t('scheduleModal.noInstructor')}</option>
+                  <option value="">{t('scheduleModal.noLocation')}</option>
                   {locations.map((loc: { id: number; name: string }) => (
                     <option key={loc.id} value={loc.id}>{loc.name}</option>
                   ))}

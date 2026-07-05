@@ -3,11 +3,10 @@ import logging
 import shutil
 from pathlib import Path
 
-from sqlalchemy.orm import Session
-
 from app.config import settings
 from app.database import SessionLocal
 from app.utils import utcnow
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

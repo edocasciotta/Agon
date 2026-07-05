@@ -2,6 +2,9 @@ import uuid
 from datetime import timedelta
 from typing import Optional
 
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
+
 from app.auth import get_current_client, require_manager, require_staff
 from app.database import get_db
 from app.models.booking import Booking
@@ -17,8 +20,6 @@ from app.schemas.client import (
     ClientUpdate,
 )
 from app.utils import utcnow
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1/clients", tags=["clients"])
 
@@ -80,8 +81,11 @@ def list_clients(
     if active_only:
         query = query.filter(Client.is_active.is_(True))
     if search:
-        pattern = f"%{search}%"
-        query = query.filter((Client.full_name.ilike(pattern)) | (Client.email.ilike(pattern)))
+        if search.isdigit():
+            query = query.filter(Client.id == int(search))
+        else:
+            pattern = f"%{search}%"
+            query = query.filter((Client.full_name.ilike(pattern)) | (Client.email.ilike(pattern)))
     total = query.count()
     items = (
         query.order_by(Client.full_name.asc()).offset((page - 1) * page_size).limit(page_size).all()

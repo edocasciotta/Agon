@@ -1,12 +1,13 @@
 from typing import List, Optional
 
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
+
 from app.auth import get_current_user, hash_password, require_manager
 from app.database import get_db
 from app.models.instructor import Instructor
 from app.models.user import User
 from app.schemas.instructor import InstructorCreate, InstructorResponse, InstructorUpdate
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1/instructors", tags=["instructors"])
 
@@ -27,22 +28,46 @@ def _build_instructor_response(instructor: Instructor, user: User) -> dict:
 @router.get("", response_model=List[InstructorResponse])
 def list_instructors(
     search: Optional[str] = Query(None),
+    include_inactive: bool = Query(False),
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
     query = db.query(Instructor)
     if search:
-        pattern = f"%{search}%"
-        query = query.join(User, Instructor.user_id == User.id).filter(
-            (User.full_name.ilike(pattern)) | (User.email.ilike(pattern))
-        )
+        if search.isdigit():
+            query = query.filter(Instructor.id == int(search))
+        else:
+            pattern = f"%{search}%"
+            query = query.join(User, Instructor.user_id == User.id).filter(
+                (User.full_name.ilike(pattern)) | (User.email.ilike(pattern))
+            )
     instructors = query.all()
     result = []
     for inst in instructors:
         user = db.query(User).filter(User.id == inst.user_id).first()
-        if user and user.is_active:
+        if user and (user.is_active or include_inactive):
             result.append(_build_instructor_response(inst, user))
     return result
+
+
+@router.patch("/{instructor_id}/reactivate", response_model=InstructorResponse)
+def reactivate_instructor(
+    instructor_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_manager),
+):
+    instructor = db.query(Instructor).filter(Instructor.id == instructor_id).first()
+    if not instructor:
+        raise HTTPException(
+            status_code=404,
+            detail={"error": {"code": "NOT_FOUND", "message": "Instructor not found"}},
+        )
+    user = db.query(User).filter(User.id == instructor.user_id).first()
+    user.is_active = True
+    db.commit()
+    db.refresh(instructor)
+    db.refresh(user)
+    return _build_instructor_response(instructor, user)
 
 
 @router.post("", response_model=InstructorResponse, status_code=status.HTTP_201_CREATED)

@@ -627,6 +627,6 @@ def test_booking_rate_limit_disabled_in_test_env(
     assert post_booking_route is not None, "POST /api/v1/bookings route not found"
     # slowapi's @limiter.limit wraps the function; __wrapped__ is set by functools.wraps
     endpoint = post_booking_route.endpoint
-    assert getattr(endpoint, "__wrapped__", None) is not None, (
-        "POST /api/v1/bookings does not have a rate limit decorator (@limiter.limit)"
-    )
+    assert (
+        getattr(endpoint, "__wrapped__", None) is not None
+    ), "POST /api/v1/bookings does not have a rate limit decorator (@limiter.limit)"

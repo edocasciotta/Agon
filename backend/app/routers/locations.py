@@ -8,12 +8,13 @@ DELETE /api/v1/locations/{id}     → soft-delete (set is_active=False)
 
 from typing import List, Optional
 
-from app.auth import require_manager
-from app.database import get_db
-from app.models.location import Location
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+
+from app.auth import require_manager
+from app.database import get_db
+from app.models.location import Location
 
 router = APIRouter(prefix="/api/v1/locations", tags=["locations"])
 
@@ -52,8 +53,11 @@ def list_locations(
     if not include_inactive:
         q = q.filter(Location.is_active.is_(True))
     if search:
-        pattern = f"%{search}%"
-        q = q.filter(Location.name.ilike(pattern))
+        if search.isdigit():
+            q = q.filter(Location.id == int(search))
+        else:
+            pattern = f"%{search}%"
+            q = q.filter(Location.name.ilike(pattern))
     return q.order_by(Location.name).all()
 
 

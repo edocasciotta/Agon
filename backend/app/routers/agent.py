@@ -17,11 +17,6 @@ from datetime import date, datetime, timezone
 from typing import Any
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from fastapi import APIRouter, Depends
-from litellm import completion
-from pydantic import BaseModel, field_validator
-from sqlalchemy.orm import Session
-
 from app.auth import require_manager
 from app.config import settings
 from app.database import get_db
@@ -40,6 +35,10 @@ from app.services.agent_tools import (
     handle_get_report,
     load_studio_data_summary,
 )
+from fastapi import APIRouter, Depends
+from litellm import completion
+from pydantic import BaseModel, field_validator
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -137,7 +136,7 @@ To perform an action, output a raw JSON object: {{"name": "<tool_name>", "parame
 Do NOT add any text before or after it — EXCEPT for cancel_booking (see CONFIRMATION RULE).
 
 Available tools and their parameters:
-- create_class: class_type, location, date (YYYY-MM-DD), start_time (HH:MM), duration_minutes
+- create_class: class_type, location, date (YYYY-MM-DD), start_time (HH:MM), duration_minutes, capacity, instructor (optional — use "none" if not needed), notes (optional)
 - cancel_class: class_type, date, start_time
 - book_client: client (name or email), class_type, date, start_time
 - cancel_booking: client, class_type, date, start_time
@@ -147,11 +146,59 @@ Available tools and their parameters:
 - assign_membership: client, membership_type, starts_at (YYYY-MM-DD, optional)
 - get_report: type (attendance|revenue|membership|retention), start_date, end_date
 
+REQUIRED FIELDS — NEVER INVENT VALUES:
+Only call a tool when the user has explicitly provided all required fields.
+
+FIELD FORMAT HINTS — always include these in parentheses when asking:
+  class_type       → name of an existing class type, e.g. "Yoga Flow"
+  date             → YYYY-MM-DD, or relative: "tomorrow", "next Monday"
+  start_time       → 24h HH:MM, e.g. "18:00" (also accept "6 pm", convert it)
+  duration_minutes → number of minutes, e.g. "60"
+  capacity         → max number of clients, e.g. "20"
+  instructor       → instructor name, or type "none" for no instructor
+  notes            → free text, or "none" to skip
+  client           → full name or email address
+  membership_type  → plan name, e.g. "Pack"
+
+Required fields per tool:
+  create_class      → class_type, date, start_time, duration_minutes, capacity are all required.
+                      Also ask: "Which instructor? (name or 'none')" — accept "none" / "no instructor".
+                      Also ask: "Any notes? (free text or 'none')" only if not already mentioned.
+  create_client     → full_name AND email are both required.
+  assign_membership → client AND membership_type are both required.
+  book_client / cancel_booking / check_in_client → client, class_type, date, start_time.
+  get_class_roster / cancel_class → class_type, date.
+When asking for any missing field, ALWAYS include the format hint in parentheses after the question.
+If ANY required field is missing, ask the user for it in plain text BEFORE calling the tool.
+NEVER invent, guess, or fill in random/typical values (random names, times, dates, capacities).
+Correct examples:
+  User: "create a new class"
+  → Reply: "Sure. What type of class? (e.g. Yoga Flow) On which date? (e.g. 2026-07-09 or 'next Monday') At what time? (e.g. 18:00) How long in minutes? (e.g. 60) What capacity? (e.g. 20)"
+
+  User: "create a Yoga class on 09/07 at 22:00"
+  → Reply: "Got it. How long in minutes? (e.g. 60) What capacity? (e.g. 20) Which instructor? (name or 'none') Any notes? (free text or 'none')"
+
+  User: "create a new client"
+  → Reply: "Please provide the client's full name (e.g. Mario Rossi) and email address (e.g. mario@example.com)."
+
+  User: "assign a membership to Elena"
+  → Reply: "Which membership plan? (e.g. Pack) Which Elena? (full name or email)"
+
+NO RAW JSON IN REPLIES — STRICT:
+Your reply MUST be plain text or a single tool call JSON. NEVER output raw data structures.
+The REAL STUDIO DATA section above is for your internal reference only — never echo it to the user.
+Do NOT output {{membership_types: [...]}}, {{class_types: [...]}}, {{clients: [...]}}, or any similar structure.
+If you want to mention available plans or class types, write them as a plain sentence.
+
 CONFIRMATION RULE (cancel_booking only): Before calling cancel_booking, write a plain-text sentence describing what you are about to cancel and ask "Shall I proceed?" in {language_name}. Wait for explicit confirmation ("yes", "sì", "oui", "ja", etc.) before outputting the JSON tool call.
+
+CANCELLATION RULE: If at any point during a multi-turn interaction the user signals they want to cancel, stop, or abort the current action — using phrases like "stop", "cancel", "never mind", "forget it", "don't do it", "annulla", "lascia perdere", "non voglio più", "basta", "dimentica", "interrompi", "abort" — immediately stop the flow, do NOT call any tool, and reply with a short friendly message in {language_name} confirming the action is cancelled and asking if you can help with something else.
+Example: User: "stop" → Reply: "No problem, I've cancelled. Is there anything else I can help you with?"
+Example: User: "lascia perdere" → Reply: "Nessun problema, ho annullato. Posso aiutarti con qualcos'altro?"
 
 UNSUPPORTED OPERATIONS: If the user asks for something NOT covered by the 9 tools above (e.g. creating a location/establishment, managing staff permissions, configuring the studio, editing class templates, etc.), respond with a plain-text explanation in {language_name} that this action cannot be done through the assistant. Do NOT output a JSON tool call for operations that are not in the list of 9 tools.
 
-Do NOT copy raw JSON from the REAL STUDIO DATA section into your reply. Only output one tool call at a time.
+Only output one tool call at a time.
 
 TIMES: Accept times in any format (18:30, 6:30 pm, 6.30 pm) and convert to 24h HH:MM.
 
@@ -295,6 +342,37 @@ def _unsupported_op_reply(lang: str) -> str:
     return _UNSUPPORTED_OP_REPLIES.get(lang, _UNSUPPORTED_OP_REPLIES["en"])
 
 
+_STUDIO_DATA_KEYS: frozenset[str] = frozenset(
+    {
+        "membership_types",
+        "class_types",
+        "locations",
+        "instructors",
+        "clients",
+        "scheduled_classes",
+    }
+)
+
+
+def _is_echoed_studio_data(content: str) -> bool:
+    """Return True if content is JSON echoing known studio data structures.
+
+    The model occasionally copies studio data JSON from its context window into
+    its reply (e.g. the full membership_types array when asked to assign a
+    membership). We detect this to avoid returning raw JSON to the user.
+    """
+    stripped = content.strip()
+    if not stripped.startswith("{"):
+        return False
+    try:
+        data = json.loads(stripped)
+        if isinstance(data, dict) and "name" not in data:
+            return bool(set(data.keys()) & _STUDIO_DATA_KEYS)
+    except (json.JSONDecodeError, ValueError, TypeError):
+        pass
+    return False
+
+
 def _is_hallucinated_tool_call(content: str) -> bool:
     """Return True if content is JSON with a 'name' field that is NOT a known tool.
 
@@ -314,22 +392,43 @@ def _is_hallucinated_tool_call(content: str) -> bool:
     return False
 
 
-_CONFIRMATION_TOKENS: frozenset[str] = frozenset({
-    # en
-    "yes", "yep", "yeah", "sure", "ok", "okay", "proceed", "confirm", "do it", "go ahead",
-    # it
-    "sì", "si", "vai", "procedi", "conferma",
-    # fr
-    "oui", "ouais",
-    # de
-    "ja", "jawohl",
-    # es
-    "sí", "claro", "dale", "hazlo",
-    # pt
-    "sim", "pode",
-    # nl
-    "doe",
-})
+_CONFIRMATION_TOKENS: frozenset[str] = frozenset(
+    {
+        # en
+        "yes",
+        "yep",
+        "yeah",
+        "sure",
+        "ok",
+        "okay",
+        "proceed",
+        "confirm",
+        "do it",
+        "go ahead",
+        # it
+        "sì",
+        "si",
+        "vai",
+        "procedi",
+        "conferma",
+        # fr
+        "oui",
+        "ouais",
+        # de
+        "ja",
+        "jawohl",
+        # es
+        "sí",
+        "claro",
+        "dale",
+        "hazlo",
+        # pt
+        "sim",
+        "pode",
+        # nl
+        "doe",
+    }
+)
 
 _CANCEL_BOOKING_CONFIRM: dict[str, str] = {
     "en": "I'm about to cancel {client}'s booking for {class_type} on {date} at {time}. Shall I proceed?",
@@ -574,9 +673,21 @@ def agent_act(
         if parsed:
             tool_name, tool_args = parsed
         else:
-            if _is_hallucinated_tool_call(choice.content):
+            stripped = choice.content.strip()
+            if stripped.startswith("{"):
+                # Any JSON we couldn't parse as a valid tool call must never
+                # be shown raw to the user — this catches:
+                #   • hallucinated tools (create_location, etc.)
+                #   • echoed studio data (membership_types, etc.)
+                #   • known tool calls with malformed/double-encoded parameters
+                if _is_hallucinated_tool_call(stripped):
+                    return AgentResponse(
+                        reply=_unsupported_op_reply(lang),
+                        draft=request.draft,
+                        usage=usage,
+                    )
                 return AgentResponse(
-                    reply=_unsupported_op_reply(lang),
+                    reply=_fallback_reply(lang),
                     draft=request.draft,
                     usage=usage,
                 )

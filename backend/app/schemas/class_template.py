@@ -11,6 +11,9 @@ class ClassTemplateCreate(BaseModel):
     default_capacity: int = Field(default=20, gt=0)
     default_instructor_id: Optional[int] = None
     color: str = "#4F46E5"
+    cancellation_window_hours: Optional[int] = None
+    booking_open_hours_before: Optional[int] = None
+    booking_close_hours_before: Optional[int] = None
 
 
 class ClassTemplateUpdate(BaseModel):
@@ -21,6 +24,9 @@ class ClassTemplateUpdate(BaseModel):
     default_instructor_id: Optional[int] = None
     color: Optional[str] = None
     is_active: Optional[bool] = None
+    cancellation_window_hours: Optional[int] = None
+    booking_open_hours_before: Optional[int] = None
+    booking_close_hours_before: Optional[int] = None
 
 
 class ClassTemplateResponse(BaseModel):
@@ -31,6 +37,9 @@ class ClassTemplateResponse(BaseModel):
     default_capacity: int
     default_instructor_id: Optional[int] = None
     color: str
+    cancellation_window_hours: Optional[int] = None
+    booking_open_hours_before: Optional[int] = None
+    booking_close_hours_before: Optional[int] = None
     is_active: bool
     created_at: datetime
     updated_at: datetime

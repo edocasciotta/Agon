@@ -1,7 +1,15 @@
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, Integer, String, UniqueConstraint
-from sqlalchemy.sql import func
-
 from app.database import Base
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    UniqueConstraint,
+)
+from sqlalchemy.sql import func
 
 
 class Booking(Base):

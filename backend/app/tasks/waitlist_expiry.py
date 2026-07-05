@@ -1,11 +1,10 @@
 import asyncio
 import logging
 
-from sqlalchemy.orm import Session
-
 from app.database import SessionLocal
 from app.models.waitlist import Waitlist
 from app.utils import utcnow
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

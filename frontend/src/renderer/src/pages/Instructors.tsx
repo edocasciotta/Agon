@@ -72,7 +72,7 @@ export function InstructorsPage() {
 
   const { data: instructors = [], isLoading } = useQuery({
     queryKey: ['instructors', debouncedSearch],
-    queryFn: () => instructorsApi.list(debouncedSearch || undefined),
+    queryFn: () => instructorsApi.list(debouncedSearch || undefined, true),
   })
 
   const { data: weekClasses = [] } = useQuery({
@@ -111,6 +111,11 @@ export function InstructorsPage() {
       closeModal()
     },
     onError: () => setApiError(t('instructors.saveError')),
+  })
+
+  const reactivateMutation = useMutation({
+    mutationFn: (id: number) => instructorsApi.reactivate(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['instructors'] }),
   })
 
   const deactivateMutation = useMutation({
@@ -265,14 +270,21 @@ export function InstructorsPage() {
               return (
                 <div
                   key={inst.id}
-                  className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col gap-3"
+                  className={`bg-white border rounded-xl p-4 flex flex-col gap-3 ${inst.is_active ? 'border-gray-200' : 'border-gray-100 opacity-60'}`}
                 >
                   <div className="flex items-center gap-3">
                     <InitialsAvatar name={inst.full_name} color={color} />
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{inst.full_name}</p>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-sm font-semibold text-gray-900 truncate">{inst.full_name}</p>
+                      </div>
                       <p className="text-xs text-gray-500 truncate">{inst.email}</p>
                     </div>
+                    {!inst.is_active && (
+                      <span className="flex-shrink-0 text-[10px] font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+                        {t('instructors.inactive')}
+                      </span>
+                    )}
                   </div>
 
                   {inst.bio && (
@@ -295,12 +307,22 @@ export function InstructorsPage() {
                     >
                       {t('common.edit')}
                     </button>
-                    <button
-                      onClick={() => setConfirmDeactivate(inst)}
-                      className="text-xs font-medium text-amber-600 hover:text-amber-800 transition-colors"
-                    >
-                      {t('instructors.deactivate')}
-                    </button>
+                    {inst.is_active ? (
+                      <button
+                        onClick={() => setConfirmDeactivate(inst)}
+                        className="text-xs font-medium text-amber-600 hover:text-amber-800 transition-colors"
+                      >
+                        {t('instructors.deactivate')}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => reactivateMutation.mutate(inst.id)}
+                        disabled={reactivateMutation.isPending}
+                        className="text-xs font-medium text-green-600 hover:text-green-800 transition-colors disabled:opacity-50"
+                      >
+                        {t('instructors.reactivate')}
+                      </button>
+                    )}
                     <button
                       onClick={() => { setConfirmRemove(inst); setRemoveError(null) }}
                       className="text-xs font-medium text-red-500 hover:text-red-700 transition-colors"

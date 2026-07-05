@@ -3,23 +3,15 @@
 @tailwind utilities;
 
 body {
-  background: #09090b;
-  color: #fafafa;
+  background: #ffffff;
+  color: #09090b;
 }
 
-@layer utilities {
-  .grid-bg {
-    background-image:
-      linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
-    background-size: 60px 60px;
-  }
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(2rem); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
-  .hero-glow {
-    background: radial-gradient(
-      ellipse 80% 50% at 50% -10%,
-      rgba(99, 102, 241, 0.18),
-      transparent
-    );
-  }
+.anim-fade-slide-up {
+  animation: fadeSlideUp 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
 }

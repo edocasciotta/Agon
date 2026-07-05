@@ -6,14 +6,18 @@ schema layer (422) rather than letting them reach the database.
 
 import datetime
 
-
 # ── Class templates ───────────────────────────────────────────────────────────
 
 
 def test_class_template_negative_duration_rejected(client, manager_auth_headers):
     resp = client.post(
         "/api/v1/class-templates",
-        json={"name": "Bad Template", "duration_minutes": -1, "default_capacity": 10, "color": "#000"},
+        json={
+            "name": "Bad Template",
+            "duration_minutes": -1,
+            "default_capacity": 10,
+            "color": "#000",
+        },
         headers=manager_auth_headers,
     )
     assert resp.status_code == 422
@@ -22,7 +26,12 @@ def test_class_template_negative_duration_rejected(client, manager_auth_headers)
 def test_class_template_zero_duration_rejected(client, manager_auth_headers):
     resp = client.post(
         "/api/v1/class-templates",
-        json={"name": "Bad Template", "duration_minutes": 0, "default_capacity": 10, "color": "#000"},
+        json={
+            "name": "Bad Template",
+            "duration_minutes": 0,
+            "default_capacity": 10,
+            "color": "#000",
+        },
         headers=manager_auth_headers,
     )
     assert resp.status_code == 422
@@ -31,7 +40,12 @@ def test_class_template_zero_duration_rejected(client, manager_auth_headers):
 def test_class_template_zero_capacity_rejected(client, manager_auth_headers):
     resp = client.post(
         "/api/v1/class-templates",
-        json={"name": "Bad Template", "duration_minutes": 60, "default_capacity": 0, "color": "#000"},
+        json={
+            "name": "Bad Template",
+            "duration_minutes": 60,
+            "default_capacity": 0,
+            "color": "#000",
+        },
         headers=manager_auth_headers,
     )
     assert resp.status_code == 422
@@ -40,7 +54,12 @@ def test_class_template_zero_capacity_rejected(client, manager_auth_headers):
 def test_class_template_negative_capacity_rejected(client, manager_auth_headers):
     resp = client.post(
         "/api/v1/class-templates",
-        json={"name": "Bad Template", "duration_minutes": 60, "default_capacity": -5, "color": "#000"},
+        json={
+            "name": "Bad Template",
+            "duration_minutes": 60,
+            "default_capacity": -5,
+            "color": "#000",
+        },
         headers=manager_auth_headers,
     )
     assert resp.status_code == 422
@@ -52,7 +71,9 @@ def test_class_template_negative_capacity_rejected(client, manager_auth_headers)
 def test_scheduled_class_past_date_rejected(client, manager_auth_headers, db_session):
     from app.models.class_template import ClassTemplate
 
-    tmpl = ClassTemplate(name="Yoga", duration_minutes=60, default_capacity=10, color="#000", is_active=True)
+    tmpl = ClassTemplate(
+        name="Yoga", duration_minutes=60, default_capacity=10, color="#000", is_active=True
+    )
     db_session.add(tmpl)
     db_session.commit()
 
@@ -73,7 +94,9 @@ def test_scheduled_class_past_date_rejected(client, manager_auth_headers, db_ses
 def test_scheduled_class_ends_before_starts_rejected(client, manager_auth_headers, db_session):
     from app.models.class_template import ClassTemplate
 
-    tmpl = ClassTemplate(name="Yoga", duration_minutes=60, default_capacity=10, color="#000", is_active=True)
+    tmpl = ClassTemplate(
+        name="Yoga", duration_minutes=60, default_capacity=10, color="#000", is_active=True
+    )
     db_session.add(tmpl)
     db_session.commit()
 
@@ -94,7 +117,9 @@ def test_scheduled_class_ends_before_starts_rejected(client, manager_auth_header
 def test_scheduled_class_zero_capacity_rejected(client, manager_auth_headers, db_session):
     from app.models.class_template import ClassTemplate
 
-    tmpl = ClassTemplate(name="Yoga", duration_minutes=60, default_capacity=10, color="#000", is_active=True)
+    tmpl = ClassTemplate(
+        name="Yoga", duration_minutes=60, default_capacity=10, color="#000", is_active=True
+    )
     db_session.add(tmpl)
     db_session.commit()
 

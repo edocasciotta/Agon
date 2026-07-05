@@ -7,7 +7,9 @@ from sqlalchemy.orm import Session
 
 from app.auth import decode_token, oauth2_scheme
 from app.database import get_db
+from app.limiter import get_jwt_sub, limiter
 from app.models.booking import Booking
+from app.models.class_template import ClassTemplate
 from app.models.scheduled_class import ScheduledClass
 from app.models.waitlist import Waitlist
 from app.schemas.booking import (
@@ -25,7 +27,6 @@ from app.services.booking_service import (
     process_waitlist,
     refund_credit,
 )
-from app.limiter import get_jwt_sub, limiter
 from app.utils import utcnow
 
 logger = logging.getLogger(__name__)
@@ -567,12 +568,23 @@ def cancel_booking(
         )
 
     studio_settings = get_studio_settings(db)
-    cancellation_hours = getattr(studio_settings, "cancellation_hours", 2) if studio_settings else 2
     cancellation_deducts_credit = (
         getattr(studio_settings, "cancellation_deducts_credit", False) if studio_settings else False
     )
 
     sc = db.query(ScheduledClass).filter(ScheduledClass.id == booking.scheduled_class_id).first()
+
+    # Per-class cancellation window overrides global setting
+    tmpl = (
+        db.query(ClassTemplate).filter(ClassTemplate.id == sc.template_id).first() if sc else None
+    )
+    global_hours = getattr(studio_settings, "cancellation_hours", 2) if studio_settings else 2
+    cancellation_hours = (
+        tmpl.cancellation_window_hours
+        if tmpl and tmpl.cancellation_window_hours is not None
+        else global_hours
+    )
+
     now = utcnow()
     hours_until = (sc.starts_at - now).total_seconds() / 3600
 

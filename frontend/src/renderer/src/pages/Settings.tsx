@@ -240,6 +240,82 @@ export function SettingsPage() {
               </div>
             </section>
 
+            <section>
+              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3">{t('settings.sectionColors')}</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('settings.primaryColor')}</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={form.primary_color ?? '#4f46e5'}
+                      onChange={(e) => handleChange('primary_color', e.target.value)}
+                      className="h-9 w-16 cursor-pointer rounded border border-gray-300 p-0.5"
+                    />
+                    <span className="text-sm text-gray-500 font-mono">{form.primary_color ?? '#4f46e5'}</span>
+                    {form.primary_color && form.primary_color !== '#4f46e5' && (
+                      <button
+                        type="button"
+                        onClick={() => handleChange('primary_color', '')}
+                        className="text-xs text-gray-400 hover:text-gray-600"
+                      >
+                        {t('settings.resetDefault')}
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('settings.secondaryColor')}</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={form.secondary_color ?? '#10b981'}
+                      onChange={(e) => handleChange('secondary_color', e.target.value)}
+                      className="h-9 w-16 cursor-pointer rounded border border-gray-300 p-0.5"
+                    />
+                    <span className="text-sm text-gray-500 font-mono">{form.secondary_color ?? '#10b981'}</span>
+                    {form.secondary_color && form.secondary_color !== '#10b981' && (
+                      <button
+                        type="button"
+                        onClick={() => handleChange('secondary_color', '')}
+                        className="text-xs text-gray-400 hover:text-gray-600"
+                      >
+                        {t('settings.resetDefault')}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3">{t('settings.sectionCalendar')}</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label={t('settings.calendarStartHour')}>
+                  <select
+                    value={form.calendar_start_hour ?? 7}
+                    onChange={(e) => handleChange('calendar_start_hour', Number(e.target.value))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    {Array.from({ length: 24 }, (_, i) => (
+                      <option key={i} value={i}>{String(i).padStart(2, '0')}:00</option>
+                    ))}
+                  </select>
+                </Field>
+                <Field label={t('settings.calendarEndHour')}>
+                  <select
+                    value={form.calendar_end_hour ?? 21}
+                    onChange={(e) => handleChange('calendar_end_hour', Number(e.target.value))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    {Array.from({ length: 24 }, (_, i) => (
+                      <option key={i} value={i}>{String(i).padStart(2, '0')}:00</option>
+                    ))}
+                  </select>
+                </Field>
+              </div>
+            </section>
+
             {saveSuccess && (
               <div className="rounded-md bg-green-50 border border-green-200 p-3 text-sm text-green-700">
                 {t('settings.savedSuccess')}

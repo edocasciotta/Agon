@@ -1,8 +1,5 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Request
-from sqlalchemy.orm import Session
-
 from app.auth import decode_token, get_current_client, oauth2_scheme, require_manager
 from app.config import settings
 from app.database import get_db
@@ -13,6 +10,8 @@ from app.models.payment import Payment
 from app.models.studio_settings import StudioSettings
 from app.schemas.payment import PaymentCreate, PaymentResponse, StripeCheckoutRequest
 from app.utils import utcnow
+from fastapi import APIRouter, Depends, HTTPException, Request
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1", tags=["payments"])
 

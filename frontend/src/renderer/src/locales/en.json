@@ -175,7 +175,8 @@
     "clearFilters": "Clear filters",
     "zoom15m": "15 min",
     "zoom30m": "30 min",
-    "zoom1h": "1 hour"
+    "zoom1h": "1 hour",
+    "allEstablishments": "All Establishments"
   },
   "editModal": {
     "title": "Edit Class",
@@ -208,12 +209,19 @@
     "updateClassType": "Update Class Type",
     "minLabel": "min",
     "maxLabel": "Max",
-    "emptyDesc": "Create your first class type to start scheduling sessions."
+    "emptyDesc": "Create your first class type to start scheduling sessions.",
+    "sectionBookingWindows": "Booking Windows",
+    "cancellationWindow": "Cancellation window (h)",
+    "bookingOpenBefore": "Opens before class (h)",
+    "bookingCloseBefore": "Closes before class (h)",
+    "bookingWindowsHint": "Leave blank to use studio defaults",
+    "bookingWindowPlaceholder": "e.g. 24"
   },
   "clients": {
     "title": "Clients",
     "addClient": "+ Add Client",
-    "searchPlaceholder": "Search by name or email...",
+    "searchPlaceholder": "Search by name, email or ID...",
+    "id": "ID",
     "name": "Name",
     "email": "Email",
     "phone": "Phone",
@@ -309,7 +317,9 @@
     "emptyDescTypes": "Create a membership plan to offer to your clients.",
     "currencyPlaceholder": "USD",
     "pricePlaceholder": "e.g. 49.99",
-    "creditsPlaceholder": "e.g. 10"
+    "creditsPlaceholder": "e.g. 10",
+    "currency": "Currency",
+    "member": "Member"
   },
   "reports": {
     "title": "Reports",
@@ -357,6 +367,9 @@
     "sectionWaitlist": "Waitlist & Notifications",
     "waitlistConfirmWindow": "Waitlist confirm window (minutes)",
     "reminderHoursBefore": "Reminder hours before class",
+    "sectionCalendar": "Calendar",
+    "calendarStartHour": "Start hour",
+    "calendarEndHour": "End hour",
     "saveSettings": "Save Settings",
     "saving": "Saving...",
     "savedSuccess": "Settings saved successfully.",
@@ -376,7 +389,11 @@
     "testEmailSent": "Test email sent!",
     "testEmailFailed": "Failed to send test email",
     "saveBeforeTest": "Save settings before sending a test email",
-    "smtpHostPlaceholder": "e.g. smtp.gmail.com"
+    "smtpHostPlaceholder": "e.g. smtp.gmail.com",
+    "sectionColors": "Appearance",
+    "primaryColor": "Primary Color",
+    "secondaryColor": "Secondary Color",
+    "resetDefault": "Reset to default"
   },
   "scheduleModal": {
     "title": "Schedule Class",
@@ -410,7 +427,8 @@
     "capacityPositive": "Capacity must be positive.",
     "selectOneDay": "Select at least one day.",
     "endDateRequired": "End date is required.",
-    "location": "Location"
+    "location": "Location",
+    "noLocation": "No location"
   },
   "marketing": {
     "sectionTitle": "Marketing",
@@ -457,7 +475,7 @@
   "establishments": {
     "title": "Establishments",
     "subtitle": "Manage your studio locations",
-    "searchPlaceholder": "Search by name...",
+    "searchPlaceholder": "Search by name or ID...",
     "add": "+ Add Establishment",
     "addTitle": "New Establishment",
     "editTitle": "Edit Establishment",
@@ -477,12 +495,13 @@
     "emptyDesc": "Add your first studio location to get started.",
     "namePlaceholder": "e.g. Main Studio",
     "addressPlaceholder": "1 Oxford Street, London",
-    "noResults": "No establishments match your search."
+    "noResults": "No establishments match your search.",
+    "reactivate": "Reactivate"
   },
   "instructors": {
     "title": "Instructors",
     "subtitle": "Manage your teaching staff",
-    "searchPlaceholder": "Search by name or email...",
+    "searchPlaceholder": "Search by name, email or ID...",
     "add": "+ Add Instructor",
     "addTitle": "New Instructor",
     "editTitle": "Edit Instructor",
@@ -509,6 +528,7 @@
     "classesCount": "{{n}} classes this week",
     "fullNamePlaceholder": "e.g. Jane Smith",
     "emailPlaceholder": "e.g. jane@studio.com",
-    "noResults": "No instructors match your search."
+    "noResults": "No instructors match your search.",
+    "reactivate": "Reactivate"
   }
 }

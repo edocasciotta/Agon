@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { classTemplatesApi, type ClassTemplateCreate } from '../api/classTemplates'
 import { instructorsApi } from '../api/instructors'
+import { studioApi } from '../api/studio'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { PageHeader } from '../components/PageHeader'
 import { EmptyState } from '../components/EmptyState'
@@ -12,6 +13,7 @@ import type { ApiError } from '../api/client'
 import { classTypeSchema } from '../lib/formSchemas'
 
 const PAGE_SIZE = 12
+const LEGACY_DEFAULT_COLOR = '#4F46E5'
 
 interface ClassTypeFormData {
   name: string
@@ -20,6 +22,9 @@ interface ClassTypeFormData {
   default_capacity: number
   color: string
   default_instructor_id: string
+  cancellation_window_hours: string
+  booking_open_hours_before: string
+  booking_close_hours_before: string
 }
 
 const DEFAULT_FORM: ClassTypeFormData = {
@@ -29,6 +34,9 @@ const DEFAULT_FORM: ClassTypeFormData = {
   default_capacity: 20,
   color: '#4F46E5',
   default_instructor_id: '',
+  cancellation_window_hours: '',
+  booking_open_hours_before: '',
+  booking_close_hours_before: '',
 }
 
 export function ClassTypesPage() {
@@ -49,6 +57,11 @@ export function ClassTypesPage() {
   const { data: instructors = [] } = useQuery({
     queryKey: ['instructors'],
     queryFn: () => instructorsApi.list(),
+  })
+
+  const { data: studioSettings } = useQuery({
+    queryKey: ['studio'],
+    queryFn: studioApi.get,
   })
 
   const createMutation = useMutation({
@@ -84,7 +97,7 @@ export function ClassTypesPage() {
 
   const handleOpenNew = () => {
     setEditingTemplate(null)
-    setFormData(DEFAULT_FORM)
+    setFormData({ ...DEFAULT_FORM, color: studioSettings?.primary_color ?? DEFAULT_FORM.color })
     setFormError(null)
     setShowModal(true)
   }
@@ -100,6 +113,18 @@ export function ClassTypesPage() {
       default_instructor_id: template.default_instructor_id
         ? String(template.default_instructor_id)
         : '',
+      cancellation_window_hours:
+        template.cancellation_window_hours != null
+          ? String(template.cancellation_window_hours)
+          : '',
+      booking_open_hours_before:
+        template.booking_open_hours_before != null
+          ? String(template.booking_open_hours_before)
+          : '',
+      booking_close_hours_before:
+        template.booking_close_hours_before != null
+          ? String(template.booking_close_hours_before)
+          : '',
     })
     setFormError(null)
     setShowModal(true)
@@ -129,6 +154,15 @@ export function ClassTypesPage() {
       default_instructor_id: formData.default_instructor_id
         ? Number(formData.default_instructor_id)
         : undefined,
+      cancellation_window_hours: formData.cancellation_window_hours
+        ? Number(formData.cancellation_window_hours)
+        : undefined,
+      booking_open_hours_before: formData.booking_open_hours_before
+        ? Number(formData.booking_open_hours_before)
+        : undefined,
+      booking_close_hours_before: formData.booking_close_hours_before
+        ? Number(formData.booking_close_hours_before)
+        : undefined,
     }
     if (editingTemplate) {
       updateMutation.mutate({ id: editingTemplate.id, data: payload })
@@ -139,6 +173,9 @@ export function ClassTypesPage() {
 
   const isPending = createMutation.isPending || updateMutation.isPending
   const paged = (templates ?? []).slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  const primaryColor = studioSettings?.primary_color ?? LEGACY_DEFAULT_COLOR
+  const resolveColor = (color: string) =>
+    color === LEGACY_DEFAULT_COLOR ? primaryColor : color
 
   return (
     <div>
@@ -182,14 +219,14 @@ export function ClassTypesPage() {
               >
                 <div
                   className="w-1.5 flex-shrink-0"
-                  style={{ backgroundColor: template.color }}
+                  style={{ backgroundColor: resolveColor(template.color) }}
                 />
                 <div className="flex-1 p-4">
                   <div className="flex items-start justify-between mb-2">
                     <h3 className="font-semibold text-gray-900 text-sm">{template.name}</h3>
                     <div
                       className="w-3 h-3 rounded-full flex-shrink-0 ml-2 mt-0.5"
-                      style={{ backgroundColor: template.color }}
+                      style={{ backgroundColor: resolveColor(template.color) }}
                     />
                   </div>
                   <p className="text-xs text-gray-500 mb-1">{template.duration_minutes} {t('classTypes.minLabel')}</p>
@@ -318,6 +355,60 @@ export function ClassTypesPage() {
                       </option>
                     ))}
                   </select>
+                </div>
+              </div>
+
+              <div className="border-t border-gray-100 pt-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                  {t('classTypes.sectionBookingWindows')}
+                </p>
+                <p className="text-xs text-gray-400 mb-3">{t('classTypes.bookingWindowsHint')}</p>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      {t('classTypes.cancellationWindow')}
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={formData.cancellation_window_hours}
+                      onChange={(e) =>
+                        setFormData({ ...formData, cancellation_window_hours: e.target.value })
+                      }
+                      placeholder={t('classTypes.bookingWindowPlaceholder')}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      {t('classTypes.bookingOpenBefore')}
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={formData.booking_open_hours_before}
+                      onChange={(e) =>
+                        setFormData({ ...formData, booking_open_hours_before: e.target.value })
+                      }
+                      placeholder={t('classTypes.bookingWindowPlaceholder')}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      {t('classTypes.bookingCloseBefore')}
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={formData.booking_close_hours_before}
+                      onChange={(e) =>
+                        setFormData({ ...formData, booking_close_hours_before: e.target.value })
+                      }
+                      placeholder={t('classTypes.bookingWindowPlaceholder')}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
                 </div>
               </div>
 

@@ -175,7 +175,8 @@
     "clearFilters": "Rimuovi filtri",
     "zoom15m": "15 min",
     "zoom30m": "30 min",
-    "zoom1h": "1 ora"
+    "zoom1h": "1 ora",
+    "allEstablishments": "Tutti gli stabilimenti"
   },
   "editModal": {
     "title": "Modifica lezione",
@@ -208,12 +209,19 @@
     "updateClassType": "Aggiorna tipo di lezione",
     "minLabel": "min",
     "maxLabel": "Max",
-    "emptyDesc": "Crea il tuo primo tipo di lezione per iniziare a programmare."
+    "emptyDesc": "Crea il tuo primo tipo di lezione per iniziare a programmare.",
+    "sectionBookingWindows": "Finestre di prenotazione",
+    "cancellationWindow": "Finestra cancellazione (h)",
+    "bookingOpenBefore": "Apertura prenotazioni (h prima)",
+    "bookingCloseBefore": "Chiusura prenotazioni (h prima)",
+    "bookingWindowsHint": "Lascia vuoto per usare i default dello studio",
+    "bookingWindowPlaceholder": "es. 24"
   },
   "clients": {
     "title": "Clienti",
     "addClient": "+ Aggiungi cliente",
-    "searchPlaceholder": "Cerca per nome o email...",
+    "searchPlaceholder": "Cerca per nome, email o ID...",
+    "id": "ID",
     "name": "Nome",
     "email": "Email",
     "phone": "Telefono",
@@ -309,7 +317,9 @@
     "emptyDescTypes": "Crea un piano di abbonamento da offrire ai tuoi clienti.",
     "currencyPlaceholder": "EUR",
     "pricePlaceholder": "es. 49.99",
-    "creditsPlaceholder": "es. 10"
+    "creditsPlaceholder": "es. 10",
+    "currency": "Valuta",
+    "member": "Membro"
   },
   "reports": {
     "title": "Report",
@@ -357,6 +367,9 @@
     "sectionWaitlist": "Lista d'attesa e notifiche",
     "waitlistConfirmWindow": "Finestra conferma lista attesa (minuti)",
     "reminderHoursBefore": "Ore di promemoria prima della lezione",
+    "sectionCalendar": "Calendario",
+    "calendarStartHour": "Ora di inizio",
+    "calendarEndHour": "Ora di fine",
     "saveSettings": "Salva impostazioni",
     "saving": "Salvataggio...",
     "savedSuccess": "Impostazioni salvate con successo.",
@@ -376,7 +389,11 @@
     "testEmailSent": "Email di test inviata!",
     "testEmailFailed": "Impossibile inviare l’email di test",
     "saveBeforeTest": "Salva le impostazioni prima di inviare un'email di test",
-    "smtpHostPlaceholder": "es. smtp.gmail.com"
+    "smtpHostPlaceholder": "es. smtp.gmail.com",
+    "sectionColors": "Aspetto",
+    "primaryColor": "Colore primario",
+    "secondaryColor": "Colore secondario",
+    "resetDefault": "Ripristina predefinito"
   },
   "scheduleModal": {
     "title": "Pianifica lezione",
@@ -410,7 +427,8 @@
     "capacityPositive": "La capacità deve essere positiva.",
     "selectOneDay": "Seleziona almeno un giorno.",
     "endDateRequired": "La data di fine è obbligatoria.",
-    "location": "Sede"
+    "location": "Sede",
+    "noLocation": "Nessuna sede"
   },
   "marketing": {
     "sectionTitle": "Marketing",
@@ -457,7 +475,7 @@
   "establishments": {
     "title": "Sedi",
     "subtitle": "Gestisci le sedi del tuo studio",
-    "searchPlaceholder": "Cerca per nome...",
+    "searchPlaceholder": "Cerca per nome o ID...",
     "add": "+ Aggiungi Sede",
     "addTitle": "Nuova Sede",
     "editTitle": "Modifica Sede",
@@ -477,12 +495,13 @@
     "hasClasses": "Impossibile rimuovere: questo stabilimento ha classi programmate.",
     "namePlaceholder": "es. Studio Centrale",
     "addressPlaceholder": "Via Roma 1, Milano",
-    "noResults": "Nessun establishment corrisponde alla ricerca."
+    "noResults": "Nessun establishment corrisponde alla ricerca.",
+    "reactivate": "Riattiva"
   },
   "instructors": {
     "title": "Istruttori",
     "subtitle": "Gestisci il personale docente",
-    "searchPlaceholder": "Cerca per nome o email...",
+    "searchPlaceholder": "Cerca per nome, email o ID...",
     "add": "+ Aggiungi Istruttore",
     "addTitle": "Nuovo Istruttore",
     "editTitle": "Modifica Istruttore",
@@ -509,6 +528,7 @@
     "hasClasses": "Impossibile rimuovere: questo istruttore ha classi programmate.",
     "fullNamePlaceholder": "es. Sara Bianchi",
     "emailPlaceholder": "es. jane@studio.com",
-    "noResults": "Nessun istruttore corrisponde alla ricerca."
+    "noResults": "Nessun istruttore corrisponde alla ricerca.",
+    "reactivate": "Riattiva"
   }
 }

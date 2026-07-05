@@ -64,8 +64,8 @@ def test_backup_row_count_matches_source(tmp_path):
 
 def test_backup_raises_when_source_missing(tmp_path):
     """_backup_sqlite raises FileNotFoundError if the source DB doesn't exist."""
-    from app.backup import _backup_sqlite
     import pytest
+    from app.backup import _backup_sqlite
 
     with pytest.raises(FileNotFoundError):
         _backup_sqlite(tmp_path / "nonexistent.db", tmp_path / "backups")

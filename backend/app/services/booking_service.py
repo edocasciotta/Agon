@@ -1,13 +1,12 @@
 from datetime import date, timedelta
 from typing import Optional
 
-from sqlalchemy.orm import Session
-
 from app.models.membership import Membership
 from app.models.membership_type import MembershipType
 from app.models.studio_settings import StudioSettings
 from app.models.waitlist import Waitlist
 from app.utils import utcnow
+from sqlalchemy.orm import Session
 
 
 def get_studio_settings(db: Session) -> Optional[StudioSettings]:

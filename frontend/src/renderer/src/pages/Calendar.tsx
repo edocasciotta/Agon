@@ -15,16 +15,12 @@ import { classesApi } from '../api/classes'
 import { classTemplatesApi } from '../api/classTemplates'
 import { instructorsApi } from '../api/instructors'
 import { locationsApi } from '../api/locations'
+import { studioApi } from '../api/studio'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { PageHeader } from '../components/PageHeader'
 import { ScheduleClassModal } from '../components/ScheduleClassModal'
 import { EditClassModal } from '../components/EditClassModal'
 import type { ScheduledClass, ClassTemplate } from '../types'
-
-// Grid configuration
-const GRID_START = 7   // 7:00
-const GRID_END = 21    // 21:00
-const HOURS = Array.from({ length: GRID_END - GRID_START }, (_, i) => i + GRID_START)
 
 type ZoomLevel = '1h' | '30m' | '15m'
 const ZOOM_ROW_H: Record<ZoomLevel, number> = { '1h': 56, '30m': 112, '15m': 224 }
@@ -47,10 +43,10 @@ function hexToRgb(hex: string) {
   return `${r}, ${g}, ${b}`
 }
 
-function getEventTop(startsAt: string, rowH: number): number {
+function getEventTop(startsAt: string, rowH: number, gridStart: number): number {
   const d = new Date(startsAt)
   const mins = d.getHours() * 60 + d.getMinutes()
-  return ((mins - GRID_START * 60) / 60) * rowH
+  return ((mins - gridStart * 60) / 60) * rowH
 }
 
 function getEventHeight(startsAt: string, endsAt: string, rowH: number): number {
@@ -68,6 +64,8 @@ function formatSubHour(h: number, m: number): string {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
 }
 
+const LEGACY_DEFAULT_COLOR = '#4F46E5'
+
 export function CalendarPage() {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
@@ -83,6 +81,20 @@ export function CalendarPage() {
 
   const rowH = ZOOM_ROW_H[zoom]
   const subLines = ZOOM_SUBLINES[zoom]
+
+  const { data: studioSettings } = useQuery({
+    queryKey: ['studio'],
+    queryFn: studioApi.get,
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const primaryColor = studioSettings?.primary_color ?? LEGACY_DEFAULT_COLOR
+  const resolveColor = (templateColor: string | undefined | null): string =>
+    !templateColor || templateColor === LEGACY_DEFAULT_COLOR ? primaryColor : templateColor
+
+  const gridStart = studioSettings?.calendar_start_hour ?? 7
+  const gridEnd = studioSettings?.calendar_end_hour ?? 21
+  const hours = Array.from({ length: Math.max(gridEnd - gridStart, 1) }, (_, i) => i + gridStart)
 
   // Active filters
   const [filterLocation, setFilterLocation] = useState<number | null>(null)
@@ -230,7 +242,7 @@ export function CalendarPage() {
                     onChange={(e) => setFilterLocation(e.target.value ? Number(e.target.value) : null)}
                     className="text-xs border border-gray-200 rounded-md px-2 py-1.5 text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 cursor-pointer"
                   >
-                    <option value="">{t('calendar.allLocations')}</option>
+                    <option value="">{t('calendar.allEstablishments')}</option>
                     {locations.map((loc) => (
                       <option key={loc.id} value={loc.id}>{loc.name}</option>
                     ))}
@@ -282,9 +294,8 @@ export function CalendarPage() {
                     {format(day, 'EEE')}
                   </div>
                   <div
-                    className={`text-lg font-semibold leading-tight ${
-                      isToday(day) ? 'text-indigo-600' : 'text-gray-800'
-                    }`}
+                    className="text-lg font-semibold leading-tight"
+                    style={{ color: isToday(day) ? primaryColor : 'rgb(31 41 55)' }}
                   >
                     {format(day, 'd')}
                   </div>
@@ -294,14 +305,14 @@ export function CalendarPage() {
 
             {/* Scrollable time grid */}
             <div ref={gridRef} className="flex-1 overflow-y-auto">
-              <div className="flex" style={{ height: `${HOURS.length * rowH}px`, minHeight: `${HOURS.length * rowH}px` }}>
+              <div className="flex" style={{ height: `${hours.length * rowH}px`, minHeight: `${hours.length * rowH}px` }}>
                 {/* Time labels */}
                 <div className="w-11 flex-shrink-0 relative">
-                  {HOURS.map((h) => (
+                  {hours.map((h) => (
                     <div key={h}>
                       <div
                         className="absolute w-full text-right pr-2"
-                        style={{ top: `${(h - GRID_START) * rowH - 8}px` }}
+                        style={{ top: `${(h - gridStart) * rowH - 8}px` }}
                       >
                         <span className="text-[10px] text-gray-400">{formatHour(h)}</span>
                       </div>
@@ -309,7 +320,7 @@ export function CalendarPage() {
                         <div
                           key={`${h}-${m}`}
                           className="absolute w-full text-right pr-2"
-                          style={{ top: `${(h - GRID_START) * rowH + (m / 60) * rowH - 7}px` }}
+                          style={{ top: `${(h - gridStart) * rowH + (m / 60) * rowH - 7}px` }}
                         >
                           <span className="text-[9px] text-gray-300">{formatSubHour(h, m)}</span>
                         </div>
@@ -327,20 +338,21 @@ export function CalendarPage() {
                     <div
                       key={day.toISOString()}
                       className="flex-1 relative border-l border-gray-100 first:border-l-0"
+                      style={isToday(day) ? { backgroundColor: `${primaryColor}0d` } : undefined}
                     >
                       {/* Hour lines + sub-lines */}
-                      {HOURS.map((h) => (
+                      {hours.map((h) => (
                         <div key={h}>
                           <div
-                            className="absolute left-0 right-0 border-t border-gray-100 cursor-pointer hover:bg-indigo-50/30 transition-colors"
-                            style={{ top: `${(h - GRID_START) * rowH}px`, height: `${rowH}px` }}
+                            className="absolute left-0 right-0 border-t border-gray-100 cursor-pointer hover:bg-gray-50/50 transition-colors"
+                            style={{ top: `${(h - gridStart) * rowH}px`, height: `${rowH}px` }}
                             onClick={() => handleSlotClick(day, h)}
                           />
                           {subLines.map((m) => (
                             <div
                               key={`${h}-${m}`}
                               className="absolute left-0 right-0 border-t border-gray-50 pointer-events-none"
-                              style={{ top: `${(h - GRID_START) * rowH + (m / 60) * rowH}px` }}
+                              style={{ top: `${(h - gridStart) * rowH + (m / 60) * rowH}px` }}
                             />
                           ))}
                         </div>
@@ -349,9 +361,9 @@ export function CalendarPage() {
                       {/* Events */}
                       {dayClasses.map((cls) => {
                         const tpl = templateMap[cls.template_id]
-                        const color = tpl?.color ?? '#4F46E5'
+                        const color = resolveColor(tpl?.color)
                         const rgb = hexToRgb(color)
-                        const top = getEventTop(cls.starts_at, rowH)
+                        const top = getEventTop(cls.starts_at, rowH, gridStart)
                         const height = getEventHeight(cls.starts_at, cls.ends_at, rowH)
                         const label = tpl?.name ?? `#${cls.id}`
                         const showText = height >= 16
@@ -404,7 +416,7 @@ export function CalendarPage() {
       {tooltip && (() => {
         const cls = tooltip.cls
         const tpl = templateMap[cls.template_id]
-        const color = tpl?.color ?? '#4F46E5'
+        const color = resolveColor(tpl?.color)
         const instructorName = cls.instructor_id ? instructorMap[cls.instructor_id] : null
         const locationName = cls.location_id ? locationMap[cls.location_id] : null
 

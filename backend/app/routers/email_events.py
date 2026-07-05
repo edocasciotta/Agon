@@ -4,14 +4,13 @@ Email Event Assignments — /api/v1/email/events
 
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
-from sqlalchemy.orm import Session
-
 from app.auth import require_manager
 from app.database import get_db
 from app.models.email_event_assignment import EVENT_TYPES, EmailEventAssignment
 from app.models.email_template import EmailTemplate
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1/email/events", tags=["email-events"])
 

@@ -2,12 +2,11 @@ import logging
 import os
 import re
 
+from app.auth import get_current_user
+from app.config import settings
 from fastapi import APIRouter, Depends
 from litellm import completion
 from pydantic import BaseModel, field_validator
-
-from app.auth import get_current_user
-from app.config import settings
 
 logger = logging.getLogger(__name__)
 

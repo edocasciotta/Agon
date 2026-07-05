@@ -4,8 +4,6 @@ import datetime
 import time
 
 import pytest
-from sqlalchemy.pool import StaticPool
-
 from app.database import Base, get_db
 from app.models.booking import Booking
 from app.models.class_template import ClassTemplate
@@ -15,6 +13,7 @@ from app.models.membership import Membership
 from app.models.membership_type import MembershipType
 from app.models.scheduled_class import ScheduledClass
 from app.models.user import User
+from sqlalchemy.pool import StaticPool
 
 
 @pytest.fixture(scope="module")
@@ -176,11 +175,7 @@ def test_list_bookings_for_client(perf_db):
     db = perf_db
     first_client = db.query(Client).first()
 
-    ms = _elapsed_ms(
-        lambda: db.query(Booking)
-        .filter(Booking.client_id == first_client.id)
-        .all()
-    )
+    ms = _elapsed_ms(lambda: db.query(Booking).filter(Booking.client_id == first_client.id).all())
     assert ms < 100, f"list bookings for client took {ms:.1f}ms (> 100ms)"
 
 
