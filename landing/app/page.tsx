@@ -565,7 +565,7 @@ export default function Home() {
       {/* ── Screenshots ── */}
       <section className="border-t border-zinc-100 py-20" style={{ background: "linear-gradient(to bottom, #f8f9ff 0%, #ffffff 100%)" }}>
         <div className="max-w-5xl mx-auto px-6">
-          <div ref={mockRef} className={`transition-all duration-700 ease-out ${mockVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+          <div ref={mockRef} className={mockVisible ? "anim-fade-slide-up" : "opacity-0"}>
             <h2 className="text-2xl font-bold text-zinc-900 mb-2">{t.screensTitle}</h2>
             <p className="text-zinc-500 text-sm mb-6">{t.screensDesc}</p>
             <div className="flex gap-1 mb-4">
