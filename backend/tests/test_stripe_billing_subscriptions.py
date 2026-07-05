@@ -680,3 +680,89 @@ def test_cancel_subscription_not_found(client, manager_auth_headers, db_session,
     assert resp.status_code == 404, resp.text
     err = resp.json()["detail"]["error"]
     assert err["code"] == "SUBSCRIPTION_NOT_FOUND"
+
+
+# ---------------------------------------------------------------------------
+# test_override_cancel_succeeds
+# ---------------------------------------------------------------------------
+
+
+def test_override_cancel_succeeds(
+    client, manager_auth_headers, db_session, registered_client, recurring_mt
+):
+    """POST .../cancel/override → local DB updated, no Stripe call made."""
+    import datetime as dt
+
+    client_obj = db_session.query(Client).filter_by(email="test@example.com").first()
+    sub_id = "sub_override_001"
+
+    # Pre-create an active StripeSubscription
+    stripe_sub = StripeSubscription(
+        client_id=client_obj.id,
+        stripe_subscription_id=sub_id,
+        stripe_price_id="price_override_001",
+        status="active",
+        current_period_end=datetime.utcfromtimestamp(_future_ts(20)),
+    )
+    db_session.add(stripe_sub)
+
+    # Pre-create a linked active Membership
+    membership = Membership(
+        client_id=client_obj.id,
+        membership_type_id=recurring_mt.id,
+        status="active",
+        starts_at=dt.date.today(),
+        stripe_subscription_id=sub_id,
+        credits_remaining=None,
+        credits_used=0,
+    )
+    db_session.add(membership)
+    db_session.commit()
+
+    resp = client.post(
+        f"/api/billing/members/{client_obj.id}/subscription/cancel/override",
+        headers=manager_auth_headers,
+    )
+
+    assert resp.status_code == 200, resp.text
+    data = resp.json()
+    assert data["status"] == "ok"
+    assert data["override"] is True
+    assert data["stripe_subscription_id"] == sub_id
+
+    db_session.expire_all()
+
+    # StripeSubscription must be marked canceled
+    updated_sub = (
+        db_session.query(StripeSubscription).filter_by(stripe_subscription_id=sub_id).first()
+    )
+    assert updated_sub is not None
+    assert updated_sub.status == "canceled"
+
+    # Linked Membership must be marked cancelled
+    updated_mem = (
+        db_session.query(Membership)
+        .filter_by(client_id=client_obj.id, stripe_subscription_id=sub_id)
+        .first()
+    )
+    assert updated_mem is not None
+    assert updated_mem.status == "cancelled"
+
+
+# ---------------------------------------------------------------------------
+# test_override_cancel_not_found
+# ---------------------------------------------------------------------------
+
+
+def test_override_cancel_not_found(client, manager_auth_headers, db_session, registered_client):
+    """POST .../cancel/override when no subscription exists → 404 SUBSCRIPTION_NOT_FOUND."""
+    client_obj = db_session.query(Client).filter_by(email="test@example.com").first()
+
+    resp = client.post(
+        f"/api/billing/members/{client_obj.id}/subscription/cancel/override",
+        headers=manager_auth_headers,
+    )
+
+    assert resp.status_code == 404, resp.text
+    err = resp.json()["detail"]["error"]
+    assert err["code"] == "SUBSCRIPTION_NOT_FOUND"

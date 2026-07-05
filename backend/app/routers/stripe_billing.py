@@ -758,3 +758,63 @@ def cancel_subscription(
     db.commit()
 
     return {"status": "ok", "cancel_at_period_end": True}
+
+
+# ---------------------------------------------------------------------------
+# POST /api/billing/members/{client_id}/subscription/cancel/override  (Phase 7)
+# ---------------------------------------------------------------------------
+
+
+@router.post("/members/{client_id}/subscription/cancel/override", status_code=200)
+def cancel_subscription_override(
+    client_id: int,
+    db: Session = Depends(get_db),
+    _current_user=Depends(require_manager),
+):
+    """Cancel a client's subscription locally in the DB without calling Stripe.
+
+    Safety valve for when Stripe is unreachable or webhooks fail.
+    Manager-only. Does NOT make any network calls to Stripe.
+    """
+    # 1. Find the most recent non-canceled StripeSubscription for this client
+    stripe_sub_row = (
+        db.query(StripeSubscription)
+        .filter(
+            StripeSubscription.client_id == client_id,
+            StripeSubscription.status != "canceled",
+        )
+        .order_by(StripeSubscription.created_at.desc())
+        .first()
+    )
+    if stripe_sub_row is None:
+        raise_api_error(
+            "SUBSCRIPTION_NOT_FOUND",
+            "No active subscription found for this client.",
+            status_code=404,
+        )
+
+    # 2. Cancel the StripeSubscription locally
+    stripe_sub_row.status = "canceled"
+    stripe_sub_row.updated_at = utcnow()
+
+    # 3. Cancel any linked Membership that is not already cancelled
+    membership = (
+        db.query(Membership)
+        .filter(
+            Membership.stripe_subscription_id == stripe_sub_row.stripe_subscription_id,
+            Membership.status != "cancelled",
+        )
+        .first()
+    )
+    if membership is not None:
+        membership.status = "cancelled"
+
+    # 4. Commit all changes
+    db.commit()
+
+    # 5. Return confirmation
+    return {
+        "status": "ok",
+        "override": True,
+        "stripe_subscription_id": stripe_sub_row.stripe_subscription_id,
+    }
