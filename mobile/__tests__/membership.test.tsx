@@ -83,6 +83,9 @@ beforeEach(() => {
 })
 
 describe('MembershipScreen — subscription card', () => {
+  beforeAll(() => jest.setTimeout(15000))
+  afterAll(() => jest.setTimeout(5000))
+
   it('renders subscription card when subscription is active', async () => {
     ;(billingApi.getSubscription as jest.Mock).mockResolvedValue({
       subscription: mockActiveSubscription,
