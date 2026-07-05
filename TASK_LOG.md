@@ -72,9 +72,24 @@ Scaffolding → DB models → Core API → Booking engine → Check-in → Membe
 - `get_class_roster` Italian phrasings not 100% reliable — 3B model still picks wrong tool occasionally.
 - Playwright e2e tests are scaffold only (no real backend needed; use `page.route()`).
 
+## Stripe Billing Integration (in progress)
+
+Spec: `~/Downloads/agon-stripe-billing-spec.md`
+
+| Phase | Status | Notes |
+|---|---|---|
+| 1 — Schema + config | ✅ done | Migration `9c30bc2887eb`; 5 new tables; `sellable_online` on `membership_types`; `STRIPE_PUBLISHABLE_KEY` in config; 256 tests pass |
+| 2 — Config endpoint + settings screen | pending | `POST /api/billing/settings`; validate key with `stripe.Account.retrieve()` |
+| 3 — Checkout (one-off payments) | pending | `POST /api/billing/checkout-session` mode=payment + webhook |
+| 4 — Subscriptions | pending | mode=subscription + subscription webhook handlers |
+| 5 — Dashboard surfacing (Electron) | pending | Reuse existing UI patterns |
+| 6 — Mobile "pay/subscribe" button | pending | Open Checkout URL in-app browser |
+| 7 — Cancellation + manual override | pending | `POST /api/billing/members/{id}/subscription/cancel` |
+
 ## Next Task
 
-V1.1 candidates (from ROADMAP.md):
+**Stripe Phase 2** — `POST /api/billing/settings` endpoint (admin-only, validate key before saving).
+
+Other V1.1 candidates (deferred):
 - Electron auto-update (`electron-updater` + GitHub releases + Alembic on relaunch)
 - Multi-location support (`location_id` already on all tables, backend ready)
-- Stripe subscription billing

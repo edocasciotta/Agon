@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     LLM_API_KEY: str = ""
     STUDIO_TIMEZONE: str = "Europe/Rome"
     STRIPE_SECRET_KEY: str = ""
+    STRIPE_PUBLISHABLE_KEY: str = ""
     STRIPE_WEBHOOK_SECRET: str = "whsec_test"
     EXPO_ACCESS_TOKEN: str = ""
 
