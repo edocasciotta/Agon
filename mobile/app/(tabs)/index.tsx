@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { useQuery } from '@tanstack/react-query'
 import { useRouter } from 'expo-router'
 import { bookingsApi } from '../../src/api/bookings'
+import type { Booking } from '../../src/types'
 import { useAuthStore } from '../../src/store/authStore'
 import { useStudioStore } from '../../src/store/studioStore'
 import { LoadingView } from '../../src/components/LoadingView'
@@ -26,11 +27,11 @@ export default function HomeScreen() {
 
   const now = new Date()
   const upcomingBookings = (bookings ?? [])
-    .filter((b) => b.status === 'confirmed' && isAfter(parseISO(b.created_at), new Date(0)))
-    .sort((a, b) => 0) // sorted by class time ideally but we only have booking created_at
+    .filter((b: Booking) => b.status === 'confirmed' && isAfter(parseISO(b.created_at), new Date(0)))
+    .sort((a: Booking, b: Booking) => 0) // sorted by class time ideally but we only have booking created_at
 
   // For home screen we just show total upcoming count
-  const confirmedCount = (bookings ?? []).filter((b) => b.status === 'confirmed').length
+  const confirmedCount = (bookings ?? []).filter((b: Booking) => b.status === 'confirmed').length
 
   if (isLoading) return <LoadingView message="Loading your schedule..." />
 

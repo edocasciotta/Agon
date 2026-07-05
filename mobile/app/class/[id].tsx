@@ -50,7 +50,7 @@ export default function ClassDetailScreen() {
   })
 
   if (isLoading) return <LoadingView message="Loading class..." />
-  if (error) return <ErrorView code={(error as ApiError).code} />
+  if (error) return <ErrorView code={(error as unknown as ApiError).code} />
   if (!cls) return <ErrorView message="Class not found." />
 
   const duration = differenceInMinutes(parseISO(cls.ends_at), parseISO(cls.starts_at))
