@@ -36,6 +36,7 @@ export interface MembershipType {
   currency: string
   credits_included?: number
   unlimited: boolean
+  sellable_online: boolean
 }
 
 export interface NotificationLog {

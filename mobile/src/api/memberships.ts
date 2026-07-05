@@ -20,3 +20,25 @@ export const clientsApi = {
     await apiClient.put('/api/v1/clients/me/push-token', { push_token: pushToken })
   },
 }
+
+export interface CheckoutSessionResponse {
+  checkout_url: string
+  session_id: string
+}
+
+export const billingApi = {
+  createCheckoutSession: async (
+    clientId: number,
+    membershipTypeId: number
+  ): Promise<CheckoutSessionResponse> => {
+    const successUrl = 'agon://membership?status=success'
+    const cancelUrl = 'agon://membership/purchase'
+    const res = await apiClient.post('/api/billing/checkout-session', {
+      client_id: clientId,
+      membership_type_id: membershipTypeId,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+    })
+    return res.data
+  },
+}
