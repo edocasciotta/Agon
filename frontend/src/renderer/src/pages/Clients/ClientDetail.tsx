@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
 import { clientsApi } from '../../api/clients'
 import { membershipTypesApi, membershipsApi } from '../../api/memberships'
+import { billingApi } from '../../api/billing'
 import { LoadingSpinner } from '../../components/LoadingSpinner'
 import { ErrorMessage } from '../../components/ErrorMessage'
 import { PageHeader } from '../../components/PageHeader'
@@ -21,6 +22,7 @@ export function ClientDetail() {
   const [editing, setEditing] = useState(false)
   const [editName, setEditName] = useState('')
   const [editPhone, setEditPhone] = useState('')
+  const [cancelSubscriptionConfirm, setCancelSubscriptionConfirm] = useState(false)
   const [showAssignModal, setShowAssignModal] = useState(false)
   const [assignTypeId, setAssignTypeId] = useState<number | ''>('')
   const [assignStartDate, setAssignStartDate] = useState(format(new Date(), 'yyyy-MM-dd'))
@@ -47,6 +49,20 @@ export function ClientDetail() {
     queryKey: ['membership-types'],
     queryFn: () => membershipTypesApi.list(),
     enabled: showAssignModal,
+  })
+
+  const { data: subscriptionData } = useQuery({
+    queryKey: ['client-subscription', clientId],
+    queryFn: () => billingApi.getSubscription(clientId),
+    enabled: activeTab === 'memberships',
+  })
+
+  const cancelSubscriptionMutation = useMutation({
+    mutationFn: () => billingApi.cancelSubscription(clientId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['client-subscription', clientId] })
+      setCancelSubscriptionConfirm(false)
+    },
   })
 
   const updateMutation = useMutation({
@@ -240,6 +256,62 @@ export function ClientDetail() {
       {/* Memberships Tab */}
       {activeTab === 'memberships' && (
         <div>
+          {/* Stripe Subscription Status */}
+          {subscriptionData?.subscription && (() => {
+            const sub = subscriptionData.subscription
+            const statusColorMap: Record<string, string> = {
+              active: 'bg-green-100 text-green-700',
+              past_due: 'bg-amber-100 text-amber-700',
+              payment_overdue: 'bg-amber-100 text-amber-700',
+              canceled: 'bg-gray-100 text-gray-600',
+              incomplete: 'bg-gray-100 text-gray-600',
+              unpaid: 'bg-amber-100 text-amber-700',
+            }
+            const badgeClass = statusColorMap[sub.status] ?? 'bg-gray-100 text-gray-600'
+            return (
+              <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-medium text-gray-700">{t('billing.subscription')}</span>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${badgeClass}`}>
+                      {t(`billing.status.${sub.status}`, { defaultValue: sub.status })}
+                    </span>
+                    {sub.current_period_end && (
+                      <span className="text-xs text-gray-500">
+                        {format(new Date(sub.current_period_end), 'MMM d, yyyy')}
+                      </span>
+                    )}
+                  </div>
+                  {cancelSubscriptionConfirm ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-600">{t('billing.cancelConfirm')}</span>
+                      <button
+                        onClick={() => cancelSubscriptionMutation.mutate()}
+                        disabled={cancelSubscriptionMutation.isPending}
+                        className="px-3 py-1.5 bg-red-600 text-white rounded-md text-xs font-medium hover:bg-red-700 disabled:opacity-50 transition-colors"
+                      >
+                        {cancelSubscriptionMutation.isPending ? t('common.saving') : t('common.yes')}
+                      </button>
+                      <button
+                        onClick={() => setCancelSubscriptionConfirm(false)}
+                        className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md text-xs font-medium hover:bg-gray-200 transition-colors"
+                      >
+                        {t('common.cancel')}
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setCancelSubscriptionConfirm(true)}
+                      className="px-3 py-1.5 bg-red-600 text-white rounded-md text-xs font-medium hover:bg-red-700 transition-colors"
+                    >
+                      {t('billing.cancelSubscription')}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )
+          })()}
+
           <div className="flex justify-end mb-3">
             <button
               onClick={() => setShowAssignModal(true)}

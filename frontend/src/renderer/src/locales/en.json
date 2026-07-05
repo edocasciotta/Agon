@@ -498,6 +498,31 @@
     "noResults": "No establishments match your search.",
     "reactivate": "Reactivate"
   },
+  "billing": {
+    "tab": "Billing",
+    "connectionStatus": "Stripe connection",
+    "connected": "Connected",
+    "notConnected": "Not connected",
+    "secretKey": "Secret key",
+    "publishableKey": "Publishable key",
+    "webhookSecret": "Webhook secret (optional)",
+    "webhookSecretHint": "Found in Stripe Dashboard → Webhooks. Leave blank to keep current value.",
+    "save": "Save",
+    "savedSuccess": "Stripe settings saved",
+    "secretKeyRequired": "Secret key is required",
+    "publishableKeyRequired": "Publishable key is required",
+    "subscription": "Stripe subscription",
+    "cancelSubscription": "Cancel subscription",
+    "cancelConfirm": "Cancel this subscription at end of current period?",
+    "status": {
+      "active": "Active",
+      "past_due": "Past due",
+      "canceled": "Canceled",
+      "incomplete": "Incomplete",
+      "unpaid": "Unpaid",
+      "payment_overdue": "Payment overdue"
+    }
+  },
   "instructors": {
     "title": "Instructors",
     "subtitle": "Manage your teaching staff",

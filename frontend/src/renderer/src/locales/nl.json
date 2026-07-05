@@ -490,6 +490,31 @@
     "noResults": "Geen vestigingen komen overeen met je zoekopdracht.",
     "reactivate": "Reactiveren"
   },
+  "billing": {
+    "tab": "Facturering",
+    "connectionStatus": "Stripe-verbinding",
+    "connected": "Verbonden",
+    "notConnected": "Niet verbonden",
+    "secretKey": "Geheime sleutel",
+    "publishableKey": "Publiceerbare sleutel",
+    "webhookSecret": "Webhook-geheim (optioneel)",
+    "webhookSecretHint": "Te vinden in het Stripe Dashboard → Webhooks. Laat leeg om de huidige waarde te behouden.",
+    "save": "Opslaan",
+    "savedSuccess": "Stripe-instellingen opgeslagen",
+    "secretKeyRequired": "Geheime sleutel is vereist",
+    "publishableKeyRequired": "Publiceerbare sleutel is vereist",
+    "subscription": "Stripe-abonnement",
+    "cancelSubscription": "Abonnement annuleren",
+    "cancelConfirm": "Dit abonnement annuleren aan het einde van de huidige periode?",
+    "status": {
+      "active": "Actief",
+      "past_due": "Achterstallig",
+      "canceled": "Geannuleerd",
+      "incomplete": "Onvolledig",
+      "unpaid": "Onbetaald",
+      "payment_overdue": "Betaling achterstallig"
+    }
+  },
   "instructors": {
     "title": "Instructeurs",
     "subtitle": "Beheer je onderwijspersoneel",

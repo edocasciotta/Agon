@@ -490,6 +490,31 @@
     "noResults": "Keine Einrichtung entspricht Ihrer Suche.",
     "reactivate": "Reaktivieren"
   },
+  "billing": {
+    "tab": "Abrechnung",
+    "connectionStatus": "Stripe-Verbindung",
+    "connected": "Verbunden",
+    "notConnected": "Nicht verbunden",
+    "secretKey": "Geheimschlüssel",
+    "publishableKey": "Öffentlicher Schlüssel",
+    "webhookSecret": "Webhook-Geheimnis (optional)",
+    "webhookSecretHint": "Im Stripe-Dashboard → Webhooks zu finden. Leer lassen, um den aktuellen Wert zu behalten.",
+    "save": "Speichern",
+    "savedSuccess": "Stripe-Einstellungen gespeichert",
+    "secretKeyRequired": "Geheimschlüssel ist erforderlich",
+    "publishableKeyRequired": "Öffentlicher Schlüssel ist erforderlich",
+    "subscription": "Stripe-Abonnement",
+    "cancelSubscription": "Abonnement kündigen",
+    "cancelConfirm": "Dieses Abonnement zum Ende des aktuellen Zeitraums kündigen?",
+    "status": {
+      "active": "Aktiv",
+      "past_due": "Überfällig",
+      "canceled": "Gekündigt",
+      "incomplete": "Unvollständig",
+      "unpaid": "Nicht bezahlt",
+      "payment_overdue": "Zahlung überfällig"
+    }
+  },
   "instructors": {
     "title": "Kursleiter",
     "subtitle": "Lehrpersonal verwalten",

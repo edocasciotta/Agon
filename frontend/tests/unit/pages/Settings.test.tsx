@@ -3,6 +3,17 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { SettingsPage } from '../../../src/renderer/src/pages/Settings'
 
+vi.mock('../../../src/renderer/src/api/billing', () => ({
+  billingApi: {
+    getSettings: vi.fn().mockResolvedValue({
+      stripe_connected: true,
+      stripe_account_id: 'acct_test123',
+      publishable_key: 'pk_test_abc',
+    }),
+    saveSettings: vi.fn().mockResolvedValue({ status: 'ok', stripe_account_id: 'acct_test123' }),
+  },
+}))
+
 vi.mock('../../../src/renderer/src/api/studio', () => ({
   studioApi: {
     get: vi.fn().mockResolvedValue({
@@ -76,5 +87,12 @@ describe('SettingsPage', () => {
     const emailTab = await screen.findByRole('tab', { name: /email/i })
     fireEvent.click(emailTab)
     expect(await screen.findByRole('button', { name: /send test email/i })).toBeTruthy()
+  })
+
+  it('Billing tab is accessible and shows connection status when clicked', async () => {
+    renderPage()
+    const billingTab = await screen.findByRole('tab', { name: /billing/i })
+    fireEvent.click(billingTab)
+    expect(await screen.findByText(/stripe connection/i)).toBeTruthy()
   })
 })

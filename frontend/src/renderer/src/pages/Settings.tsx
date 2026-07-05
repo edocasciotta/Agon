@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { z } from 'zod'
 import { studioApi } from '../api/studio'
+import { billingApi } from '../api/billing'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { PageHeader } from '../components/PageHeader'
 import type { StudioSettings, EmailSettings } from '../types'
 import type { ApiError } from '../api/client'
 
-type Tab = 'studio' | 'email'
+type Tab = 'studio' | 'email' | 'billing'
 
 export function SettingsPage() {
   const { t } = useTranslation()
@@ -26,6 +28,16 @@ export function SettingsPage() {
   const [testEmailMsg, setTestEmailMsg] = useState<{ text: string; ok: boolean } | null>(null)
   const [emailSettingsSaved, setEmailSettingsSaved] = useState(false)
 
+  // Billing tab state
+  const [billingForm, setBillingForm] = useState<{
+    secret_key: string
+    publishable_key: string
+    webhook_secret: string
+  }>({ secret_key: '', publishable_key: '', webhook_secret: '' })
+  const [billingFieldErrors, setBillingFieldErrors] = useState<Partial<Record<'secret_key' | 'publishable_key', string>>>({})
+  const [billingSaveSuccess, setBillingSaveSuccess] = useState(false)
+  const [billingSaveError, setBillingSaveError] = useState<string | null>(null)
+
   const { data: settings, isLoading } = useQuery({
     queryKey: ['studio'],
     queryFn: () => studioApi.get(),
@@ -34,6 +46,12 @@ export function SettingsPage() {
   const { data: emailSettings, isLoading: emailLoading } = useQuery({
     queryKey: ['emailSettings'],
     queryFn: () => studioApi.getEmailSettings(),
+  })
+
+  const { data: billingStatus, isLoading: billingLoading } = useQuery({
+    queryKey: ['billing-settings'],
+    queryFn: () => billingApi.getSettings(),
+    enabled: activeTab === 'billing',
   })
 
   useEffect(() => {
@@ -95,8 +113,51 @@ export function SettingsPage() {
     setEmailSettingsSaved(false)
   }
 
+  const billingSaveMutation = useMutation({
+    mutationFn: (data: { secret_key: string; publishable_key: string; webhook_secret?: string }) =>
+      billingApi.saveSettings(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['billing-settings'] })
+      setBillingSaveSuccess(true)
+      setBillingSaveError(null)
+      setBillingForm((prev) => ({ ...prev, secret_key: '', webhook_secret: '' }))
+      setTimeout(() => setBillingSaveSuccess(false), 3000)
+    },
+    onError: (err: ApiError) => {
+      setBillingSaveError(err.message ?? t('settings.failedSave'))
+      setBillingSaveSuccess(false)
+    },
+  })
+
   const handleSave = () => updateMutation.mutate(form)
   const handleEmailSave = () => emailUpdateMutation.mutate(emailForm)
+
+  const handleBillingSave = () => {
+    const billingSchema = z.object({
+      secret_key: z.string().min(1, t('billing.secretKeyRequired')),
+      publishable_key: z.string().min(1, t('billing.publishableKeyRequired')),
+      webhook_secret: z.string().optional(),
+    })
+    const result = billingSchema.safeParse(billingForm)
+    if (!result.success) {
+      const fieldErrs: Partial<Record<'secret_key' | 'publishable_key', string>> = {}
+      for (const issue of result.error.issues) {
+        const field = issue.path[0] as 'secret_key' | 'publishable_key'
+        if (field === 'secret_key' || field === 'publishable_key') {
+          fieldErrs[field] = issue.message
+        }
+      }
+      setBillingFieldErrors(fieldErrs)
+      return
+    }
+    setBillingFieldErrors({})
+    const { secret_key, publishable_key, webhook_secret } = result.data
+    billingSaveMutation.mutate({
+      secret_key,
+      publishable_key,
+      webhook_secret: webhook_secret || undefined,
+    })
+  }
 
   if (isLoading) return <div className="flex items-center justify-center h-64"><LoadingSpinner size="lg" /></div>
 
@@ -119,6 +180,9 @@ export function SettingsPage() {
           </button>
           <button className={tabClass('email')} onClick={() => setActiveTab('email')} role="tab" aria-selected={activeTab === 'email'}>
             {t('settings.tabEmail')}
+          </button>
+          <button className={tabClass('billing')} onClick={() => setActiveTab('billing')} role="tab" aria-selected={activeTab === 'billing'}>
+            {t('billing.tab')}
           </button>
         </nav>
       </div>
@@ -335,6 +399,110 @@ export function SettingsPage() {
               {updateMutation.isPending ? t('settings.saving') : t('settings.saveSettings')}
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Billing Tab */}
+      {activeTab === 'billing' && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6 max-w-2xl">
+          {billingLoading ? (
+            <LoadingSpinner />
+          ) : (
+            <div className="space-y-6">
+              <section>
+                <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3">
+                  {t('billing.connectionStatus')}
+                </h3>
+                {billingStatus?.stripe_connected ? (
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                      {t('billing.connected')}
+                    </span>
+                    {billingStatus.stripe_account_id && (
+                      <span className="text-sm text-gray-500 font-mono">{billingStatus.stripe_account_id}</span>
+                    )}
+                  </div>
+                ) : (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                    {t('billing.notConnected')}
+                  </span>
+                )}
+              </section>
+
+              <section>
+                <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3">
+                  Stripe API Keys
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {t('billing.secretKey')}
+                    </label>
+                    <input
+                      type="password"
+                      value={billingForm.secret_key}
+                      onChange={(e) => setBillingForm((prev) => ({ ...prev, secret_key: e.target.value }))}
+                      placeholder={t('billing.secretKey')}
+                      aria-label={t('billing.secretKey')}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                    {billingFieldErrors.secret_key && (
+                      <p className="mt-1 text-xs text-red-600">{billingFieldErrors.secret_key}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {t('billing.publishableKey')}
+                    </label>
+                    <input
+                      type="text"
+                      value={billingForm.publishable_key}
+                      onChange={(e) => setBillingForm((prev) => ({ ...prev, publishable_key: e.target.value }))}
+                      placeholder={t('billing.publishableKey')}
+                      aria-label={t('billing.publishableKey')}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                    {billingFieldErrors.publishable_key && (
+                      <p className="mt-1 text-xs text-red-600">{billingFieldErrors.publishable_key}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {t('billing.webhookSecret')}
+                    </label>
+                    <input
+                      type="password"
+                      value={billingForm.webhook_secret}
+                      onChange={(e) => setBillingForm((prev) => ({ ...prev, webhook_secret: e.target.value }))}
+                      placeholder={t('billing.webhookSecret')}
+                      aria-label={t('billing.webhookSecret')}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">{t('billing.webhookSecretHint')}</p>
+                  </div>
+                </div>
+              </section>
+
+              {billingSaveSuccess && (
+                <div className="rounded-md bg-green-50 border border-green-200 p-3 text-sm text-green-700">
+                  {t('billing.savedSuccess')}
+                </div>
+              )}
+              {billingSaveError && (
+                <div className="rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+                  {billingSaveError}
+                </div>
+              )}
+
+              <button
+                onClick={handleBillingSave}
+                disabled={billingSaveMutation.isPending}
+                className="px-6 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+              >
+                {billingSaveMutation.isPending ? t('settings.saving') : t('billing.save')}
+              </button>
+            </div>
+          )}
         </div>
       )}
 

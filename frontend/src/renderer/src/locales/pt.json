@@ -490,6 +490,31 @@
     "noResults": "Nenhum estabelecimento corresponde à sua pesquisa.",
     "reactivate": "Reativar"
   },
+  "billing": {
+    "tab": "Faturamento",
+    "connectionStatus": "Conexão com Stripe",
+    "connected": "Conectado",
+    "notConnected": "Não conectado",
+    "secretKey": "Chave secreta",
+    "publishableKey": "Chave pública",
+    "webhookSecret": "Segredo do webhook (opcional)",
+    "webhookSecretHint": "Encontrado no Painel Stripe → Webhooks. Deixe em branco para manter o valor atual.",
+    "save": "Salvar",
+    "savedSuccess": "Configurações do Stripe salvas",
+    "secretKeyRequired": "A chave secreta é obrigatória",
+    "publishableKeyRequired": "A chave pública é obrigatória",
+    "subscription": "Assinatura Stripe",
+    "cancelSubscription": "Cancelar assinatura",
+    "cancelConfirm": "Cancelar esta assinatura no final do período atual?",
+    "status": {
+      "active": "Ativo",
+      "past_due": "Vencido",
+      "canceled": "Cancelado",
+      "incomplete": "Incompleto",
+      "unpaid": "Não pago",
+      "payment_overdue": "Pagamento atrasado"
+    }
+  },
   "instructors": {
     "title": "Instrutores",
     "subtitle": "Gerencie seu corpo docente",
