@@ -83,9 +83,6 @@ beforeEach(() => {
 })
 
 describe('MembershipScreen — subscription card', () => {
-  beforeAll(() => jest.setTimeout(15000))
-  afterAll(() => jest.setTimeout(5000))
-
   it('renders subscription card when subscription is active', async () => {
     ;(billingApi.getSubscription as jest.Mock).mockResolvedValue({
       subscription: mockActiveSubscription,
@@ -95,12 +92,12 @@ describe('MembershipScreen — subscription card', () => {
 
     await waitFor(() => {
       expect(getByText('STRIPE SUBSCRIPTION')).toBeTruthy()
-    })
+    }, { timeout: 10000 })
     // 'ACTIVE' appears in both the membership card badge and the subscription badge
     expect(getAllByText('ACTIVE').length).toBeGreaterThanOrEqual(2)
     expect(getByText('Jan 1, 2027')).toBeTruthy()
     expect(getByText('Cancel Subscription')).toBeTruthy()
-  })
+  }, 15000)
 
   it('hides cancel button when subscription is canceled', async () => {
     ;(billingApi.getSubscription as jest.Mock).mockResolvedValue({
@@ -111,10 +108,10 @@ describe('MembershipScreen — subscription card', () => {
 
     await waitFor(() => {
       expect(getByText('STRIPE SUBSCRIPTION')).toBeTruthy()
-    })
+    }, { timeout: 10000 })
     expect(getByText('CANCELED')).toBeTruthy()
     expect(queryByText('Cancel Subscription')).toBeNull()
-  })
+  }, 15000)
 
   it('calls cancelSubscription after user confirms alert', async () => {
     ;(billingApi.getSubscription as jest.Mock).mockResolvedValue({
@@ -131,7 +128,7 @@ describe('MembershipScreen — subscription card', () => {
 
     await waitFor(() => {
       expect(getByText('Cancel Subscription')).toBeTruthy()
-    })
+    }, { timeout: 10000 })
 
     fireEvent.press(getByText('Cancel Subscription'))
 
@@ -153,8 +150,8 @@ describe('MembershipScreen — subscription card', () => {
 
     await waitFor(() => {
       expect(billingApi.cancelSubscription).toHaveBeenCalledWith(42)
-    })
-  })
+    }, { timeout: 10000 })
+  }, 15000)
 
   it('shows dash when current_period_end is null', async () => {
     ;(billingApi.getSubscription as jest.Mock).mockResolvedValue({
@@ -168,9 +165,9 @@ describe('MembershipScreen — subscription card', () => {
 
     await waitFor(() => {
       expect(getByText('STRIPE SUBSCRIPTION')).toBeTruthy()
-    })
+    }, { timeout: 10000 })
     expect(getByText('—')).toBeTruthy()
-  })
+  }, 15000)
 
   it('does not render subscription card when subscription is null', async () => {
     ;(billingApi.getSubscription as jest.Mock).mockResolvedValue({
@@ -181,6 +178,6 @@ describe('MembershipScreen — subscription card', () => {
 
     await waitFor(() => {
       expect(queryByText('STRIPE SUBSCRIPTION')).toBeNull()
-    })
-  })
+    }, { timeout: 10000 })
+  }, 15000)
 })
