@@ -61,15 +61,39 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
   const [singleErrors, setSingleErrors] = useState<Record<string, string>>({})
   const [recurringErrors, setRecurringErrors] = useState<Record<string, string>>({})
 
-  // Sync defaultDate when it changes
   useEffect(() => {
-    if (defaultDate) {
-      const dateStr = format(defaultDate, 'yyyy-MM-dd')
-      const timeStr = format(defaultDate, 'HH:mm')
-      setSingleForm((f) => ({ ...f, date: dateStr, start_time: timeStr }))
-      setRecurringForm((f) => ({ ...f, first_date: dateStr, start_time: timeStr }))
+    if (isOpen) {
+      const dateStr = defaultDate ? format(defaultDate, 'yyyy-MM-dd') : ''
+      const timeStr = defaultDate ? format(defaultDate, 'HH:mm') : '09:00'
+      setSingleForm({
+        template_id: '',
+        date: dateStr,
+        start_time: timeStr,
+        duration_minutes: 60,
+        instructor_id: '',
+        location_id: '1',
+        capacity: 10,
+        notes: '',
+      })
+      setRecurringForm({
+        template_id: '',
+        first_date: dateStr,
+        start_time: timeStr,
+        duration_minutes: 60,
+        instructor_id: '',
+        location_id: '1',
+        capacity: 10,
+        recurrence_days: [],
+        end_date: '',
+        notes: '',
+      })
+      setSingleErrors({})
+      setRecurringErrors({})
+      setApiError(null)
+      setSuccessMessage(null)
+      setActiveTab('single')
     }
-  }, [defaultDate])
+  }, [isOpen, defaultDate])
 
   const { data: templates = [] } = useQuery({
     queryKey: ['class-templates'],

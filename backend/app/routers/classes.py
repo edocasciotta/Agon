@@ -18,6 +18,7 @@ from app.schemas.scheduled_class import (
 )
 from app.utils import utcnow
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1/classes", tags=["classes"])
@@ -124,9 +125,16 @@ def list_classes(
             status_code=401,
             detail={"error": {"code": "AUTH_TOKEN_INVALID", "message": "Invalid token type"}},
         )
+    confirmed_count = (
+        func.count(Booking.id)
+        .filter(Booking.status == "confirmed")
+        .label("booking_count")
+    )
     query = (
-        db.query(ScheduledClass, ClassTemplate.name.label("template_name"))
+        db.query(ScheduledClass, ClassTemplate.name.label("template_name"), confirmed_count)
         .outerjoin(ClassTemplate, ScheduledClass.template_id == ClassTemplate.id)
+        .outerjoin(Booking, Booking.scheduled_class_id == ScheduledClass.id)
+        .group_by(ScheduledClass.id)
     )
     if start_date:
         query = query.filter(ScheduledClass.starts_at >= datetime.fromisoformat(start_date))
@@ -142,9 +150,10 @@ def list_classes(
         query = query.filter(ScheduledClass.status == status)
     rows = query.order_by(ScheduledClass.starts_at).all()
     result = []
-    for sc, tname in rows:
+    for sc, tname, bcount in rows:
         r = ScheduledClassResponse.model_validate(sc)
         r.template_name = tname
+        r.booking_count = bcount or 0
         result.append(r)
     return result
 
@@ -177,10 +186,17 @@ def get_class(
             status_code=401,
             detail={"error": {"code": "AUTH_TOKEN_INVALID", "message": "Invalid token type"}},
         )
+    confirmed_count = (
+        func.count(Booking.id)
+        .filter(Booking.status == "confirmed")
+        .label("booking_count")
+    )
     row = (
-        db.query(ScheduledClass, ClassTemplate.name.label("template_name"))
+        db.query(ScheduledClass, ClassTemplate.name.label("template_name"), confirmed_count)
         .outerjoin(ClassTemplate, ScheduledClass.template_id == ClassTemplate.id)
+        .outerjoin(Booking, Booking.scheduled_class_id == ScheduledClass.id)
         .filter(ScheduledClass.id == class_id)
+        .group_by(ScheduledClass.id)
         .first()
     )
     if not row:
@@ -188,9 +204,10 @@ def get_class(
             status_code=404,
             detail={"error": {"code": "NOT_FOUND", "message": "Scheduled class not found"}},
         )
-    sc, tname = row
+    sc, tname, bcount = row
     r = ScheduledClassResponse.model_validate(sc)
     r.template_name = tname
+    r.booking_count = bcount or 0
     return r
 
 

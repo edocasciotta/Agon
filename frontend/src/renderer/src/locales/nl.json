@@ -169,6 +169,7 @@
     "end": "Einde",
     "statusLabel": "Status",
     "capacityLabel": "Capaciteit",
+    "booked": "geboekt",
     "notesLabel": "Notities",
     "cancelClass": "Les annuleren",
     "cancelling": "Annuleren...",

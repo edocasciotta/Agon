@@ -38,6 +38,7 @@ export interface ScheduledClass {
   starts_at: string
   ends_at: string
   capacity: number
+  booking_count: number
   status: 'scheduled' | 'cancelled' | 'completed'
   notes?: string
 }
