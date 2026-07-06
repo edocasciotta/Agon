@@ -147,7 +147,19 @@
     "assignMembership": "Assign membership",
     "viewReports": "View reports",
     "spotsFull": "Full",
-    "spotsAvailable": "{{booked}}/{{cap}}"
+    "spotsAvailable": "{{booked}}/{{cap}}",
+    "retentionRate": "Retention rate",
+    "churned": "{{n}} churned this month",
+    "checkinRate": "Check-in rate",
+    "avgPerClass": "Avg {{n}} per class",
+    "avgPaymentSub": "avg {{amount}} each",
+    "attendanceHighlights": "Attendance",
+    "topClasses": "Top class types",
+    "membersByType": "Members by plan",
+    "noData": "No data yet",
+    "avgClassSize": "Avg class size",
+    "totalBookings": "Bookings this month",
+    "busiestDay": "Busiest day"
   },
   "calendar": {
     "title": "Calendar",
@@ -340,7 +352,17 @@
     "pricePlaceholder": "e.g. 49.99",
     "creditsPlaceholder": "e.g. 10",
     "currency": "Currency",
-    "member": "Member"
+    "member": "Member",
+    "sellableOnline": "Online",
+    "sellableOnlineLabel": "Available for online purchase",
+    "editMembershipType": "Edit Membership Type",
+    "deactivate": "Deactivate",
+    "failedEdit": "Failed to update membership type",
+    "reactivate": "Reactivate",
+    "remove": "Remove",
+    "confirmRemoveTitle": "Remove membership plan?",
+    "confirmRemoveDesc": "This permanently deletes the plan. Only possible if no members have ever purchased it.",
+    "failedRemove": "Failed to remove membership type"
   },
   "reports": {
     "title": "Reports",

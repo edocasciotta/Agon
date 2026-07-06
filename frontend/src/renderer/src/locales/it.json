@@ -147,7 +147,19 @@
     "assignMembership": "Assegna abbonamento",
     "viewReports": "Vedi report",
     "spotsFull": "Piena",
-    "spotsAvailable": "{{booked}}/{{cap}}"
+    "spotsAvailable": "{{booked}}/{{cap}}",
+    "retentionRate": "Tasso di fidelizzazione",
+    "churned": "{{n}} persi questo mese",
+    "checkinRate": "Tasso di check-in",
+    "avgPerClass": "Media {{n}} per classe",
+    "avgPaymentSub": "media {{amount}} ciascuno",
+    "attendanceHighlights": "Presenze",
+    "topClasses": "Classi più popolari",
+    "membersByType": "Membri per piano",
+    "noData": "Nessun dato disponibile",
+    "avgClassSize": "Media per classe",
+    "totalBookings": "Prenotazioni questo mese",
+    "busiestDay": "Giorno più affollato"
   },
   "calendar": {
     "title": "Calendario",
@@ -338,7 +350,17 @@
     "pricePlaceholder": "es. 49.99",
     "creditsPlaceholder": "es. 10",
     "currency": "Valuta",
-    "member": "Membro"
+    "member": "Membro",
+    "sellableOnline": "Online",
+    "sellableOnlineLabel": "Disponibile per acquisto online",
+    "editMembershipType": "Modifica Tipo di Abbonamento",
+    "deactivate": "Disattiva",
+    "failedEdit": "Aggiornamento fallito",
+    "reactivate": "Riattiva",
+    "remove": "Rimuovi",
+    "confirmRemoveTitle": "Rimuovere il piano?",
+    "confirmRemoveDesc": "Elimina definitivamente il piano. Possibile solo se nessun membro lo ha mai acquistato.",
+    "failedRemove": "Impossibile rimuovere il tipo di abbonamento"
   },
   "reports": {
     "title": "Report",

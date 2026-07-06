@@ -181,6 +181,22 @@ def decode_qr_token(token: str) -> dict:
         )
 
 
+def require_authenticated(token: str = Depends(oauth2_scheme)):
+    """Dependency: requires any valid access token (manager, instructor, or client).
+
+    Use this on endpoints that must be authenticated but are not role-restricted —
+    e.g. reading public studio data, listing membership plans for purchase.
+    Returns the decoded JWT payload.
+    """
+    payload = decode_token(token)
+    if payload.get("type") != "access":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={"error": {"code": "AUTH_TOKEN_INVALID", "message": "Invalid token type"}},
+        )
+    return payload
+
+
 def require_manager(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     """Dependency: requires manager role.
 

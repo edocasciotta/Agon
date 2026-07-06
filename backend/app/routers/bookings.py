@@ -405,7 +405,7 @@ def create_booking(
         )
 
     now = utcnow()
-    if sc.starts_at <= now:
+    if role != "manager" and sc.starts_at <= now:
         raise HTTPException(
             status_code=409,
             detail={

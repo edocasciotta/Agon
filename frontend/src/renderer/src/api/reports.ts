@@ -1,5 +1,5 @@
 import { apiClient } from './client'
-import type { AttendanceReport, RevenueReport } from '../types'
+import type { AttendanceReport, RevenueReport, RetentionReport } from '../types'
 
 export const reportsApi = {
   attendance: async (params?: { start_date?: string; end_date?: string }): Promise<AttendanceReport> => {
@@ -14,7 +14,7 @@ export const reportsApi = {
     const res = await apiClient.get('/api/v1/reports/memberships')
     return res.data
   },
-  retentionReport: async () => {
+  retentionReport: async (): Promise<RetentionReport> => {
     const res = await apiClient.get('/api/v1/reports/retention')
     return res.data
   },

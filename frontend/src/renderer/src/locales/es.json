@@ -147,7 +147,19 @@
     "assignMembership": "Asignar membresía",
     "viewReports": "Ver informes",
     "spotsFull": "Llena",
-    "spotsAvailable": "{{booked}}/{{cap}}"
+    "spotsAvailable": "{{booked}}/{{cap}}",
+    "retentionRate": "Tasa de retención",
+    "churned": "{{n}} perdidos este mes",
+    "checkinRate": "Tasa de asistencia",
+    "avgPerClass": "Prom. {{n}} por clase",
+    "avgPaymentSub": "prom. {{amount}} c/u",
+    "attendanceHighlights": "Asistencia",
+    "topClasses": "Tipos de clase más populares",
+    "membersByType": "Miembros por plan",
+    "noData": "Sin datos",
+    "avgClassSize": "Tamaño prom. de clase",
+    "totalBookings": "Reservas este mes",
+    "busiestDay": "Día más concurrido"
   },
   "calendar": {
     "title": "Calendario",
@@ -330,7 +342,17 @@
     "pricePlaceholder": "ej. 49.99",
     "creditsPlaceholder": "ej. 10",
     "currency": "Moneda",
-    "member": "Miembro"
+    "member": "Miembro",
+    "sellableOnline": "Online",
+    "sellableOnlineLabel": "Disponible para compra online",
+    "editMembershipType": "Editar Tipo de Membresía",
+    "deactivate": "Desactivar",
+    "failedEdit": "Error al actualizar",
+    "reactivate": "Reactivar",
+    "remove": "Eliminar",
+    "confirmRemoveTitle": "¿Eliminar plan?",
+    "confirmRemoveDesc": "Elimina el plan permanentemente. Solo posible si ningún miembro lo ha comprado.",
+    "failedRemove": "Error al eliminar el tipo de membresía"
   },
   "reports": {
     "title": "Informes",

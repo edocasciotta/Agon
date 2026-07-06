@@ -28,6 +28,7 @@ export const membershipTypeSchema = z.object({
       'Credits must be at least 1'
     ),
   unlimited: z.boolean(),
+  sellable_online: z.boolean(),
 })
 
 export const classTypeSchema = z.object({

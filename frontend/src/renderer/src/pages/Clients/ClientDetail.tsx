@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
+import { ChevronLeft } from 'lucide-react'
 import { clientsApi } from '../../api/clients'
 import { membershipTypesApi, membershipsApi } from '../../api/memberships'
 import { billingApi } from '../../api/billing'
@@ -121,10 +122,11 @@ export function ClientDetail() {
         subtitle={client.email}
         action={
           <button
-            onClick={() => navigate('/clients')}
-            className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+            onClick={() => navigate(-1)}
+            aria-label={t('common.back')}
+            className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
           >
-            {t('clientDetail.back')}
+            <ChevronLeft className="w-5 h-5" />
           </button>
         }
       />

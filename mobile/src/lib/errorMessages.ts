@@ -6,6 +6,7 @@ export const errorMessages: Record<string, string> = {
   BOOKING_CLASS_ALREADY_STARTED: 'This class has already started.',
   AUTH_INVALID_CREDENTIALS: 'Invalid email or password.',
   AUTH_TOKEN_INVALID: 'Your session has expired. Please log in again.',
+  AUTH_INSUFFICIENT_PERMISSIONS: "You don't have permission to do that.",
   NOT_FOUND: 'Not found.',
   SERVER_ERROR: 'Something went wrong. Please try again.',
 }

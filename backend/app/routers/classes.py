@@ -5,6 +5,7 @@ from typing import List, Optional
 from app.auth import decode_token, get_current_user, oauth2_scheme, require_manager
 from app.database import get_db
 from app.models.booking import Booking
+from app.models.class_template import ClassTemplate
 from app.models.client import Client
 from app.models.scheduled_class import ScheduledClass
 from app.models.waitlist import Waitlist
@@ -123,7 +124,10 @@ def list_classes(
             status_code=401,
             detail={"error": {"code": "AUTH_TOKEN_INVALID", "message": "Invalid token type"}},
         )
-    query = db.query(ScheduledClass)
+    query = (
+        db.query(ScheduledClass, ClassTemplate.name.label("template_name"))
+        .outerjoin(ClassTemplate, ScheduledClass.template_id == ClassTemplate.id)
+    )
     if start_date:
         query = query.filter(ScheduledClass.starts_at >= datetime.fromisoformat(start_date))
     if end_date:
@@ -136,7 +140,13 @@ def list_classes(
         query = query.filter(ScheduledClass.location_id == location_id)
     if status is not None:
         query = query.filter(ScheduledClass.status == status)
-    return query.order_by(ScheduledClass.starts_at).all()
+    rows = query.order_by(ScheduledClass.starts_at).all()
+    result = []
+    for sc, tname in rows:
+        r = ScheduledClassResponse.model_validate(sc)
+        r.template_name = tname
+        result.append(r)
+    return result
 
 
 @router.post("", response_model=ScheduledClassResponse, status_code=status.HTTP_201_CREATED)
@@ -167,13 +177,21 @@ def get_class(
             status_code=401,
             detail={"error": {"code": "AUTH_TOKEN_INVALID", "message": "Invalid token type"}},
         )
-    sc = db.query(ScheduledClass).filter(ScheduledClass.id == class_id).first()
-    if not sc:
+    row = (
+        db.query(ScheduledClass, ClassTemplate.name.label("template_name"))
+        .outerjoin(ClassTemplate, ScheduledClass.template_id == ClassTemplate.id)
+        .filter(ScheduledClass.id == class_id)
+        .first()
+    )
+    if not row:
         raise HTTPException(
             status_code=404,
             detail={"error": {"code": "NOT_FOUND", "message": "Scheduled class not found"}},
         )
-    return sc
+    sc, tname = row
+    r = ScheduledClassResponse.model_validate(sc)
+    r.template_name = tname
+    return r
 
 
 @router.put("/{class_id}", response_model=ScheduledClassResponse)

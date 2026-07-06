@@ -7,6 +7,7 @@ import { instructorsApi } from '../api/instructors'
 import { locationsApi } from '../api/locations'
 import { classTemplatesApi } from '../api/classTemplates'
 import type { ScheduledClass, ClassTemplate } from '../types'
+import { resolveApiError } from '../lib/errorMessages'
 
 function addMinutes(dateStr: string, timeStr: string, minutes: number): string {
   const [h, m] = timeStr.split(':').map(Number)
@@ -91,8 +92,7 @@ export function EditClassModal({ isOpen, onClose, onSuccess, editClass, onCancel
       onClose()
     },
     onError: (err: unknown) => {
-      const msg = err instanceof Error ? err.message : t('editModal.failedSave')
-      setApiError(msg)
+      setApiError(resolveApiError(err, t('editModal.failedSave')))
     },
   })
 

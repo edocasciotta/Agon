@@ -147,7 +147,19 @@
     "assignMembership": "Assigner un abonnement",
     "viewReports": "Voir les rapports",
     "spotsFull": "Complet",
-    "spotsAvailable": "{{booked}}/{{cap}}"
+    "spotsAvailable": "{{booked}}/{{cap}}",
+    "retentionRate": "Taux de fidélisation",
+    "churned": "{{n}} perdus ce mois",
+    "checkinRate": "Taux de check-in",
+    "avgPerClass": "Moy. {{n}} par cours",
+    "avgPaymentSub": "moy. {{amount}} chacun",
+    "attendanceHighlights": "Présences",
+    "topClasses": "Types de cours populaires",
+    "membersByType": "Membres par forfait",
+    "noData": "Aucune donnée",
+    "avgClassSize": "Taille moy. d'un cours",
+    "totalBookings": "Réservations ce mois",
+    "busiestDay": "Jour le plus chargé"
   },
   "calendar": {
     "title": "Calendrier",
@@ -330,7 +342,17 @@
     "pricePlaceholder": "ex. 49.99",
     "creditsPlaceholder": "ex. 10",
     "currency": "Devise",
-    "member": "Membre"
+    "member": "Membre",
+    "sellableOnline": "En ligne",
+    "sellableOnlineLabel": "Disponible à l'achat en ligne",
+    "editMembershipType": "Modifier le Type d'Abonnement",
+    "deactivate": "Désactiver",
+    "failedEdit": "Échec de la mise à jour",
+    "reactivate": "Réactiver",
+    "remove": "Supprimer",
+    "confirmRemoveTitle": "Supprimer ce plan ?",
+    "confirmRemoveDesc": "Supprime définitivement le plan. Possible uniquement si aucun membre ne l'a jamais acheté.",
+    "failedRemove": "Échec de la suppression"
   },
   "reports": {
     "title": "Rapports",

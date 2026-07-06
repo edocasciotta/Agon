@@ -6,64 +6,66 @@ import type { Booking } from '../../src/types'
 import { useAuthStore } from '../../src/store/authStore'
 import { useStudioStore } from '../../src/store/studioStore'
 import { LoadingView } from '../../src/components/LoadingView'
-import { format, parseISO, differenceInMinutes, isAfter } from 'date-fns'
+import { LanguagePicker } from '../../src/components/LanguagePicker'
+import { useT } from '../../src/i18n'
 
-function getGreeting(): string {
+function useGreeting(t: (key: string) => string): string {
   const hour = new Date().getHours()
-  if (hour < 12) return 'Good morning'
-  if (hour < 18) return 'Good afternoon'
-  return 'Good evening'
+  if (hour < 12) return t('home.morning')
+  if (hour < 18) return t('home.afternoon')
+  return t('home.evening')
 }
 
 export default function HomeScreen() {
+  const t = useT()
   const user = useAuthStore((s) => s.user)
   const studioName = useStudioStore((s) => s.studioName)
   const router = useRouter()
+  const greeting = useGreeting(t)
 
   const { data: bookings, isLoading } = useQuery({
     queryKey: ['bookings'],
     queryFn: bookingsApi.list,
   })
 
-  const now = new Date()
-  const upcomingBookings = (bookings ?? [])
-    .filter((b: Booking) => b.status === 'confirmed' && isAfter(parseISO(b.created_at), new Date(0)))
-    .sort((a: Booking, b: Booking) => 0) // sorted by class time ideally but we only have booking created_at
-
-  // For home screen we just show total upcoming count
   const confirmedCount = (bookings ?? []).filter((b: Booking) => b.status === 'confirmed').length
 
-  if (isLoading) return <LoadingView message="Loading your schedule..." />
+  if (isLoading) return <LoadingView message={t('home.loading')} />
 
   const firstName = user?.full_name?.split(' ')[0] ?? 'there'
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <Text style={styles.greeting}>{getGreeting()}, {firstName}</Text>
-        {studioName && <Text style={styles.studioName}>{studioName}</Text>}
+      <View style={styles.headerRow}>
+        <View style={styles.headerText}>
+          <Text style={styles.greeting}>{greeting}, {firstName}</Text>
+          {studioName && <Text style={styles.studioName}>{studioName}</Text>}
+        </View>
+        <LanguagePicker />
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Your Bookings</Text>
+        <Text style={styles.cardTitle}>{t('home.yourBookings')}</Text>
         <Text style={styles.cardValue}>{confirmedCount}</Text>
-        <Text style={styles.cardSubtitle}>upcoming {confirmedCount === 1 ? 'class' : 'classes'}</Text>
+        <Text style={styles.cardSubtitle}>
+          {confirmedCount === 1 ? t('home.upcomingClass') : t('home.upcomingClasses')}
+        </Text>
       </View>
 
       <View style={styles.quickActions}>
-        <Text style={styles.sectionTitle}>Quick Actions</Text>
+        <Text style={styles.sectionTitle}>{t('home.quickActions')}</Text>
         <TouchableOpacity
           style={styles.actionButton}
           onPress={() => router.push('/(tabs)/classes')}
         >
-          <Text style={styles.actionButtonText}>Browse Classes</Text>
+          <Text style={styles.actionButtonText}>{t('home.browseClasses')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.actionButton, styles.actionButtonSecondary]}
           onPress={() => router.push('/(tabs)/bookings')}
         >
           <Text style={[styles.actionButtonText, styles.actionButtonTextSecondary]}>
-            View My Bookings
+            {t('home.viewBookings')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -79,8 +81,15 @@ const styles = StyleSheet.create({
   content: {
     padding: 20,
   },
-  header: {
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
     marginBottom: 24,
+  },
+  headerText: {
+    flex: 1,
+    marginRight: 12,
   },
   greeting: {
     fontSize: 26,

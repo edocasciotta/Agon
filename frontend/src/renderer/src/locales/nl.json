@@ -147,7 +147,19 @@
     "assignMembership": "Lidmaatschap toewijzen",
     "viewReports": "Rapporten bekijken",
     "spotsFull": "Vol",
-    "spotsAvailable": "{{booked}}/{{cap}}"
+    "spotsAvailable": "{{booked}}/{{cap}}",
+    "retentionRate": "Retentiegraad",
+    "churned": "{{n}} vertrokken deze maand",
+    "checkinRate": "Check-in percentage",
+    "avgPerClass": "Gem. {{n}} per les",
+    "avgPaymentSub": "gem. {{amount}} per betaling",
+    "attendanceHighlights": "Aanwezigheid",
+    "topClasses": "Populairste lestypen",
+    "membersByType": "Leden per plan",
+    "noData": "Geen gegevens",
+    "avgClassSize": "Gem. lesgrootte",
+    "totalBookings": "Boekingen deze maand",
+    "busiestDay": "Drukste dag"
   },
   "calendar": {
     "title": "Agenda",
@@ -330,7 +342,17 @@
     "pricePlaceholder": "bijv. 49.99",
     "creditsPlaceholder": "bijv. 10",
     "currency": "Valuta",
-    "member": "Lid"
+    "member": "Lid",
+    "sellableOnline": "Online",
+    "sellableOnlineLabel": "Beschikbaar voor online aankoop",
+    "editMembershipType": "Lidmaatschapstype bewerken",
+    "deactivate": "Deactiveren",
+    "failedEdit": "Bijwerken mislukt",
+    "reactivate": "Reactiveren",
+    "remove": "Verwijderen",
+    "confirmRemoveTitle": "Lidmaatschapsplan verwijderen?",
+    "confirmRemoveDesc": "Verwijdert het plan permanent. Alleen mogelijk als geen enkel lid het ooit heeft gekocht.",
+    "failedRemove": "Verwijderen mislukt"
   },
   "reports": {
     "title": "Rapporten",

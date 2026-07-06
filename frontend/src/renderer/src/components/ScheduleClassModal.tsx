@@ -7,6 +7,7 @@ import { classTemplatesApi } from '../api/classTemplates'
 import { instructorsApi } from '../api/instructors'
 import { locationsApi } from '../api/locations'
 import type { ClassTemplate } from '../types'
+import { resolveApiError } from '../lib/errorMessages'
 
 interface ScheduleClassModalProps {
   isOpen: boolean
@@ -122,8 +123,7 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
       onClose()
     },
     onError: (err: unknown) => {
-      const msg = err instanceof Error ? err.message : t('scheduleModal.failedSchedule')
-      setApiError(msg)
+      setApiError(resolveApiError(err, t('scheduleModal.failedSchedule')))
     },
   })
 
@@ -137,8 +137,7 @@ export function ScheduleClassModal({ isOpen, onClose, onSuccess, defaultDate }: 
       }, 1500)
     },
     onError: (err: unknown) => {
-      const msg = err instanceof Error ? err.message : t('scheduleModal.failedScheduleRecurring')
-      setApiError(msg)
+      setApiError(resolveApiError(err, t('scheduleModal.failedScheduleRecurring')))
     },
   })
 

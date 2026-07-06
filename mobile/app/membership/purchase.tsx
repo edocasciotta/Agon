@@ -9,6 +9,7 @@ import {
   Linking,
 } from 'react-native'
 import { useState } from 'react'
+import { Stack } from 'expo-router'
 import { useQuery } from '@tanstack/react-query'
 import { membershipTypesApi, billingApi } from '../../src/api/memberships'
 import { LoadingView } from '../../src/components/LoadingView'
@@ -32,7 +33,9 @@ export default function PurchaseScreen() {
   if (isLoading) return <LoadingView message="Loading membership options..." />
   if (error) return <ErrorView code={(error as unknown as ApiError).code} />
 
-  const onlineTypes = (types ?? []).filter((t: MembershipType) => t.sellable_online)
+  const activeTypes = (types ?? []).filter(
+    (t: MembershipType) => t.is_active !== false && t.sellable_online
+  )
 
   const handlePurchase = async (type: MembershipType) => {
     if (!user) return
@@ -49,10 +52,11 @@ export default function PurchaseScreen() {
 
   return (
     <View style={styles.wrapper}>
+      <Stack.Screen options={{ title: 'Membership Plans' }} />
       <OfflineBanner />
       <FlatList
         style={styles.container}
-        data={onlineTypes}
+        data={activeTypes}
         keyExtractor={(item) => String(item.id)}
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={
@@ -61,7 +65,7 @@ export default function PurchaseScreen() {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>
-              No membership options are available for online purchase.
+              No membership plans are currently available. Contact your studio.
             </Text>
           </View>
         }

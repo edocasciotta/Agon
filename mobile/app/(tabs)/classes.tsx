@@ -74,7 +74,7 @@ export default function ClassesScreen() {
             <Text style={styles.durationText}>{formatDuration(item.starts_at, item.ends_at)}</Text>
           </View>
           <View style={styles.classInfo}>
-            <Text style={styles.classId}>Class #{item.id}</Text>
+            <Text style={styles.classId}>{item.template_name ?? `Class #${item.id}`}</Text>
             {item.notes ? (
               <Text style={styles.classNotes} numberOfLines={1}>{item.notes}</Text>
             ) : null}

@@ -65,6 +65,7 @@ export interface MembershipType {
   credits_included?: number
   unlimited: boolean
   is_active: boolean
+  sellable_online: boolean
 }
 
 export interface Membership {
@@ -152,6 +153,8 @@ export interface AttendanceReport {
   avg_class_size: number
   classes_cancelled: number
   classes_completed: number
+  busiest_day?: string
+  by_class_template: { template_name: string; classes: number; bookings: number; checkins: number }[]
 }
 
 export interface RevenueReport {
@@ -160,4 +163,14 @@ export interface RevenueReport {
   currency: string
   payment_count: number
   avg_payment: number
+  by_membership_type: { name: string; revenue: number; count: number }[]
+}
+
+export interface RetentionReport {
+  period: { start: string; end: string }
+  total_clients: number
+  active_clients: number
+  new_clients: number
+  churned_clients: number
+  retention_rate: number
 }

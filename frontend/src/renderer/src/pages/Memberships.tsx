@@ -7,29 +7,46 @@ import { clientsApi } from '../api/clients'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { PageHeader } from '../components/PageHeader'
 import { EmptyState } from '../components/EmptyState'
-import type { ApiError } from '../api/client'
 import type { MembershipType } from '../types'
 import { membershipTypeSchema } from '../lib/formSchemas'
+import { resolveApiError } from '../lib/errorMessages'
+
+const EMPTY_CREATE = {
+  name: '',
+  type: 'recurring' as 'recurring' | 'credit_pack',
+  price: '',
+  currency: 'USD',
+  credits_included: '',
+  unlimited: false,
+  sellable_online: false,
+}
 
 export function MembershipsPage() {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+
   const [statusFilter, setStatusFilter] = useState('')
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
-  const [formData, setFormData] = useState({
-    name: '',
-    type: 'recurring' as 'recurring' | 'credit_pack',
-    price: '',
-    currency: 'USD',
-    credits_included: '',
-    unlimited: false,
-  })
+  const [formData, setFormData] = useState(EMPTY_CREATE)
 
+  const [editingType, setEditingType] = useState<MembershipType | null>(null)
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    price: '',
+    sellable_online: false,
+    is_active: true,
+  })
+  const [editError, setEditError] = useState<string | null>(null)
+
+  const [confirmRemoveId, setConfirmRemoveId] = useState<number | null>(null)
+  const [removeError, setRemoveError] = useState<string | null>(null)
+
+  // Include inactive so deactivated plans remain visible and manageable
   const { data: membershipTypes, isLoading: typesLoading } = useQuery({
-    queryKey: ['membership-types'],
-    queryFn: () => membershipTypesApi.list(),
+    queryKey: ['membership-types', 'include-inactive'],
+    queryFn: () => membershipTypesApi.list(true),
   })
 
   const { data: memberships, isLoading: membershipsLoading } = useQuery({
@@ -37,7 +54,7 @@ export function MembershipsPage() {
     queryFn: () => membershipsApi.list(),
   })
 
-  const { data: clientsPage } = useQuery({
+  const { data: clientsPage, isLoading: clientsLoading } = useQuery({
     queryKey: ['clients', 'all-for-memberships'],
     queryFn: () => clientsApi.list(undefined, 1, 1000),
   })
@@ -55,9 +72,49 @@ export function MembershipsPage() {
       queryClient.invalidateQueries({ queryKey: ['membership-types'] })
       setShowCreateModal(false)
       setCreateError(null)
+      setFormData(EMPTY_CREATE)
     },
-    onError: (err: ApiError) => {
-      setCreateError(err.message ?? t('memberships.failedCreate'))
+    onError: (err: unknown) => {
+      setCreateError(resolveApiError(err, t('memberships.failedCreate')))
+    },
+  })
+
+  const editTypeMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<MembershipType> }) =>
+      membershipTypesApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['membership-types'] })
+      setEditingType(null)
+      setEditError(null)
+    },
+    onError: (err: unknown) => {
+      setEditError(resolveApiError(err, t('memberships.failedEdit')))
+    },
+  })
+
+  const deactivateMutation = useMutation({
+    mutationFn: (id: number) => membershipTypesApi.deactivate(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['membership-types'] })
+    },
+  })
+
+  const reactivateMutation = useMutation({
+    mutationFn: (id: number) => membershipTypesApi.reactivate(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['membership-types'] })
+    },
+  })
+
+  const removeMutation = useMutation({
+    mutationFn: (id: number) => membershipTypesApi.remove(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['membership-types'] })
+      setConfirmRemoveId(null)
+      setRemoveError(null)
+    },
+    onError: (err: unknown) => {
+      setRemoveError(resolveApiError(err, t('memberships.failedRemove')))
     },
   })
 
@@ -74,12 +131,43 @@ export function MembershipsPage() {
       currency: formData.currency,
       credits_included: formData.credits_included ? Number(formData.credits_included) : undefined,
       unlimited: formData.unlimited,
+      sellable_online: formData.sellable_online,
+    })
+  }
+
+  const openEdit = (mt: MembershipType) => {
+    setEditingType(mt)
+    setEditFormData({
+      name: mt.name,
+      price: String(mt.price),
+      sellable_online: mt.sellable_online,
+      is_active: mt.is_active,
+    })
+    setEditError(null)
+  }
+
+  const handleEdit = () => {
+    if (!editingType) return
+    if (!editFormData.name.trim()) {
+      setEditError(t('memberships.nameRequired'))
+      return
+    }
+    editTypeMutation.mutate({
+      id: editingType.id,
+      data: {
+        name: editFormData.name,
+        price: Number(editFormData.price),
+        sellable_online: editFormData.sellable_online,
+        is_active: editFormData.is_active,
+      },
     })
   }
 
   const filteredMemberships = statusFilter
     ? (memberships ?? []).filter((m: { status: string }) => m.status === statusFilter)
     : (memberships ?? [])
+
+  const confirmRemoveType = membershipTypes?.find((mt) => mt.id === confirmRemoveId)
 
   return (
     <div>
@@ -121,12 +209,14 @@ export function MembershipsPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('memberships.type')}</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('memberships.price')}</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('memberships.credits')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('memberships.sellableOnline')}</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('memberships.isActive')}</th>
+                  <th className="px-6 py-3" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {membershipTypes.map((mt) => (
-                  <tr key={mt.id}>
+                  <tr key={mt.id} className={mt.is_active ? '' : 'bg-gray-50 opacity-60'}>
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">{mt.name}</td>
                     <td className="px-6 py-4 text-sm text-gray-500">
                       {mt.type === 'recurring' ? t('memberships.recurring') : t('memberships.creditPack')}
@@ -137,10 +227,50 @@ export function MembershipsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
-                        mt.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                        mt.sellable_online ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500'
+                      }`}>
+                        {mt.sellable_online ? t('memberships.yes') : t('memberships.no')}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
+                        mt.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
                       }`}>
                         {mt.is_active ? t('memberships.yes') : t('memberships.no')}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => openEdit(mt)}
+                          className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                        >
+                          {t('common.edit')}
+                        </button>
+                        {mt.is_active ? (
+                          <button
+                            onClick={() => deactivateMutation.mutate(mt.id)}
+                            disabled={deactivateMutation.isPending}
+                            className="text-xs text-amber-600 hover:text-amber-800 font-medium disabled:opacity-50"
+                          >
+                            {t('memberships.deactivate')}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => reactivateMutation.mutate(mt.id)}
+                            disabled={reactivateMutation.isPending}
+                            className="text-xs text-green-600 hover:text-green-800 font-medium disabled:opacity-50"
+                          >
+                            {t('memberships.reactivate')}
+                          </button>
+                        )}
+                        <button
+                          onClick={() => { setConfirmRemoveId(mt.id); setRemoveError(null) }}
+                          className="text-xs text-red-600 hover:text-red-800 font-medium"
+                        >
+                          {t('memberships.remove')}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -165,7 +295,7 @@ export function MembershipsPage() {
             <option value="cancelled">{t('memberships.cancelled')}</option>
           </select>
         </div>
-        {membershipsLoading ? (
+        {membershipsLoading || clientsLoading ? (
           <LoadingSpinner />
         ) : (
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -277,6 +407,16 @@ export function MembershipsPage() {
                 />
                 <label htmlFor="unlimited" className="text-sm text-gray-700">{t('memberships.unlimitedClasses')}</label>
               </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="sellable_online"
+                  checked={formData.sellable_online}
+                  onChange={(e) => setFormData({ ...formData, sellable_online: e.target.checked })}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="sellable_online" className="text-sm text-gray-700">{t('memberships.sellableOnlineLabel')}</label>
+              </div>
               {createError && (
                 <div className="rounded-md bg-red-50 p-3 text-sm text-red-700 border border-red-200">{createError}</div>
               )}
@@ -295,6 +435,104 @@ export function MembershipsPage() {
                   {t('memberships.cancel')}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Type Modal */}
+      {editingType && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50" onClick={() => { setEditingType(null); setEditError(null) }}>
+          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('memberships.editMembershipType')}</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('memberships.membershipName')}</label>
+                <input
+                  type="text"
+                  value={editFormData.name}
+                  onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('memberships.price')}</label>
+                <input
+                  type="number"
+                  value={editFormData.price}
+                  onChange={(e) => setEditFormData({ ...editFormData, price: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="edit_sellable_online"
+                  checked={editFormData.sellable_online}
+                  onChange={(e) => setEditFormData({ ...editFormData, sellable_online: e.target.checked })}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="edit_sellable_online" className="text-sm text-gray-700">{t('memberships.sellableOnlineLabel')}</label>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="edit_is_active"
+                  checked={editFormData.is_active}
+                  onChange={(e) => setEditFormData({ ...editFormData, is_active: e.target.checked })}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="edit_is_active" className="text-sm text-gray-700">{t('memberships.isActive')}</label>
+              </div>
+              {editError && (
+                <div className="rounded-md bg-red-50 p-3 text-sm text-red-700 border border-red-200">{editError}</div>
+              )}
+              <div className="flex gap-2">
+                <button
+                  onClick={handleEdit}
+                  disabled={editTypeMutation.isPending}
+                  className="flex-1 py-2 px-4 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                >
+                  {editTypeMutation.isPending ? t('common.saving') : t('common.save')}
+                </button>
+                <button
+                  onClick={() => { setEditingType(null); setEditError(null) }}
+                  className="flex-1 py-2 px-4 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
+                >
+                  {t('common.cancel')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Remove Confirmation Dialog */}
+      {confirmRemoveId !== null && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50" onClick={() => { setConfirmRemoveId(null); setRemoveError(null) }}>
+          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-base font-semibold text-gray-900 mb-2">{t('memberships.confirmRemoveTitle')}</h2>
+            {confirmRemoveType && (
+              <p className="text-sm font-medium text-indigo-700 mb-3">"{confirmRemoveType.name}"</p>
+            )}
+            <p className="text-sm text-gray-600 mb-4">{t('memberships.confirmRemoveDesc')}</p>
+            {removeError && (
+              <div className="rounded-md bg-red-50 p-3 text-sm text-red-700 border border-red-200 mb-4">{removeError}</div>
+            )}
+            <div className="flex gap-2">
+              <button
+                onClick={() => removeMutation.mutate(confirmRemoveId)}
+                disabled={removeMutation.isPending}
+                className="flex-1 py-2 px-4 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 disabled:opacity-50 transition-colors"
+              >
+                {removeMutation.isPending ? t('common.loading') : t('memberships.remove')}
+              </button>
+              <button
+                onClick={() => { setConfirmRemoveId(null); setRemoveError(null) }}
+                className="flex-1 py-2 px-4 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
+              >
+                {t('common.cancel')}
+              </button>
             </div>
           </div>
         </div>

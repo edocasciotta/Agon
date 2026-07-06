@@ -17,6 +17,7 @@ class MembershipTypeCreate(BaseModel):
     validity_days: Optional[int] = None
     can_pause: bool = False
     max_pause_days: Optional[int] = None
+    sellable_online: bool = False
 
 
 class MembershipTypeUpdate(BaseModel):
@@ -30,6 +31,7 @@ class MembershipTypeUpdate(BaseModel):
     can_pause: Optional[bool] = None
     max_pause_days: Optional[int] = None
     is_active: Optional[bool] = None
+    sellable_online: Optional[bool] = None
 
 
 class MembershipTypeResponse(BaseModel):
@@ -47,6 +49,7 @@ class MembershipTypeResponse(BaseModel):
     can_pause: bool
     max_pause_days: Optional[int] = None
     is_active: bool
+    sellable_online: bool
     created_at: datetime
     updated_at: datetime
     model_config = {"from_attributes": True}

@@ -2,13 +2,30 @@ import { apiClient } from './client'
 import type { MembershipType, Membership } from '../types'
 
 export const membershipTypesApi = {
-  list: async (): Promise<MembershipType[]> => {
-    const res = await apiClient.get('/api/v1/membership-types')
+  list: async (includeInactive = false): Promise<MembershipType[]> => {
+    const res = await apiClient.get('/api/v1/membership-types', {
+      params: includeInactive ? { include_inactive: true } : {},
+    })
     return res.data
   },
   create: async (data: Partial<MembershipType>) => {
     const res = await apiClient.post('/api/v1/membership-types', data)
     return res.data
+  },
+  update: async (id: number, data: Partial<MembershipType>): Promise<MembershipType> => {
+    const res = await apiClient.put(`/api/v1/membership-types/${id}`, data)
+    return res.data
+  },
+  deactivate: async (id: number): Promise<MembershipType> => {
+    const res = await apiClient.delete(`/api/v1/membership-types/${id}`)
+    return res.data
+  },
+  reactivate: async (id: number): Promise<MembershipType> => {
+    const res = await apiClient.patch(`/api/v1/membership-types/${id}/reactivate`)
+    return res.data
+  },
+  remove: async (id: number): Promise<void> => {
+    await apiClient.delete(`/api/v1/membership-types/${id}/remove`)
   },
 }
 

@@ -1,6 +1,7 @@
 export interface ScheduledClass {
   id: number
   template_id: number
+  template_name?: string
   starts_at: string
   ends_at: string
   capacity: number
@@ -37,6 +38,7 @@ export interface MembershipType {
   credits_included?: number
   unlimited: boolean
   sellable_online: boolean
+  is_active?: boolean
 }
 
 export interface NotificationLog {

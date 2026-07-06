@@ -53,6 +53,7 @@ class ScheduledClassUpdate(BaseModel):
 class ScheduledClassResponse(BaseModel):
     id: int
     template_id: int
+    template_name: Optional[str] = None
     instructor_id: Optional[int] = None
     location_id: int = 1
     starts_at: datetime

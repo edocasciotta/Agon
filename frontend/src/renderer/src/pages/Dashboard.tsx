@@ -10,10 +10,10 @@ import {
   isSameDay,
 } from 'date-fns'
 import {
-  Users,
-  CalendarDays,
   BadgeCheck,
   Banknote,
+  TrendingUp,
+  Activity,
   CalendarPlus,
   UserPlus,
   CreditCard,
@@ -23,13 +23,13 @@ import {
 import { classesApi } from '../api/classes'
 import { classTemplatesApi } from '../api/classTemplates'
 import { instructorsApi } from '../api/instructors'
-import { clientsApi } from '../api/clients'
-import { reportsApi } from '../api/reports'
 import { locationsApi } from '../api/locations'
+import { reportsApi } from '../api/reports'
+import { studioApi } from '../api/studio'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import type { ScheduledClass, ClassTemplate } from '../types'
 
-// ─── helpers ────────────────────────────────────────────────────────────────
+// ─── helpers ─────────────────────────────────────────────────────────────────
 
 function greeting(t: (k: string) => string): string {
   const h = new Date().getHours()
@@ -43,40 +43,38 @@ function fmtMoney(value: number, currency?: string): string {
   return `${sym}${value.toLocaleString('it-IT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
 }
 
-// ─── sub-components ─────────────────────────────────────────────────────────
+// ─── sub-components ──────────────────────────────────────────────────────────
 
 interface KpiCardProps {
   icon: LucideIcon
   label: string
   value: string | number
   sub?: string
-  accentClass: string
-  iconBg: string
-  iconColor: string
+  accent: string
   loading?: boolean
 }
 
-function KpiCard({ icon: Icon, label, value, sub, accentClass, iconBg, iconColor, loading }: KpiCardProps) {
+function KpiCard({ icon: Icon, label, value, sub, accent, loading }: KpiCardProps) {
   return (
-    <div className="bg-white border border-gray-100 rounded-xl overflow-hidden relative">
-      <div className={`h-0.5 w-full ${accentClass}`} />
+    <div className="bg-white border border-gray-100 rounded-xl overflow-hidden">
+      <div className="h-0.5 w-full" style={{ background: accent }} />
       <div className="p-5">
         <div
           className="w-8 h-8 rounded-lg flex items-center justify-center mb-3"
-          style={{ background: iconBg, color: iconColor }}
+          style={{ background: `${accent}20`, color: accent }}
         >
           <Icon size={16} strokeWidth={1.75} />
         </div>
         {loading ? (
-          <div className="mt-1"><LoadingSpinner size="sm" /></div>
+          <div className="mt-1">
+            <LoadingSpinner size="sm" />
+          </div>
         ) : (
           <div className="text-2xl font-medium text-gray-900 leading-none">{value}</div>
         )}
         <div className="text-xs text-gray-500 mt-1">{label}</div>
         {sub && (
-          <div className="text-[11px] text-gray-400 mt-2.5 pt-2.5 border-t border-gray-100">
-            {sub}
-          </div>
+          <div className="text-[11px] text-gray-400 mt-2.5 pt-2.5 border-t border-gray-100">{sub}</div>
         )}
       </div>
     </div>
@@ -88,19 +86,18 @@ interface ClassRowProps {
   template?: ClassTemplate
   instructorName?: string
   locationName?: string
+  accent: string
 }
 
-function ClassRow({ cls, template, instructorName, locationName }: ClassRowProps) {
-  const color = template?.color ?? '#4F46E5'
+function ClassRow({ cls, template, instructorName, locationName, accent }: ClassRowProps) {
   const starts = new Date(cls.starts_at)
-  const isFuture = starts > new Date()
   const isPast = new Date(cls.ends_at) < new Date()
 
   return (
     <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors">
       <span
         className="w-2 h-2 rounded-full flex-shrink-0"
-        style={{ background: isPast ? '#d1d5db' : color }}
+        style={{ background: isPast ? '#d1d5db' : accent }}
       />
       <span className="text-[11px] font-medium text-gray-400 w-10 flex-shrink-0">
         {format(starts, 'HH:mm')}
@@ -116,8 +113,8 @@ function ClassRow({ cls, template, instructorName, locationName }: ClassRowProps
       <span
         className="flex-shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-full"
         style={
-          isFuture
-            ? { background: `${color}18`, color }
+          !isPast
+            ? { background: `${accent}18`, color: accent }
             : { background: '#f3f4f6', color: '#9ca3af' }
         }
       >
@@ -130,12 +127,11 @@ function ClassRow({ cls, template, instructorName, locationName }: ClassRowProps
 interface QuickActionProps {
   icon: LucideIcon
   label: string
-  iconBg: string
-  iconColor: string
+  accent: string
   onClick: () => void
 }
 
-function QuickAction({ icon: Icon, label, iconBg, iconColor, onClick }: QuickActionProps) {
+function QuickAction({ icon: Icon, label, accent, onClick }: QuickActionProps) {
   return (
     <button
       onClick={onClick}
@@ -143,7 +139,7 @@ function QuickAction({ icon: Icon, label, iconBg, iconColor, onClick }: QuickAct
     >
       <span
         className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0"
-        style={{ background: iconBg, color: iconColor }}
+        style={{ background: `${accent}18`, color: accent }}
       >
         <Icon size={15} strokeWidth={1.75} />
       </span>
@@ -153,18 +149,61 @@ function QuickAction({ icon: Icon, label, iconBg, iconColor, onClick }: QuickAct
   )
 }
 
-// ─── main component ──────────────────────────────────────────────────────────
+function BarRow({
+  label,
+  value,
+  max,
+  accent,
+  sub,
+}: {
+  label: string
+  value: number
+  max: number
+  accent: string
+  sub?: string
+}) {
+  const pct = max > 0 ? Math.round((value / max) * 100) : 0
+  return (
+    <div className="mb-3 last:mb-0">
+      <div className="flex justify-between items-baseline mb-1">
+        <span className="text-sm text-gray-700 truncate max-w-[70%]">{label}</span>
+        <span className="text-xs text-gray-400 ml-2 flex-shrink-0">{sub ?? value}</span>
+      </div>
+      <div className="w-full bg-gray-100 rounded-full h-1">
+        <div
+          className="h-1 rounded-full transition-all"
+          style={{ width: `${pct}%`, background: accent }}
+        />
+      </div>
+    </div>
+  )
+}
+
+function StatCell({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="p-3 bg-gray-50 rounded-lg">
+      <div className="text-base font-semibold text-gray-900">{value}</div>
+      <div className="text-[11px] text-gray-500 mt-0.5">{label}</div>
+    </div>
+  )
+}
+
+// ─── main component ───────────────────────────────────────────────────────────
 
 export function Dashboard() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const now = new Date()
 
-  const today = format(now, 'yyyy-MM-dd')
   const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd')
   const weekEnd = format(endOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd')
   const monthStart = format(startOfMonth(now), 'yyyy-MM-dd')
   const monthEnd = format(endOfMonth(now), 'yyyy-MM-dd')
+
+  const { data: studioSettings } = useQuery({
+    queryKey: ['studio'],
+    queryFn: () => studioApi.get(),
+  })
 
   const { data: allClasses, isLoading: classesLoading } = useQuery({
     queryKey: ['classes', weekStart, weekEnd],
@@ -186,11 +225,6 @@ export function Dashboard() {
     queryFn: () => locationsApi.list(false),
   })
 
-  const { data: clients, isLoading: clientsLoading } = useQuery({
-    queryKey: ['clients', 'dashboard'],
-    queryFn: () => clientsApi.list(undefined, 1, 100),
-  })
-
   const { data: membershipsReport, isLoading: membershipsLoading } = useQuery({
     queryKey: ['reports', 'memberships'],
     queryFn: () => reportsApi.membershipsReport(),
@@ -201,7 +235,21 @@ export function Dashboard() {
     queryFn: () => reportsApi.revenue({ start_date: monthStart, end_date: monthEnd }),
   })
 
-  // Derived values
+  const { data: retentionReport, isLoading: retentionLoading } = useQuery({
+    queryKey: ['reports', 'retention'],
+    queryFn: () => reportsApi.retentionReport(),
+  })
+
+  const { data: attendanceReport, isLoading: attendanceLoading } = useQuery({
+    queryKey: ['reports', 'attendance', monthStart, monthEnd],
+    queryFn: () => reportsApi.attendance({ start_date: monthStart, end_date: monthEnd }),
+  })
+
+  // Studio brand colors — only these two are used everywhere
+  const primary = studioSettings?.primary_color ?? '#4f46e5'
+  const secondary = studioSettings?.secondary_color ?? '#10b981'
+
+  // Derived maps
   const templateMap: Record<number, ClassTemplate> = {}
   if (templates) for (const tpl of templates) templateMap[tpl.id] = tpl
 
@@ -212,25 +260,33 @@ export function Dashboard() {
   if (locations) for (const loc of locations) locationMap[loc.id] = loc.name
   const multipleLocations = (locations?.length ?? 0) > 1
 
+  // Today's classes
   const todayClasses = (allClasses ?? [])
     .filter((c) => isSameDay(new Date(c.starts_at), now) && c.status !== 'cancelled')
     .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())
 
-  const weekScheduled = (allClasses ?? []).filter((c) => c.status === 'scheduled').length
-  const weekCancelled = (allClasses ?? []).filter((c) => c.status === 'cancelled').length
-
-  // New clients this month (based on the most recent 100 clients)
-  const newClientsThisMonth = (clients?.items ?? []).filter((c: any) => {
-    if (!c.created_at) return false
-    const d = new Date(c.created_at)
-    return d >= startOfMonth(now) && d <= endOfMonth(now)
-  }).length
-
+  // KPI values
+  const activeMembers = membershipsReport?.total_active ?? 0
+  const expiringSoon = membershipsReport?.expiring_soon ?? 0
   const revenue = revenueReport?.total_revenue ?? 0
   const currency = revenueReport?.currency
   const paymentCount = revenueReport?.payment_count ?? 0
+  const avgPayment = revenueReport?.avg_payment ?? 0
+  const retentionRate = retentionReport?.retention_rate ?? null
+  const churned = retentionReport?.churned_clients ?? 0
+  const checkinRate = attendanceReport?.checkin_rate ?? null
+  const avgClassSize = attendanceReport?.avg_class_size ?? 0
 
-  const studioName = 'Agon Studio'
+  // Insights
+  const topClasses = [...(attendanceReport?.by_class_template ?? [])]
+    .sort((a, b) => b.bookings - a.bookings)
+    .slice(0, 4)
+  const maxClassBookings = Math.max(...topClasses.map((c) => c.bookings), 1)
+
+  const byType = membershipsReport?.by_type ?? []
+  const maxTypeActive = Math.max(...byType.map((t) => t.active), 1)
+
+  const studioName = studioSettings?.studio_name ?? 'Studio'
 
   return (
     <div className="space-y-5">
@@ -247,54 +303,57 @@ export function Dashboard() {
       {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KpiCard
-          icon={Users}
-          label={t('dashboard.totalClients')}
-          value={clients?.total ?? '—'}
-          sub={newClientsThisMonth > 0 ? t('dashboard.newThisMonth').replace('{{n}}', String(newClientsThisMonth)) : undefined}
-          accentClass="bg-blue-400"
-          iconBg="#E6F1FB"
-          iconColor="#185FA5"
-          loading={clientsLoading}
-        />
-        <KpiCard
-          icon={CalendarDays}
-          label={t('dashboard.classesThisWeek')}
-          value={classesLoading ? '—' : weekScheduled}
-          sub={weekCancelled > 0 ? t('dashboard.cancelledCount').replace('{{n}}', String(weekCancelled)) : undefined}
-          accentClass="bg-green-500"
-          iconBg="#EAF3DE"
-          iconColor="#3B6D11"
-          loading={classesLoading}
-        />
-        <KpiCard
           icon={BadgeCheck}
+          accent={primary}
           label={t('dashboard.activeMemberships')}
-          value={membershipsReport?.total_active ?? '—'}
+          value={membershipsLoading ? '—' : activeMembers}
           sub={
-            (membershipsReport?.expiring_soon ?? 0) > 0
-              ? t('dashboard.expiringSoon').replace('{{n}}', String(membershipsReport?.expiring_soon))
+            expiringSoon > 0
+              ? t('dashboard.expiringSoon').replace('{{n}}', String(expiringSoon))
               : undefined
           }
-          accentClass="bg-amber-400"
-          iconBg="#FAEEDA"
-          iconColor="#854F0B"
           loading={membershipsLoading}
         />
         <KpiCard
           icon={Banknote}
+          accent={primary}
           label={t('dashboard.revenueThisMonth')}
           value={revenueLoading ? '—' : fmtMoney(revenue, currency)}
-          sub={paymentCount > 0 ? t('dashboard.paymentsCount').replace('{{n}}', String(paymentCount)) : undefined}
-          accentClass="bg-indigo-400"
-          iconBg="#EEEDFE"
-          iconColor="#534AB7"
+          sub={
+            paymentCount > 0
+              ? `${paymentCount} · ${t('dashboard.avgPaymentSub').replace('{{amount}}', fmtMoney(avgPayment, currency))}`
+              : undefined
+          }
           loading={revenueLoading}
+        />
+        <KpiCard
+          icon={TrendingUp}
+          accent={secondary}
+          label={t('dashboard.retentionRate')}
+          value={retentionRate !== null ? `${retentionRate}%` : '—'}
+          sub={
+            churned > 0
+              ? t('dashboard.churned').replace('{{n}}', String(churned))
+              : undefined
+          }
+          loading={retentionLoading}
+        />
+        <KpiCard
+          icon={Activity}
+          accent={secondary}
+          label={t('dashboard.checkinRate')}
+          value={checkinRate !== null ? `${checkinRate}%` : '—'}
+          sub={
+            avgClassSize > 0
+              ? t('dashboard.avgPerClass').replace('{{n}}', String(avgClassSize))
+              : undefined
+          }
+          loading={attendanceLoading}
         />
       </div>
 
-      {/* Today + Quick actions */}
+      {/* Today's classes + Quick actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        {/* Today's classes */}
         <div className="lg:col-span-2 bg-white border border-gray-100 rounded-xl overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
             <span className="text-sm font-medium text-gray-900">{t('dashboard.todayClasses')}</span>
@@ -316,14 +375,16 @@ export function Dashboard() {
                   cls={cls}
                   template={templateMap[cls.template_id]}
                   instructorName={cls.instructor_id ? instructorMap[cls.instructor_id] : undefined}
-                  locationName={multipleLocations && cls.location_id ? locationMap[cls.location_id] : undefined}
+                  locationName={
+                    multipleLocations && cls.location_id ? locationMap[cls.location_id] : undefined
+                  }
+                  accent={primary}
                 />
               ))}
             </div>
           )}
         </div>
 
-        {/* Quick actions */}
         <div className="bg-white border border-gray-100 rounded-xl overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-100">
             <span className="text-sm font-medium text-gray-900">{t('dashboard.quickActions')}</span>
@@ -331,31 +392,123 @@ export function Dashboard() {
           <QuickAction
             icon={CalendarPlus}
             label={t('dashboard.scheduleClass')}
-            iconBg="#E6F1FB"
-            iconColor="#185FA5"
+            accent={primary}
             onClick={() => navigate('/calendar')}
           />
           <QuickAction
             icon={UserPlus}
             label={t('dashboard.addClient')}
-            iconBg="#EAF3DE"
-            iconColor="#3B6D11"
+            accent={primary}
             onClick={() => navigate('/clients')}
           />
           <QuickAction
             icon={CreditCard}
             label={t('dashboard.assignMembership')}
-            iconBg="#FAEEDA"
-            iconColor="#854F0B"
+            accent={primary}
             onClick={() => navigate('/memberships')}
           />
           <QuickAction
             icon={BarChart2}
             label={t('dashboard.viewReports')}
-            iconBg="#EEEDFE"
-            iconColor="#534AB7"
+            accent={primary}
             onClick={() => navigate('/reports')}
           />
+        </div>
+      </div>
+
+      {/* Insights row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        {/* Attendance highlights */}
+        <div className="bg-white border border-gray-100 rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100">
+            <span className="text-sm font-medium text-gray-900">
+              {t('dashboard.attendanceHighlights')}
+            </span>
+          </div>
+          {attendanceLoading ? (
+            <div className="flex items-center justify-center h-28">
+              <LoadingSpinner size="sm" />
+            </div>
+          ) : (
+            <div className="p-4 grid grid-cols-2 gap-2">
+              <StatCell
+                label={t('dashboard.classesThisWeek')}
+                value={
+                  (allClasses ?? []).filter((c) => c.status === 'scheduled').length
+                }
+              />
+              <StatCell
+                label={t('dashboard.avgClassSize')}
+                value={avgClassSize > 0 ? avgClassSize : '—'}
+              />
+              <StatCell
+                label={t('dashboard.totalBookings')}
+                value={attendanceReport?.total_bookings ?? '—'}
+              />
+              <StatCell
+                label={t('dashboard.busiestDay')}
+                value={attendanceReport?.busiest_day ?? '—'}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Top class types */}
+        <div className="bg-white border border-gray-100 rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100">
+            <span className="text-sm font-medium text-gray-900">{t('dashboard.topClasses')}</span>
+          </div>
+          {attendanceLoading ? (
+            <div className="flex items-center justify-center h-28">
+              <LoadingSpinner size="sm" />
+            </div>
+          ) : topClasses.length === 0 ? (
+            <div className="flex items-center justify-center h-28 text-sm text-gray-400">
+              {t('dashboard.noData')}
+            </div>
+          ) : (
+            <div className="p-4">
+              {topClasses.map((c) => (
+                <BarRow
+                  key={c.template_name}
+                  label={c.template_name}
+                  value={c.bookings}
+                  max={maxClassBookings}
+                  accent={primary}
+                  sub={String(c.bookings)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Members by plan */}
+        <div className="bg-white border border-gray-100 rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100">
+            <span className="text-sm font-medium text-gray-900">{t('dashboard.membersByType')}</span>
+          </div>
+          {membershipsLoading ? (
+            <div className="flex items-center justify-center h-28">
+              <LoadingSpinner size="sm" />
+            </div>
+          ) : byType.length === 0 ? (
+            <div className="flex items-center justify-center h-28 text-sm text-gray-400">
+              {t('dashboard.noData')}
+            </div>
+          ) : (
+            <div className="p-4">
+              {byType.map((item) => (
+                <BarRow
+                  key={item.name}
+                  label={item.name}
+                  value={item.active}
+                  max={maxTypeActive}
+                  accent={secondary}
+                  sub={String(item.active)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

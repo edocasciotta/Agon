@@ -630,3 +630,45 @@ def test_booking_rate_limit_disabled_in_test_env(
     assert (
         getattr(endpoint, "__wrapped__", None) is not None
     ), "POST /api/v1/bookings does not have a rate limit decorator (@limiter.limit)"
+
+
+# ---------------------------------------------------------------------------
+# Manager override: past classes
+# ---------------------------------------------------------------------------
+
+
+def test_create_booking_already_started_blocks_client(
+    client, client_auth_headers, client_membership, scheduled_class_fixture, db_session
+):
+    """Clients cannot book a class that has already started."""
+    from app.utils import utcnow
+    scheduled_class_fixture.starts_at = utcnow() - datetime.timedelta(hours=1)
+    db_session.commit()
+
+    resp = client.post(
+        "/api/v1/bookings",
+        json={"scheduled_class_id": scheduled_class_fixture.id},
+        headers=client_auth_headers,
+    )
+    assert resp.status_code == 409, resp.text
+    assert resp.json()["detail"]["error"]["code"] == "BOOKING_CLASS_ALREADY_STARTED"
+
+
+def test_manager_can_book_already_started_class(
+    client, manager_auth_headers, registered_client, client_membership,
+    scheduled_class_fixture, db_session
+):
+    """Managers can retroactively book a client into a class that has already started."""
+    from app.utils import utcnow
+    from app.models.client import Client
+    scheduled_class_fixture.starts_at = utcnow() - datetime.timedelta(hours=1)
+    db_session.commit()
+
+    client_obj = db_session.query(Client).filter_by(email="test@example.com").first()
+    resp = client.post(
+        "/api/v1/bookings",
+        json={"scheduled_class_id": scheduled_class_fixture.id, "client_id": client_obj.id},
+        headers=manager_auth_headers,
+    )
+    assert resp.status_code == 201, resp.text
+    assert resp.json()["status"] == "confirmed"

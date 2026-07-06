@@ -231,7 +231,15 @@ def create_checkout_session(
     if not mt:
         raise_api_error("MEMBERSHIP_TYPE_NOT_FOUND", "Membership type not found.", status_code=404)
 
-    # 3. Must be sellable online
+    # 3. Must be active
+    if not mt.is_active:
+        raise_api_error(
+            "MEMBERSHIP_TYPE_NOT_FOUND",
+            "This membership type is no longer available.",
+            status_code=404,
+        )
+
+    # 4. Must be enabled for online purchase
     if not mt.sellable_online:
         raise_api_error(
             "MEMBERSHIP_TYPE_NOT_ONLINE",

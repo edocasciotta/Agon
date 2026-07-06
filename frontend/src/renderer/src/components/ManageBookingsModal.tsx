@@ -8,6 +8,7 @@ import { clientsApi } from '../api/clients'
 import { bookingsApi } from '../api/bookings'
 import type { RosterEntry } from '../api/bookings'
 import type { ScheduledClass, ClassTemplate } from '../types'
+import { resolveApiError } from '../lib/errorMessages'
 
 interface ManageBookingsModalProps {
   isOpen: boolean
@@ -69,9 +70,7 @@ export function ManageBookingsModal({
       setApiError(null)
     },
     onError: (err: unknown) => {
-      const msg =
-        err instanceof Error ? err.message : t('manageBookings.bookingFailed')
-      setApiError(msg)
+      setApiError(resolveApiError(err, t('manageBookings.bookingFailed')))
     },
   })
 
@@ -82,9 +81,7 @@ export function ManageBookingsModal({
       setApiError(null)
     },
     onError: (err: unknown) => {
-      const msg =
-        err instanceof Error ? err.message : t('manageBookings.cancelFailed')
-      setApiError(msg)
+      setApiError(resolveApiError(err, t('manageBookings.cancelFailed')))
     },
   })
 

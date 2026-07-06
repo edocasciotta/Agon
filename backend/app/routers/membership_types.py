@@ -1,13 +1,15 @@
 from typing import List
 
-from app.auth import get_current_user, require_manager
+from app.auth import require_authenticated, require_manager
 from app.database import get_db
+from app.models.membership import Membership
 from app.models.membership_type import MembershipType
 from app.schemas.membership_type import (
     MembershipTypeCreate,
     MembershipTypeResponse,
     MembershipTypeUpdate,
 )
+from app.utils import raise_api_error
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -18,7 +20,7 @@ router = APIRouter(prefix="/api/v1", tags=["membership-types"])
 def list_membership_types(
     include_inactive: bool = False,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _token=Depends(require_authenticated),
 ):
     query = db.query(MembershipType)
     if not include_inactive:
@@ -43,7 +45,7 @@ def create_membership_type(
 def get_membership_type(
     membership_type_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    _token=Depends(require_authenticated),
 ):
     mt = db.query(MembershipType).filter(MembershipType.id == membership_type_id).first()
     if not mt:
@@ -90,3 +92,41 @@ def deactivate_membership_type(
     db.commit()
     db.refresh(mt)
     return mt
+
+
+@router.patch("/membership-types/{membership_type_id}/reactivate", response_model=MembershipTypeResponse)
+def reactivate_membership_type(
+    membership_type_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_manager),
+):
+    mt = db.query(MembershipType).filter(MembershipType.id == membership_type_id).first()
+    if not mt:
+        raise_api_error("NOT_FOUND", "Membership type not found", status_code=404)
+    mt.is_active = True
+    db.commit()
+    db.refresh(mt)
+    return mt
+
+
+@router.delete("/membership-types/{membership_type_id}/remove", status_code=204)
+def remove_membership_type(
+    membership_type_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_manager),
+):
+    """Hard-delete a membership type. Blocked if any memberships reference it."""
+    mt = db.query(MembershipType).filter(MembershipType.id == membership_type_id).first()
+    if not mt:
+        raise_api_error("NOT_FOUND", "Membership type not found", status_code=404)
+    has_members = (
+        db.query(Membership).filter(Membership.membership_type_id == membership_type_id).first()
+    )
+    if has_members:
+        raise_api_error(
+            "MEMBERSHIP_TYPE_HAS_MEMBERS",
+            "This plan has existing members and cannot be deleted. Deactivate it instead.",
+            status_code=409,
+        )
+    db.delete(mt)
+    db.commit()

@@ -57,7 +57,7 @@ export default function ClassDetailScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.classTitle}>Class #{cls.id}</Text>
+      <Text style={styles.classTitle}>{cls.template_name ?? `Class #${cls.id}`}</Text>
 
       <View style={styles.infoCard}>
         <View style={styles.infoRow}>

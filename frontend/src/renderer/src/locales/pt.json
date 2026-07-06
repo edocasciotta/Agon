@@ -147,7 +147,19 @@
     "assignMembership": "Atribuir assinatura",
     "viewReports": "Ver relatórios",
     "spotsFull": "Cheia",
-    "spotsAvailable": "{{booked}}/{{cap}}"
+    "spotsAvailable": "{{booked}}/{{cap}}",
+    "retentionRate": "Taxa de retenção",
+    "churned": "{{n}} perdidos este mês",
+    "checkinRate": "Taxa de check-in",
+    "avgPerClass": "Méd. {{n}} por aula",
+    "avgPaymentSub": "méd. {{amount}} cada",
+    "attendanceHighlights": "Presenças",
+    "topClasses": "Tipos de aula populares",
+    "membersByType": "Membros por plano",
+    "noData": "Sem dados",
+    "avgClassSize": "Média por aula",
+    "totalBookings": "Reservas este mês",
+    "busiestDay": "Dia mais concorrido"
   },
   "calendar": {
     "title": "Calendário",
@@ -330,7 +342,17 @@
     "pricePlaceholder": "ex. 49.99",
     "creditsPlaceholder": "ex. 10",
     "currency": "Moeda",
-    "member": "Membro"
+    "member": "Membro",
+    "sellableOnline": "Online",
+    "sellableOnlineLabel": "Disponível para compra online",
+    "editMembershipType": "Editar Tipo de Adesão",
+    "deactivate": "Desativar",
+    "failedEdit": "Falha ao atualizar",
+    "reactivate": "Reativar",
+    "remove": "Remover",
+    "confirmRemoveTitle": "Remover plano?",
+    "confirmRemoveDesc": "Exclui o plano permanentemente. Só possível se nenhum membro o comprou.",
+    "failedRemove": "Falha ao remover o tipo de adesão"
   },
   "reports": {
     "title": "Relatórios",

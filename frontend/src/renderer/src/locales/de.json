@@ -147,7 +147,19 @@
     "assignMembership": "Mitgliedschaft zuweisen",
     "viewReports": "Berichte anzeigen",
     "spotsFull": "Voll",
-    "spotsAvailable": "{{booked}}/{{cap}}"
+    "spotsAvailable": "{{booked}}/{{cap}}",
+    "retentionRate": "Kundenbindungsrate",
+    "churned": "{{n}} verloren diesen Monat",
+    "checkinRate": "Check-in-Rate",
+    "avgPerClass": "Ø {{n}} pro Kurs",
+    "avgPaymentSub": "Ø {{amount}} pro Zahlung",
+    "attendanceHighlights": "Anwesenheit",
+    "topClasses": "Beliebteste Kurstypen",
+    "membersByType": "Mitglieder nach Plan",
+    "noData": "Keine Daten",
+    "avgClassSize": "Ø Kursgröße",
+    "totalBookings": "Buchungen diesen Monat",
+    "busiestDay": "Stoßzeit"
   },
   "calendar": {
     "title": "Kalender",
@@ -330,7 +342,17 @@
     "pricePlaceholder": "z.B. 49.99",
     "creditsPlaceholder": "z.B. 10",
     "currency": "Währung",
-    "member": "Mitglied"
+    "member": "Mitglied",
+    "sellableOnline": "Online",
+    "sellableOnlineLabel": "Online kaufbar",
+    "editMembershipType": "Mitgliedschaftstyp bearbeiten",
+    "deactivate": "Deaktivieren",
+    "failedEdit": "Aktualisierung fehlgeschlagen",
+    "reactivate": "Reaktivieren",
+    "remove": "Entfernen",
+    "confirmRemoveTitle": "Mitgliedschaftsplan entfernen?",
+    "confirmRemoveDesc": "Löscht den Plan dauerhaft. Nur möglich, wenn kein Mitglied ihn je gekauft hat.",
+    "failedRemove": "Entfernen fehlgeschlagen"
   },
   "reports": {
     "title": "Berichte",
