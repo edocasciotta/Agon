@@ -3,22 +3,36 @@
 
 ---
 
-## Project State (2026-07-05)
+## Project State (2026-07-06)
 
-**All 12 build phases complete (0–11). V1 shipped. Post-V1 improvements A–Q applied.**
+**All 12 build phases complete (0–11). V1 shipped. Post-V1 improvements A–R applied.**
 
 ### Test Counts
 | Suite | Count | Status |
 |---|---|---|
-| Backend (pytest) | 244 | ✅ |
-| Frontend (Vitest) | 43 | ✅ |
-| Mobile (jest-expo) | 21 | ✅ |
+| Backend (pytest) | 288 | ✅ |
+| Frontend (Vitest) | 53 | ✅ |
+| Mobile (jest-expo) | 44 | ✅ |
 | Docs build | — | ✅ |
+
+### Active branch
+`main` — all changes committed and pushed (`a33dd7e`).
+
+### Local dev
+- Backend: `cd backend && .venv/bin/uvicorn app.main:app --reload`
+- Frontend: `cd frontend && npm run dev`
+- Mobile: `cd mobile && npx expo start`
+- Local DB: `admin@example.com` / `password`
+- Ollama: model `agon-assistant` must be loaded; if missing, agent calls fail silently.
+
+---
 
 ### Completed Build Phases (0–11)
 Scaffolding → DB models → Core API → Booking engine → Check-in → Memberships/payments → Notifications/tasks → Reports/GDPR → Migration assistant → Frontend desktop → Mobile → Docs site.
 
-### Post-V1 Improvements
+---
+
+## Post-V1 Improvements
 | Phase | Summary |
 |---|---|
 | D | SQLite WAL + composite indexes (migration `086528153a55`); ARCHITECTURE.md |
@@ -34,7 +48,52 @@ Scaffolding → DB models → Core API → Booking engine → Check-in → Membe
 | N | Hallucinated-tool guard; i18n language persistence (localStorage) |
 | O | System prompt: REQUIRED FIELDS + NO RAW JSON; echoed-data guard; calendar hours configurable from Settings |
 | P | Color customization; per-class booking windows; ID visibility + search by ID |
-| Q | Landing page: inviting hero copy; 9-language toggle; mock UI screenshots section; scroll animation (CSS keyframes — deployed to agon-studio.dev) |
+| Q | Landing page: inviting hero copy; 9-language toggle; mock UI screenshots section; scroll animation |
+| R | Stripe billing phases 1–7 (schema → config → checkout → subscriptions → desktop → mobile → cancel) |
+
+---
+
+## Security Hardening (2026-07-06) — commit `5224e19`
+
+Full security audit. Normative doc: `docs/SECURITY_GUIDELINES.md`.
+
+| # | Severity | Fix |
+|---|---|---|
+| 1 | Critical | Role/entity confusion: `User.id` & `Client.id` overlap. JWT `role` claim checked before DB lookup. |
+| 2 | Critical | `/auth/refresh` now dispatches on refresh token's own `role`; no "try users then clients". |
+| 3 | High | IDOR in `POST /billing/checkout-session`: non-staff caller now restricted to their own `sub`. |
+| 4 | High | Path traversal in migration analyser — `basename` + allow-list + `commonpath` confinement. |
+| 5 | High | Root `agon.db` / `backups/` added to `.gitignore`. |
+| 6 | Medium | Login user-enumeration: `burn_password_check()` on no-match path. |
+| 7 | Medium | bcrypt silent truncation: `AUTH_PASSWORD_TOO_LONG` guard (72 bytes). |
+| 8 | Medium | Mobile: `validateStudioUrl` rejects non-local plain-http URLs. |
+| 9 | Added | Rate limit on `POST /auth/refresh` (10/min). |
+
+---
+
+## UX Improvements (2026-07-06) — commit `a33dd7e`
+
+### Backend
+- `GET /classes` + `GET /classes/{id}` — outerjoin `ClassTemplate`, response includes `template_name`
+- `PATCH /membership-types/{id}/reactivate` — sets `is_active = True`
+- `DELETE /membership-types/{id}/remove` — hard-delete; blocked (409 `MEMBERSHIP_TYPE_HAS_MEMBERS`) if any `Membership` references the type
+- `POST /bookings` — manager role bypass: can book into already-started classes
+- `POST /billing/checkout-session` — `sellable_online` gate restored
+
+### Frontend – Dashboard
+- All colors derived from `primary_color` / `secondary_color` in Studio Settings; zero hardcoded Tailwind color classes for UI elements
+- New KPIs: **Retention rate** (churned sub) + **Check-in rate** (avg size sub); replaced weaker "total clients" + "classes this week"
+- New insights row (3 cards): **Attendance highlights** (4-stat grid), **Top class types** (CSS bar chart by bookings), **Members by plan** (CSS bar chart by active count)
+
+### Frontend – Memberships page
+- `membershipTypesApi.list(true)` — deactivated types visible and manageable in backoffice
+- Per-row actions: Edit, Deactivate ↔ Reactivate toggle, Remove (red confirmation dialog)
+- `resolveApiError()` platform-wide utility for user-friendly API error messages; applied to all mutation handlers in ManageBookingsModal, EditClassModal, ScheduleClassModal
+
+### Mobile
+- Classes list + detail: `template_name` shown instead of "Class #19"
+- Home tab: language switcher in header
+- Purchase screen: filtered by `is_active && sellable_online`
 
 ---
 
@@ -48,69 +107,31 @@ Scaffolding → DB models → Core API → Booking engine → Check-in → Membe
 - **`Client.password_hash` nullable** — backoffice-created clients have no password until invited.
 - **i18n:** 7 locales only — EN, IT, FR, DE, ES, PT, NL. PL and TR removed.
 - **Test conftest:** `StaticPool` (SQLite in-memory, one connection per test).
-- **Landing page animation:** CSS `@keyframes` (not CSS transitions) — React 18 batches hydration + state update in same microtask; transitions don't fire. Keyframes always replay from `from {}`.
+- **Membership lifecycle:** deactivate = soft-delete (`is_active = False`, reversible); remove = hard-delete (blocked by FK if any Membership purchased). Industry standard (Mindbody/Glofox).
+- **`resolveApiError(err, fallback)`:** platform-wide error utility. Priority: `errorMessages[code]` → `err.message` → `fallback`. `apiClient` rejects with plain `ApiError` object (not `Error` instance) — `instanceof Error` checks always fail.
+- **Dashboard color system:** `primary_color` for quantity metrics (memberships, revenue); `secondary_color` for rate metrics (retention, check-in). All hex colors passed via `style={}`, never Tailwind classes.
+- **`template_name` in ScheduledClassResponse:** added via SQLAlchemy outerjoin + post-validation attribute assignment (Pydantic V2 models are mutable by default). No ORM model change needed.
 
 ---
 
-## Handover — 2026-07-05
-
-### Active branch
-`feat/ux-improvements` — **many uncommitted changes** (backend + frontend + mobile). Phase P+Q work is NOT yet committed. Run `git status` to see the full diff before starting.
-
-### Local dev
-- Backend: `cd backend && .venv/bin/uvicorn app.main:app --reload`
-- Frontend: `cd frontend && npm run dev`
-- Local DB: `admin@example.com` / `password`
-- Ollama: model `agon-assistant` must be loaded; if missing, agent calls fail silently.
-
-### Landing page (agon-studio.dev)
+## Landing page (agon-studio.dev)
 - Source: `landing/` — Next.js 15 static export, deployed via `npx vercel --prod` from `landing/` dir.
 - After deploy: `vercel alias set <url> agon-studio.dev && vercel alias set <url> www.agon-studio.dev`.
 - Do NOT run vercel from monorepo root — it uploads 15 GB.
 
-### Known open issues
+---
+
+## Known Open Items
 - `get_class_roster` Italian phrasings not 100% reliable — 3B model still picks wrong tool occasionally.
 - Playwright e2e tests are scaffold only (no real backend needed; use `page.route()`).
+- Mobile: booked count per class not shown on Today's classes (requires new backend field on ScheduledClass).
 
-## Stripe Billing Integration (in progress)
+---
 
-Spec: `~/Downloads/agon-stripe-billing-spec.md`
+## Next Task Candidates
 
-| Phase | Status | Notes |
-|---|---|---|
-| 1 — Schema + config | ✅ done | Migration `9c30bc2887eb`; 5 new tables; `sellable_online` on `membership_types`; `STRIPE_PUBLISHABLE_KEY` in config; 256 tests pass |
-| 2 — Config endpoint + settings screen | ✅ done | `POST /api/billing/settings` + `GET /api/billing/settings`; validates key, writes .env atomically, sets `stripe_connected`; 261 tests pass |
-| 3 — Checkout (one-off payments) | ✅ done | `POST /api/billing/checkout-session` + `POST /api/billing/webhook`; idempotency, grants Membership+Payment; 268 tests pass |
-| 4 — Subscriptions | ✅ done | mode=subscription checkout; handlers for subscription.created/updated/deleted, invoice.paid/failed; GET+POST /members/{id}/subscription[/cancel]; 278 tests pass |
-| 5 — Dashboard surfacing (Electron) | ✅ done | Billing tab in Settings (key config + status); subscription card in ClientDetail; billingApi module; billing i18n in 7 locales; 44/44 frontend tests pass |
-| 6 — Mobile "pay/subscribe" button | ✅ done | Purchase screen calls checkout-session, opens Stripe URL via Linking.openURL; sellable_online filter; OfflineBanner; 26/26 mobile tests pass |
-| 7 — Cancellation + manual override | ✅ done | Override endpoint (no Stripe calls) + mobile cancel card with confirmation; 280 backend + 31 mobile tests pass |
-
-## Security Hardening (2026-07-06)
-
-Full security audit + fixes across backend/frontend/mobile. New normative doc
-`docs/SECURITY_GUIDELINES.md`, referenced from all four `CLAUDE.md` files so it loads on every task.
-
-| # | Severity | Fix |
-|---|---|---|
-| 1 | **Critical** | Role/entity confusion: `User.id` & `Client.id` overlap. `get_current_user`/`get_current_client` now check the JWT `role` claim before the DB lookup. Prevented a client token from resolving as a staff User (priv-esc). |
-| 2 | **Critical** | `/auth/refresh` derived role by "try users then clients" → a client refresh token could mint a manager access token on id collision. Now dispatches on the refresh token's own `role`. |
-| 3 | **High** | IDOR in `POST /api/billing/checkout-session`: a client could open a checkout for any `client_id`. Now a non-staff caller is restricted to their own `sub`. |
-| 4 | **High** | Path traversal in `migration.analyse_file`: attacker-controlled `file.filename` interpolated into a write path. Now `basename` + allow-list + `commonpath` confinement. |
-| 5 | **High** | Root `agon.db`/`agon.db-*`/`backups/` were NOT git-ignored (only `backend/` copies were) → live member PII could be committed. `.gitignore` now covers root + `*.db` glob + `backups/`/`uploads/`. |
-| 6 | **Medium** | Login user-enumeration via timing: no bcrypt run on unknown email. Added `burn_password_check()` on the no-match path. |
-| 7 | **Medium** | bcrypt silently truncates > 72 bytes. Added `AUTH_PASSWORD_TOO_LONG` (`PASSWORD_MAX_BYTES`) on register + reset. |
-| 8 | **Medium** | Mobile: studio URL from QR/manual entry used as API base with no validation (credential-phishing vector). New `validateStudioUrl` — http(s) only, plain http restricted to localhost/LAN. |
-| 9 | **Added** | Rate limit on `POST /auth/refresh` (10/min) — was missing per backend spec. |
-
-Tests: backend `280 passed`; mobile suite + new `validateStudioUrl.test.ts` green; mobile typecheck clean.
-Not source-changed but reviewed & sound: Electron `webPreferences` (sandbox+contextIsolation), preload
-bridge, `SetPassword.tsx`, Stripe webhook signature/idempotency, PII log redaction filter.
-
-## Next Task
-
-**Stripe Phase 2** — `POST /api/billing/settings` endpoint (admin-only, validate key before saving).
-
-Other V1.1 candidates (deferred):
-- Electron auto-update (`electron-updater` + GitHub releases + Alembic on relaunch)
-- Multi-location support (`location_id` already on all tables, backend ready)
+- **Electron auto-update** (`electron-updater` + GitHub releases + Alembic migration on relaunch)
+- **Multi-location support** (`location_id` already on all tables; backend ready; needs UI routing)
+- **Reports page enrichment** — surface `by_class_template` and `by_membership_type` charts there too
+- **Waitlist notifications** — push when a spot opens (Expo push already wired for bookings)
+- **Client app: booking history screen** — list past + upcoming bookings with status
