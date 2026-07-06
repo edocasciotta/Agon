@@ -1,4 +1,5 @@
 import os
+import socket
 import tempfile
 
 from app.auth import get_current_user, require_manager
@@ -12,6 +13,17 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1/studio", tags=["studio"])
+
+
+def _get_lan_url() -> str:
+    """Return the backend's LAN URL by probing the outbound interface."""
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.connect(("8.8.8.8", 80))
+            ip = s.getsockname()[0]
+        return f"http://{ip}:8000"
+    except Exception:
+        return "http://localhost:8000"
 
 
 @router.get("/branding", response_model=StudioBrandingResponse)
@@ -37,7 +49,9 @@ def get_studio_settings(
             status_code=404,
             detail={"error": {"code": "NOT_FOUND", "message": "Studio settings not configured"}},
         )
-    return settings
+    return StudioSettingsResponse.model_validate(
+        {**settings.__dict__, "lan_url": _get_lan_url()}
+    )
 
 
 @router.put("", response_model=StudioSettingsResponse)

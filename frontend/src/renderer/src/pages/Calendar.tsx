@@ -20,6 +20,7 @@ import { LoadingSpinner } from '../components/LoadingSpinner'
 import { PageHeader } from '../components/PageHeader'
 import { ScheduleClassModal } from '../components/ScheduleClassModal'
 import { EditClassModal } from '../components/EditClassModal'
+import { ManageBookingsModal } from '../components/ManageBookingsModal'
 import type { ScheduledClass, ClassTemplate } from '../types'
 
 type ZoomLevel = '1h' | '30m' | '15m'
@@ -75,6 +76,8 @@ export function CalendarPage() {
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false)
   const [scheduleDefaultDate, setScheduleDefaultDate] = useState<Date | undefined>()
   const [editModalClass, setEditModalClass] = useState<ScheduledClass | null>(null)
+  const [manageBookingsClass, setManageBookingsClass] = useState<ScheduledClass | null>(null)
+  const [actionMenuClass, setActionMenuClass] = useState<{ cls: ScheduledClass; x: number; y: number } | null>(null)
   const [cancelConfirmId, setCancelConfirmId] = useState<number | null>(null)
   const [zoom, setZoom] = useState<ZoomLevel>('1h')
   const [tooltip, setTooltip] = useState<TooltipState | null>(null)
@@ -372,7 +375,7 @@ export function CalendarPage() {
                         return (
                           <button
                             key={cls.id}
-                            onClick={(e) => { e.stopPropagation(); setEditModalClass(cls); setTooltip(null) }}
+                            onClick={(e) => { e.stopPropagation(); setActionMenuClass({ cls, x: e.clientX, y: e.clientY }); setTooltip(null) }}
                             onMouseEnter={(e) => setTooltip({ cls, x: e.clientX, y: e.clientY })}
                             onMouseLeave={() => setTooltip(null)}
                             className="absolute left-1 right-1 rounded-md text-left transition-all overflow-hidden"
@@ -474,6 +477,45 @@ export function CalendarPage() {
         )
       })()}
 
+      {/* ── Class action menu ── */}
+      {actionMenuClass && (
+        <div className="fixed inset-0 z-50" onClick={() => setActionMenuClass(null)}>
+          <div
+            className="absolute bg-white rounded-lg shadow-xl border border-gray-200 py-1 w-48"
+            style={{
+              left: Math.min(actionMenuClass.x, window.innerWidth - 210),
+              top: Math.min(actionMenuClass.y, window.innerHeight - 120),
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => {
+                setManageBookingsClass(actionMenuClass.cls)
+                setActionMenuClass(null)
+              }}
+              className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors"
+            >
+              <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              {t('calendar.manageBookings')}
+            </button>
+            <button
+              onClick={() => {
+                setEditModalClass(actionMenuClass.cls)
+                setActionMenuClass(null)
+              }}
+              className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors"
+            >
+              <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              {t('calendar.editClass')}
+            </button>
+          </div>
+        </div>
+      )}
+
       <ScheduleClassModal
         isOpen={scheduleModalOpen}
         onClose={() => setScheduleModalOpen(false)}
@@ -522,6 +564,14 @@ export function CalendarPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {manageBookingsClass && (
+        <ManageBookingsModal
+          isOpen={true}
+          onClose={() => setManageBookingsClass(null)}
+          scheduledClass={manageBookingsClass}
+        />
       )}
     </div>
   )

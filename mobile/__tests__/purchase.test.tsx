@@ -24,7 +24,13 @@ jest.mock('../src/api/memberships', () => ({
 }))
 
 jest.mock('react-native/Libraries/Linking/Linking', () => ({
-  openURL: jest.fn(),
+  default: {
+    openURL: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    canOpenURL: jest.fn(),
+    getInitialURL: jest.fn(),
+  },
 }))
 
 jest.mock('../src/store/connectivityStore', () => ({

@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-from app.auth import get_current_user, require_manager
+from app.auth import decode_token, get_current_user, oauth2_scheme, require_manager
 from app.database import get_db
 from app.models.booking import Booking
 from app.models.client import Client
@@ -115,8 +115,14 @@ def list_classes(
     location_id: Optional[int] = Query(None),
     status: Optional[str] = Query(None),
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    token: str = Depends(oauth2_scheme),
 ):
+    payload = decode_token(token)
+    if payload.get("type") != "access":
+        raise HTTPException(
+            status_code=401,
+            detail={"error": {"code": "AUTH_TOKEN_INVALID", "message": "Invalid token type"}},
+        )
     query = db.query(ScheduledClass)
     if start_date:
         query = query.filter(ScheduledClass.starts_at >= datetime.fromisoformat(start_date))
@@ -153,8 +159,14 @@ def schedule_single_class(
 def get_class(
     class_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    token: str = Depends(oauth2_scheme),
 ):
+    payload = decode_token(token)
+    if payload.get("type") != "access":
+        raise HTTPException(
+            status_code=401,
+            detail={"error": {"code": "AUTH_TOKEN_INVALID", "message": "Invalid token type"}},
+        )
     sc = db.query(ScheduledClass).filter(ScheduledClass.id == class_id).first()
     if not sc:
         raise HTTPException(

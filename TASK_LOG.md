@@ -86,6 +86,27 @@ Spec: `~/Downloads/agon-stripe-billing-spec.md`
 | 6 — Mobile "pay/subscribe" button | ✅ done | Purchase screen calls checkout-session, opens Stripe URL via Linking.openURL; sellable_online filter; OfflineBanner; 26/26 mobile tests pass |
 | 7 — Cancellation + manual override | ✅ done | Override endpoint (no Stripe calls) + mobile cancel card with confirmation; 280 backend + 31 mobile tests pass |
 
+## Security Hardening (2026-07-06)
+
+Full security audit + fixes across backend/frontend/mobile. New normative doc
+`docs/SECURITY_GUIDELINES.md`, referenced from all four `CLAUDE.md` files so it loads on every task.
+
+| # | Severity | Fix |
+|---|---|---|
+| 1 | **Critical** | Role/entity confusion: `User.id` & `Client.id` overlap. `get_current_user`/`get_current_client` now check the JWT `role` claim before the DB lookup. Prevented a client token from resolving as a staff User (priv-esc). |
+| 2 | **Critical** | `/auth/refresh` derived role by "try users then clients" → a client refresh token could mint a manager access token on id collision. Now dispatches on the refresh token's own `role`. |
+| 3 | **High** | IDOR in `POST /api/billing/checkout-session`: a client could open a checkout for any `client_id`. Now a non-staff caller is restricted to their own `sub`. |
+| 4 | **High** | Path traversal in `migration.analyse_file`: attacker-controlled `file.filename` interpolated into a write path. Now `basename` + allow-list + `commonpath` confinement. |
+| 5 | **High** | Root `agon.db`/`agon.db-*`/`backups/` were NOT git-ignored (only `backend/` copies were) → live member PII could be committed. `.gitignore` now covers root + `*.db` glob + `backups/`/`uploads/`. |
+| 6 | **Medium** | Login user-enumeration via timing: no bcrypt run on unknown email. Added `burn_password_check()` on the no-match path. |
+| 7 | **Medium** | bcrypt silently truncates > 72 bytes. Added `AUTH_PASSWORD_TOO_LONG` (`PASSWORD_MAX_BYTES`) on register + reset. |
+| 8 | **Medium** | Mobile: studio URL from QR/manual entry used as API base with no validation (credential-phishing vector). New `validateStudioUrl` — http(s) only, plain http restricted to localhost/LAN. |
+| 9 | **Added** | Rate limit on `POST /auth/refresh` (10/min) — was missing per backend spec. |
+
+Tests: backend `280 passed`; mobile suite + new `validateStudioUrl.test.ts` green; mobile typecheck clean.
+Not source-changed but reviewed & sound: Electron `webPreferences` (sandbox+contextIsolation), preload
+bridge, `SetPassword.tsx`, Stripe webhook signature/idempotency, PII log redaction filter.
+
 ## Next Task
 
 **Stripe Phase 2** — `POST /api/billing/settings` endpoint (admin-only, validate key before saving).

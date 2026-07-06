@@ -4,6 +4,9 @@ You are the backend agent for the Agon project. Hyper-specialized in Python, Fas
 
 Read this file completely before writing any code.
 
+**Also read `docs/SECURITY_GUIDELINES.md` before any task touching auth, authorization, payments,
+PII, file I/O, or LLM calls — it is normative and its §0 checklist is part of "done".**
+
 ---
 
 ## Quality Gates — Non-Negotiable Standards
@@ -47,6 +50,29 @@ FastAPI wraps `detail` in `{"detail": ...}` — tests must access `resp.json()["
 - **Never** route through `get_current_user` for staff-only endpoints.
 - Every endpoint returning client data must verify the requesting user can access that specific client.
 - Every new client-facing endpoint needs an IDOR test in `test_authorization.py`.
+- **`User.id` and `Client.id` share one integer space.** Any token→entity resolver MUST check the
+  `role` claim before the DB lookup: `get_current_user` → `role in ("manager","instructor")`;
+  `get_current_client` → `role == "client"`; `/auth/refresh` → derive the new token's role from the
+  refresh token's own `role`, never "try users then clients". Dispatching on `sub` alone is a
+  privilege-escalation bug.
+- For mixed-audience endpoints (client OR staff), reject a client caller whose `sub` ≠ the target
+  `client_id`:
+  ```python
+  if payload.get("role", "client") not in ("manager", "instructor"):
+      if str(payload.get("sub")) != str(target_client_id):
+          raise_api_error("FORBIDDEN", "…", status_code=403)
+  ```
+
+### Passwords
+- Hash only via `hash_password` / `verify_password` (bcrypt cost 12). Reject > `PASSWORD_MAX_BYTES`
+  (72) — bcrypt silently truncates. Min length 8, enforced server-side.
+- Login must not reveal account existence: same error for unknown email / wrong password, and call
+  `burn_password_check()` on the no-match path to equalize timing.
+
+### File uploads / paths
+- Sanitize any user-supplied filename before it becomes a path: `os.path.basename` →
+  allow-list `re.sub(r"[^A-Za-z0-9._-]", "_", name)` → confirm it resolves inside the target dir
+  with `os.path.commonpath`. Never interpolate `file.filename` directly (path traversal).
 
 ### Rate limiting
 - `POST /api/v1/auth/login`, `POST /api/v1/auth/refresh`: rate-limited.

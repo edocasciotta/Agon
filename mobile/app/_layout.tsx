@@ -4,10 +4,17 @@ import { Stack, useRouter } from 'expo-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { StatusBar } from 'expo-status-bar'
 import * as Notifications from 'expo-notifications'
+import * as SplashScreen from 'expo-splash-screen'
+import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter'
 import { OfflineBanner } from '../src/components/OfflineBanner'
 import { useNetworkStatus } from '../src/hooks/useNetworkStatus'
 import { usePendingQueue } from '../src/store/pendingQueue'
 import { bookingsApi } from '../src/api/bookings'
+import { useLanguageStore } from '../src/store/languageStore'
+import { useSessionStore } from '../src/store/sessionStore'
+import { useAuthStore } from '../src/store/authStore'
+
+SplashScreen.preventAutoHideAsync()
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -18,6 +25,21 @@ const queryClient = new QueryClient({
     },
   },
 })
+
+function SessionGuard() {
+  const router = useRouter()
+  const needsReauth = useSessionStore((s) => s.needsReauth)
+
+  useEffect(() => {
+    if (needsReauth) {
+      useSessionStore.getState().setNeedsReauth(false)
+      useAuthStore.getState().logout()
+      router.replace('/onboarding/login')
+    }
+  }, [needsReauth, router])
+
+  return null
+}
 
 function NetworkWatcher() {
   const isOnline = useNetworkStatus()
@@ -96,16 +118,31 @@ function DeepLinkHandler() {
 }
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    'Inter-Regular': Inter_400Regular,
+    'Inter-Medium': Inter_500Medium,
+    'Inter-SemiBold': Inter_600SemiBold,
+    'Inter-Bold': Inter_700Bold,
+  })
+
+  useEffect(() => {
+    useLanguageStore.getState().loadLocale()
+    if (fontsLoaded) SplashScreen.hideAsync()
+  }, [fontsLoaded])
+
+  if (!fontsLoaded) return null
+
   return (
     <QueryClientProvider client={queryClient}>
       <StatusBar style="auto" />
+      <SessionGuard />
       <NetworkWatcher />
       <DeepLinkHandler />
       <View style={{ flex: 1 }}>
         <OfflineBanner />
         <Stack>
           <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="onboarding/scan" options={{ title: 'Connect to Studio' }} />
+          <Stack.Screen name="onboarding/scan" options={{ headerShown: false }} />
           <Stack.Screen name="onboarding/register" options={{ title: 'Create Account' }} />
           <Stack.Screen name="onboarding/login" options={{ title: 'Sign In' }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

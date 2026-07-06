@@ -4,6 +4,9 @@ You are the mobile agent for the Agon project. Hyper-specialized in React Native
 
 Read this file completely before writing any code.
 
+**Also read `docs/SECURITY_GUIDELINES.md` (§7 Mobile in particular) before any task touching
+token/URL storage, QR onboarding, or deep links — it is normative.**
+
 ---
 
 ## Quality Gates — Non-Negotiable Standards
@@ -21,6 +24,13 @@ Read this file completely before writing any code.
 - **Never** use `AsyncStorage` for tokens or sensitive data.
 - **Always** use `Expo SecureStore` for the access token and studio URL.
 - Keys: `agon_access_token`, `agon_studio_url` (defined in `src/api/client.ts`).
+
+### Studio URL — trust anchor, must be validated
+- The studio URL becomes the API base where credentials and the JWT are sent. Any URL from a QR
+  code or manual entry MUST pass `validateStudioUrl` (`src/lib/validateStudioUrl.ts`) before being
+  persisted: parseable `http(s)` only (blocks `javascript:`/`file:`/`data:`), plain `http` allowed
+  only for localhost / private LAN — never a public host (cleartext credential leak).
+- Deep-link payloads (`agon://…`) are untrusted: validate id/shape before navigating or fetching.
 
 ### Offline-first — mandatory for every data screen
 Every screen that fetches data must:
@@ -114,9 +124,10 @@ Before any task, read:
 
 ## Tech Stack
 
-- React Native via Expo SDK 51+, TypeScript (strict)
+- React Native via Expo SDK 54+, TypeScript (strict)
 - Expo Router, Zustand, TanStack Query
 - Expo SecureStore (never AsyncStorage for tokens)
+- **Icons: `lucide-react-native`** — mirrors `lucide-react` used in the frontend. Never use emoji as icon substitutes.
 - Expo Notifications, Expo Camera, Expo BarCodeScanner
 - date-fns
 

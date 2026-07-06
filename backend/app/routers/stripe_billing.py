@@ -206,11 +206,20 @@ def create_checkout_session(
     Accessible by authenticated clients (who may only purchase for themselves)
     and by managers (who may initiate on behalf of any client).
     """
-    # Decode JWT to determine caller role — managers may pass any client_id,
-    # clients are restricted to their own id in a future IDOR check if needed.
+    # Decode JWT to determine caller role. Managers may initiate checkout on
+    # behalf of any client; a client may only purchase for their own account.
     payload = decode_token(token)
     if payload.get("type") != "access":
         raise_api_error("AUTH_TOKEN_INVALID", "Invalid token type", status_code=401)
+
+    caller_role = payload.get("role", "client")
+    if caller_role not in ("manager", "instructor"):
+        if str(payload.get("sub")) != str(body.client_id):
+            raise_api_error(
+                "FORBIDDEN",
+                "You may only purchase a membership for your own account.",
+                status_code=403,
+            )
 
     # 1. Load client
     client = db.query(Client).filter(Client.id == body.client_id).first()

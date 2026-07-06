@@ -1,3 +1,4 @@
+import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
@@ -16,6 +17,9 @@ ACCESS_TOKEN_EXPIRE_CLIENT = timedelta(days=30)
 REFRESH_TOKEN_EXPIRE_MANAGER = timedelta(days=30)
 REFRESH_TOKEN_EXPIRE_CLIENT = timedelta(days=90)
 
+# bcrypt silently ignores bytes beyond 72 — reject longer passwords instead.
+PASSWORD_MAX_BYTES = 72
+
 
 def hash_password(password: str) -> str:
     return _bcrypt.hashpw(password.encode(), _bcrypt.gensalt(rounds=12)).decode()
@@ -23,6 +27,17 @@ def hash_password(password: str) -> str:
 
 def verify_password(plain: str, hashed: str) -> bool:
     return _bcrypt.checkpw(plain.encode(), hashed.encode())
+
+
+# Hash of a random unguessable value, computed once at import. Verifying
+# against it when an email is unknown keeps login timing comparable to the
+# known-email path, so responses don't reveal whether an account exists.
+_TIMING_EQUALIZER_HASH = hash_password(secrets.token_hex(16))
+
+
+def burn_password_check() -> None:
+    """Perform a dummy bcrypt verification to equalize login timing."""
+    verify_password("timing-equalizer", _TIMING_EQUALIZER_HASH)
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
@@ -51,7 +66,13 @@ def decode_token(token: str) -> dict:
 
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    """Returns the authenticated User (manager or instructor) from JWT."""
+    """Returns the authenticated User (manager or instructor) from JWT.
+
+    User.id and Client.id share the same integer space, so the JWT ``role``
+    claim MUST be checked before the DB lookup — otherwise a client token whose
+    ``sub`` collides with a staff User id would be resolved as that User
+    (privilege escalation). A client token is rejected with 403 here.
+    """
     from app.models.user import User
 
     payload = decode_token(token)
@@ -59,6 +80,16 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise HTTPException(
             status_code=401,
             detail={"error": {"code": "AUTH_TOKEN_INVALID", "message": "Invalid token type"}},
+        )
+    if payload.get("role", "client") not in ("manager", "instructor"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "error": {
+                    "code": "AUTH_INSUFFICIENT_PERMISSIONS",
+                    "message": "Staff access required",
+                }
+            },
         )
     user_id = payload.get("sub")
     if user_id is None:
@@ -78,7 +109,12 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
 
 def get_current_client(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    """Returns the authenticated Client from JWT."""
+    """Returns the authenticated Client from JWT.
+
+    The JWT ``role`` claim MUST be ``client`` — User.id and Client.id share the
+    same integer space, so a staff token whose ``sub`` collides with a Client id
+    would otherwise be resolved as that Client (cross-entity confusion).
+    """
     from app.models.client import Client
 
     payload = decode_token(token)
@@ -86,6 +122,16 @@ def get_current_client(token: str = Depends(oauth2_scheme), db: Session = Depend
         raise HTTPException(
             status_code=401,
             detail={"error": {"code": "AUTH_TOKEN_INVALID", "message": "Invalid token type"}},
+        )
+    if payload.get("role", "client") != "client":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "error": {
+                    "code": "AUTH_INSUFFICIENT_PERMISSIONS",
+                    "message": "Client access required",
+                }
+            },
         )
     client_id = payload.get("sub")
     if client_id is None:

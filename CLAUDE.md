@@ -76,6 +76,24 @@ Always provide:
 4. All code must follow `TECHNICAL_SPEC.md` conventions.
 5. If sub-agent output conflicts with spec, reject and re-delegate with the specific failure.
 6. Never skip `TASK_LOG.md` update — it is your only persistent memory across sessions.
+7. **No code accepted that violates `docs/SECURITY_GUIDELINES.md`.** Run its §0 pre-merge
+   checklist against every sub-agent output touching auth, authorization, money, PII, file I/O,
+   external URLs, or LLM calls. Reject and re-delegate on any violation.
+
+---
+
+## Security — Applies to Every Task
+
+`docs/SECURITY_GUIDELINES.md` is **normative** and shared by all sub-agents. When you delegate any
+task that touches authentication, authorization, payments, personal data, file handling, external
+URLs, or LLM prompts, include the relevant section as an explicit constraint in the task brief, and
+verify it in the output before accepting. The highest-risk classes in this codebase are:
+
+- **IDOR** — a client reaching another client's data. Every client-facing endpoint needs an
+  authorization check against the token's `sub` and a test in `test_authorization.py`.
+- **Role/entity confusion** — `User.id` and `Client.id` overlap; auth must dispatch on the JWT
+  `role` claim, never on `sub` alone.
+- **Secret exposure** — never log or return secrets/tokens; never commit `.env`, `*.db`, or keys.
 
 ---
 

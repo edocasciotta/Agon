@@ -6,18 +6,28 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
-  ScrollView,
 } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import { useRouter } from 'expo-router'
+import { ChevronLeft, QrCode, Link } from 'lucide-react-native'
 import { useStudioStore } from '../../src/store/studioStore'
+import { LanguagePicker } from '../../src/components/LanguagePicker'
+import { validateStudioUrl } from '../../src/lib/validateStudioUrl'
+import { useT } from '../../src/i18n'
+
+type Mode = null | 'qr' | 'manual'
+
+const CORNER_SIZE = 20
+const CORNER_THICKNESS = 3
 
 export default function ScanScreen() {
+  const [mode, setMode] = useState<Mode>(null)
   const [permission, requestPermission] = useCameraPermissions()
   const [scanned, setScanned] = useState(false)
   const [manualUrl, setManualUrl] = useState('')
-  const [showManual, setShowManual] = useState(false)
   const router = useRouter()
+  const t = useT()
 
   const handleBarCodeScanned = ({ data }: { data: string }) => {
     if (scanned) return
@@ -25,148 +35,274 @@ export default function ScanScreen() {
     try {
       const parsed = JSON.parse(data) as { url: string; name: string }
       if (!parsed.url || !parsed.name) {
-        Alert.alert('Invalid QR Code', 'This QR code is not from an Agon studio.')
+        Alert.alert(t('onboarding.invalidQr'), t('onboarding.invalidQrMsg'))
         setScanned(false)
         return
       }
-      useStudioStore.getState().setStudio(parsed.url, parsed.name)
+      const validated = validateStudioUrl(parsed.url)
+      if (!validated.ok) {
+        Alert.alert(t('onboarding.invalidQr'), t('onboarding.invalidUrlMsg'))
+        setScanned(false)
+        return
+      }
+      useStudioStore.getState().setStudio(validated.url, parsed.name)
       router.replace('/onboarding/login')
     } catch {
-      Alert.alert('Invalid QR Code', 'Could not parse studio information.')
+      Alert.alert(t('onboarding.invalidQr'), t('onboarding.parseError'))
       setScanned(false)
     }
   }
 
   const handleManualConnect = () => {
-    const url = manualUrl.trim() || 'http://localhost:8000'
-    useStudioStore.getState().setStudio(url, 'Agon Studio')
+    const validated = validateStudioUrl(manualUrl.trim() || 'http://localhost:8000')
+    if (!validated.ok) {
+      Alert.alert(t('onboarding.invalidQr'), t('onboarding.invalidUrlMsg'))
+      return
+    }
+    useStudioStore.getState().setStudio(validated.url, 'Agon Studio')
     router.replace('/onboarding/login')
   }
 
-  if (!permission) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.subtitle}>Requesting camera permission...</Text>
-      </View>
-    )
+  const goBack = () => {
+    setMode(null)
+    setScanned(false)
   }
 
-  if (!permission.granted) {
+  // --- Mode selection screen ---
+  if (mode === null) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>Camera Access Needed</Text>
-        <Text style={styles.subtitle}>Allow camera access to scan your studio's QR code.</Text>
-        <TouchableOpacity style={styles.button} onPress={requestPermission}>
-          <Text style={styles.buttonText}>Grant Camera Permission</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.linkButton} onPress={() => setShowManual(true)}>
-          <Text style={styles.linkText}>Enter URL manually</Text>
-        </TouchableOpacity>
-        {showManual && (
-          <View style={styles.manualContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder="http://localhost:8000"
-              value={manualUrl}
-              onChangeText={setManualUrl}
-              autoCapitalize="none"
-              keyboardType="url"
-            />
-            <TouchableOpacity style={styles.button} onPress={handleManualConnect}>
-              <Text style={styles.buttonText}>Connect manually</Text>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.topBar}>
+          <View style={{ flex: 1 }} />
+          <LanguagePicker />
+        </View>
+        <View style={styles.selectionContent}>
+          <Text style={styles.logo}>Agon</Text>
+          <Text style={styles.title}>{t('onboarding.title')}</Text>
+          <Text style={styles.subtitle}>{t('onboarding.subtitle')}</Text>
+          <View style={styles.cardsContainer}>
+            <TouchableOpacity style={styles.card} onPress={() => setMode('qr')}>
+              <QrCode size={36} color="#4F46E5" />
+              <Text style={styles.cardTitle}>{t('onboarding.scanQr')}</Text>
+              <Text style={styles.cardDesc}>{t('onboarding.scanQrDesc')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.card} onPress={() => setMode('manual')}>
+              <Link size={36} color="#4F46E5" />
+              <Text style={styles.cardTitle}>{t('onboarding.manualUrl')}</Text>
+              <Text style={styles.cardDesc}>{t('onboarding.manualUrlDesc')}</Text>
             </TouchableOpacity>
           </View>
-        )}
-      </View>
+        </View>
+      </SafeAreaView>
     )
   }
 
-  return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
-      <Text style={styles.title}>Scan Studio QR Code</Text>
-      <Text style={styles.subtitle}>Point your camera at the QR code provided by your studio.</Text>
-
-      <View style={styles.cameraContainer}>
-        <CameraView
-          style={styles.camera}
-          onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
-          barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
-        />
-        <View style={styles.overlay}>
-          <View style={styles.viewfinder}>
-            <View style={[styles.corner, styles.cornerTopLeft]} />
-            <View style={[styles.corner, styles.cornerTopRight]} />
-            <View style={[styles.corner, styles.cornerBottomLeft]} />
-            <View style={[styles.corner, styles.cornerBottomRight]} />
-          </View>
-        </View>
-      </View>
-
-      {scanned && (
-        <TouchableOpacity style={styles.button} onPress={() => setScanned(false)}>
-          <Text style={styles.buttonText}>Scan Again</Text>
-        </TouchableOpacity>
-      )}
-
-      <TouchableOpacity style={styles.linkButton} onPress={() => setShowManual(!showManual)}>
-        <Text style={styles.linkText}>Enter URL manually</Text>
-      </TouchableOpacity>
-
-      {showManual && (
-        <View style={styles.manualContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="http://localhost:8000"
-            value={manualUrl}
-            onChangeText={setManualUrl}
-            autoCapitalize="none"
-            keyboardType="url"
-          />
-          <TouchableOpacity style={styles.button} onPress={handleManualConnect}>
-            <Text style={styles.buttonText}>Connect manually</Text>
+  // --- Camera permission: loading ---
+  if (mode === 'qr' && !permission) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.topBar}>
+          <TouchableOpacity onPress={goBack} style={styles.backButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <ChevronLeft size={28} color="#4F46E5" />
           </TouchableOpacity>
         </View>
-      )}
-    </ScrollView>
+        <View style={styles.centeredContent}>
+          <Text style={styles.subtitle}>{t('onboarding.requestingPerm')}</Text>
+        </View>
+      </SafeAreaView>
+    )
+  }
+
+  // --- Camera permission: denied ---
+  if (mode === 'qr' && permission && !permission.granted) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.topBar}>
+          <TouchableOpacity onPress={goBack} style={styles.backButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <ChevronLeft size={28} color="#4F46E5" />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.centeredContent}>
+          <Text style={styles.title}>{t('onboarding.cameraPermTitle')}</Text>
+          <Text style={styles.subtitle}>{t('onboarding.cameraPermDesc')}</Text>
+          <TouchableOpacity style={styles.primaryButton} onPress={requestPermission}>
+            <Text style={styles.primaryButtonText}>{t('onboarding.grantPerm')}</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    )
+  }
+
+  // --- QR scan mode ---
+  if (mode === 'qr') {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.topBar}>
+          <TouchableOpacity onPress={goBack} style={styles.backButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <ChevronLeft size={28} color="#4F46E5" />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.centeredContent}>
+          <Text style={styles.subtitle}>{t('onboarding.pointCamera')}</Text>
+          <View style={styles.cameraContainer}>
+            <CameraView
+              style={styles.camera}
+              onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+              barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
+            />
+            <View style={styles.overlay}>
+              <View style={styles.viewfinder}>
+                <View style={[styles.corner, styles.cornerTopLeft]} />
+                <View style={[styles.corner, styles.cornerTopRight]} />
+                <View style={[styles.corner, styles.cornerBottomLeft]} />
+                <View style={[styles.corner, styles.cornerBottomRight]} />
+              </View>
+            </View>
+          </View>
+          {scanned && (
+            <TouchableOpacity style={styles.primaryButton} onPress={() => setScanned(false)}>
+              <Text style={styles.primaryButtonText}>{t('onboarding.scanAgain')}</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </SafeAreaView>
+    )
+  }
+
+  // --- Manual URL mode ---
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.topBar}>
+        <TouchableOpacity onPress={goBack} style={styles.backButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+          <ChevronLeft size={28} color="#4F46E5" />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.centeredContent}>
+        <Text style={styles.title}>{t('onboarding.manualUrl')}</Text>
+        <Text style={styles.subtitle}>{t('onboarding.manualUrlDesc')}</Text>
+        <TextInput
+          style={styles.input}
+          placeholder={t('onboarding.urlPlaceholder')}
+          placeholderTextColor="#9CA3AF"
+          value={manualUrl}
+          onChangeText={setManualUrl}
+          autoCapitalize="none"
+          keyboardType="url"
+          autoFocus
+        />
+        <TouchableOpacity style={styles.primaryButton} onPress={handleManualConnect}>
+          <Text style={styles.primaryButtonText}>{t('onboarding.connect')}</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   )
 }
 
-const CORNER_SIZE = 20
-const CORNER_THICKNESS = 3
-
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    minHeight: 50,
+  },
+  backButton: {
+    padding: 4,
+  },
+  selectionContent: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
-    backgroundColor: '#fff',
+    paddingHorizontal: 24,
+    paddingBottom: 48,
   },
-  scrollContainer: {
-    flexGrow: 1,
+  centeredContent: {
+    flex: 1,
     alignItems: 'center',
-    padding: 24,
-    backgroundColor: '#fff',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  logo: {
+    fontSize: 40,
+    fontFamily: 'Inter-Bold',
+    color: '#4F46E5',
+    letterSpacing: -1,
+    marginBottom: 8,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 22,
+    fontFamily: 'Inter-Bold',
     color: '#111827',
-    marginBottom: 8,
     textAlign: 'center',
+    marginBottom: 8,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 15,
+    fontFamily: 'Inter-Regular',
     color: '#6B7280',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 32,
+  },
+  cardsContainer: {
+    width: '100%',
+    gap: 16,
+  },
+  card: {
+    backgroundColor: '#F9FAFB',
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    borderRadius: 16,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    gap: 8,
+  },
+  cardTitle: {
+    fontSize: 17,
+    fontFamily: 'Inter-SemiBold',
+    color: '#111827',
+  },
+  cardDesc: {
+    fontSize: 13,
+    fontFamily: 'Inter-Regular',
+    color: '#6B7280',
+    textAlign: 'center',
+  },
+  primaryButton: {
+    backgroundColor: '#4F46E5',
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  primaryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+  },
+  input: {
+    borderWidth: 1.5,
+    borderColor: '#D1D5DB',
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 15,
+    fontFamily: 'Inter-Regular',
+    color: '#111827',
+    alignSelf: 'stretch',
+    marginBottom: 4,
   },
   cameraContainer: {
     width: 280,
     height: 280,
     marginBottom: 24,
     position: 'relative',
-    borderRadius: 8,
+    borderRadius: 12,
     overflow: 'hidden',
   },
   camera: {
@@ -211,40 +347,5 @@ const styles = StyleSheet.create({
     right: 0,
     borderBottomWidth: CORNER_THICKNESS,
     borderRightWidth: CORNER_THICKNESS,
-  },
-  button: {
-    backgroundColor: '#4F46E5',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginTop: 12,
-    alignSelf: 'stretch',
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  linkButton: {
-    marginTop: 16,
-    padding: 8,
-  },
-  linkText: {
-    color: '#4F46E5',
-    fontSize: 14,
-  },
-  manualContainer: {
-    width: '100%',
-    marginTop: 8,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 14,
-    color: '#111827',
-    marginBottom: 8,
   },
 })

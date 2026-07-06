@@ -17,6 +17,7 @@ export interface StudioSettings {
   secondary_color?: string
   stripe_connected: boolean
   tunnel_url?: string
+  lan_url?: string
   last_backup_at?: string
 }
 

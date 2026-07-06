@@ -4,8 +4,10 @@ from datetime import timedelta
 from app.auth import (
     ACCESS_TOKEN_EXPIRE_CLIENT,
     ACCESS_TOKEN_EXPIRE_MANAGER,
+    PASSWORD_MAX_BYTES,
     REFRESH_TOKEN_EXPIRE_CLIENT,
     REFRESH_TOKEN_EXPIRE_MANAGER,
+    burn_password_check,
     create_access_token,
     create_refresh_token,
     decode_token,
@@ -47,6 +49,16 @@ async def register_client(
                 "error": {
                     "code": "AUTH_PASSWORD_TOO_SHORT",
                     "message": "Password must be at least 8 characters",
+                }
+            },
+        )
+    if len(payload.password.encode()) > PASSWORD_MAX_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={
+                "error": {
+                    "code": "AUTH_PASSWORD_TOO_LONG",
+                    "message": "Password must be at most 72 bytes",
                 }
             },
         )
@@ -110,6 +122,10 @@ async def login(request: Request, payload: LoginRequest, db: Session = Depends(g
         refresh_token = create_refresh_token(token_data, expires_delta=REFRESH_TOKEN_EXPIRE_CLIENT)
         return TokenResponse(access_token=access_token, refresh_token=refresh_token)
 
+    # No account matched. Run a dummy bcrypt verification so the response time
+    # for an unknown email matches the known-email path (prevents user
+    # enumeration via timing).
+    burn_password_check()
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail={
@@ -119,8 +135,17 @@ async def login(request: Request, payload: LoginRequest, db: Session = Depends(g
 
 
 @router.post("/refresh", response_model=TokenResponse, status_code=200)
-async def refresh_token_endpoint(payload: RefreshRequest, db: Session = Depends(get_db)):
-    """Issue a new access token from a valid refresh token."""
+@limiter.limit("10/minute")
+async def refresh_token_endpoint(
+    request: Request, payload: RefreshRequest, db: Session = Depends(get_db)
+):
+    """Issue a new access token from a valid refresh token.
+
+    The new access token's role is derived from the refresh token's own ``role``
+    claim, NOT by probing the users table first. User.id and Client.id overlap,
+    so a "try users then clients" lookup would let a client refresh token mint a
+    manager access token whenever the ids collide (privilege escalation).
+    """
     decoded = decode_token(payload.refresh_token)
     if decoded.get("type") != "refresh":
         raise HTTPException(
@@ -133,19 +158,20 @@ async def refresh_token_endpoint(payload: RefreshRequest, db: Session = Depends(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail={"error": {"code": "AUTH_TOKEN_INVALID", "message": "Token missing subject"}},
         )
+    role = decoded.get("role", "client")
 
-    # Determine if sub is a User or Client (try users first)
-    user = db.query(User).filter(User.id == int(sub)).first()
-    if user and user.is_active:
-        token_data = {"sub": str(user.id), "role": user.role}
-        new_access = create_access_token(token_data, expires_delta=ACCESS_TOKEN_EXPIRE_MANAGER)
-        return TokenResponse(access_token=new_access, refresh_token=payload.refresh_token)
-
-    client = db.query(Client).filter(Client.id == int(sub)).first()
-    if client and client.is_active:
-        token_data = {"sub": str(client.id), "role": "client"}
-        new_access = create_access_token(token_data, expires_delta=ACCESS_TOKEN_EXPIRE_CLIENT)
-        return TokenResponse(access_token=new_access, refresh_token=payload.refresh_token)
+    if role in ("manager", "instructor"):
+        user = db.query(User).filter(User.id == int(sub)).first()
+        if user and user.is_active:
+            token_data = {"sub": str(user.id), "role": user.role}
+            new_access = create_access_token(token_data, expires_delta=ACCESS_TOKEN_EXPIRE_MANAGER)
+            return TokenResponse(access_token=new_access, refresh_token=payload.refresh_token)
+    elif role == "client":
+        client = db.query(Client).filter(Client.id == int(sub)).first()
+        if client and client.is_active:
+            token_data = {"sub": str(client.id), "role": "client"}
+            new_access = create_access_token(token_data, expires_delta=ACCESS_TOKEN_EXPIRE_CLIENT)
+            return TokenResponse(access_token=new_access, refresh_token=payload.refresh_token)
 
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -246,6 +272,16 @@ async def reset_password(payload: ResetPasswordRequest, db: Session = Depends(ge
                 "error": {
                     "code": "AUTH_PASSWORD_TOO_SHORT",
                     "message": "Password must be at least 8 characters",
+                }
+            },
+        )
+    if len(payload.new_password.encode()) > PASSWORD_MAX_BYTES:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": {
+                    "code": "AUTH_PASSWORD_TOO_LONG",
+                    "message": "Password must be at most 72 bytes",
                 }
             },
         )

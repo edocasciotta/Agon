@@ -121,7 +121,8 @@
     "step6Title": "Installatie voltooid!",
     "step6Subtitle": "Uw studio is klaar. Verbind de mobiele app om te beginnen.",
     "qrPlaceholder": "QR-code verschijnt hier — scan om de mobiele app te verbinden",
-    "goToDashboard": "Naar dashboard"
+    "goToDashboard": "Naar dashboard",
+    "qrInstruction": "Deel deze QR-code met je leden. Ze kunnen hem scannen met de Agon-app om verbinding te maken met je studio."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -176,7 +177,25 @@
     "zoom15m": "15 min",
     "zoom30m": "30 min",
     "zoom1h": "1 uur",
-    "allEstablishments": "Alle vestigingen"
+    "allEstablishments": "Alle vestigingen",
+    "manageBookings": "Boekingen beheren"
+  },
+  "manageBookings": {
+    "title": "Boekingen beheren",
+    "booked": "Geboekt",
+    "spotsLeft": "{{count}} plaatsen vrij",
+    "full": "Vol",
+    "loading": "Lijst laden...",
+    "noBookings": "Geen boekingen.",
+    "unknownClient": "Onbekende klant",
+    "removeBooking": "Verwijderen",
+    "addBooking": "Boeking toevoegen",
+    "searchClient": "Zoek klant op naam of e-mail...",
+    "noClientsFound": "Geen klanten gevonden",
+    "confirmBooking": "Boeken",
+    "booking": "Boeken...",
+    "bookingFailed": "Boeking kon niet worden aangemaakt.",
+    "cancelFailed": "Boeking kon niet worden geannuleerd."
   },
   "classTypes": {
     "title": "Lestypen",
@@ -385,7 +404,18 @@
     "sectionColors": "Weergave",
     "primaryColor": "Primaire kleur",
     "secondaryColor": "Secundaire kleur",
-    "resetDefault": "Standaard herstellen"
+    "resetDefault": "Standaard herstellen",
+    "mobileUrlLabel": "Mobiele toegangs-URL",
+    "mobileUrlHint": "Automatisch gedetecteerd LAN-adres: {{ip}}. U kunt dit vervangen door een openbare URL.",
+    "mobileUrlSave": "Opslaan",
+    "mobileUrlSaved": "Opgeslagen!",
+    "tabMobile": "Mobiel",
+    "mobileTitle": "Mobiele App",
+    "mobileSubtitle": "Deel deze QR-code met je leden zodat ze de Agon-app kunnen verbinden met je studio.",
+    "mobileHowToShare": "Hoe te delen",
+    "mobileStep1": "Open de Agon-app op het apparaat van het lid",
+    "mobileStep2": "Tik op \"QR-code scannen\" op het welkomstscherm",
+    "mobileStep3": "Richt de camera op de bovenstaande QR-code"
   },
   "scheduleModal": {
     "title": "Les plannen",
@@ -555,5 +585,30 @@
     "saving": "Saving...",
     "saveChanges": "Save Changes",
     "failedSave": "Failed to save changes. Please try again."
+  },
+  "qr": {
+    "copyUrl": "URL kopieren",
+    "copied": "Gekopieerd!",
+    "download": "QR downloaden",
+    "localWarning": "Deze URL werkt alleen op hetzelfde Wi-Fi-netwerk. Stel een tunnel URL in voor toegang op afstand."
+  },
+  "setPassword": {
+    "title": "Wachtwoord instellen",
+    "subtitle": "Welkom bij Agon! Maak een wachtwoord aan om toegang te krijgen tot uw account.",
+    "passwordLabel": "Nieuw wachtwoord",
+    "passwordPlaceholder": "Minimaal 8 tekens",
+    "confirmLabel": "Wachtwoord bevestigen",
+    "confirmPlaceholder": "Herhaal uw wachtwoord",
+    "submit": "Wachtwoord instellen",
+    "submitting": "Opslaan…",
+    "successTitle": "Wachtwoord ingesteld!",
+    "successMsg": "U kunt nu inloggen met uw e-mailadres en nieuw wachtwoord.",
+    "goToLogin": "Ga naar inloggen",
+    "errorMismatch": "Wachtwoorden komen niet overeen.",
+    "errorTooShort": "Het wachtwoord moet minimaal 8 tekens lang zijn.",
+    "errorInvalidToken": "Deze uitnodigingslink is ongeldig of is al gebruikt.",
+    "errorExpiredToken": "Deze uitnodigingslink is verlopen. Vraag uw studiomanager om een nieuwe te sturen.",
+    "errorGeneric": "Er is iets misgegaan. Probeer het opnieuw.",
+    "loading": "Uw uitnodigingslink wordt geverifieerd…"
   }
 }

@@ -2,6 +2,7 @@ import csv
 import io
 import json
 import os
+import re
 from typing import Optional
 
 from app.auth import require_manager
@@ -129,10 +130,23 @@ async def analyse_file(
     mapping = llm_map_columns(headers, target_fields)
     unmapped = [col for col, val in mapping.items() if val is None]
 
-    # Save file
+    # Save file. file.filename is attacker-controlled — strip any path
+    # components and unexpected characters so it cannot escape UPLOADS_DIR
+    # (path traversal) or embed separators.
+    raw_name = os.path.basename(file.filename or "upload.csv")
+    safe_name = re.sub(r"[^A-Za-z0-9._-]", "_", raw_name)[:100] or "upload.csv"
     ensure_uploads_dir()
-    filename = f"upload_{utcnow().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
+    filename = f"upload_{utcnow().strftime('%Y%m%d_%H%M%S')}_{safe_name}"
+    uploads_abs = os.path.abspath(UPLOADS_DIR)
     saved_path = os.path.join(UPLOADS_DIR, filename)
+    # Defence in depth: confirm the resolved path stays inside UPLOADS_DIR.
+    if os.path.commonpath([os.path.abspath(saved_path), uploads_abs]) != uploads_abs:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": {"code": "MIGRATION_INVALID_FILENAME", "message": "Invalid file name."}
+            },
+        )
     with open(saved_path, "wb") as f:
         f.write(content)
 

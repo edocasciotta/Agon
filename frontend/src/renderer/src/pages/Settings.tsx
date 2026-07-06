@@ -6,10 +6,11 @@ import { studioApi } from '../api/studio'
 import { billingApi } from '../api/billing'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { PageHeader } from '../components/PageHeader'
+import { StudioQRCode } from '../components/StudioQRCode'
 import type { StudioSettings, EmailSettings } from '../types'
 import type { ApiError } from '../api/client'
 
-type Tab = 'studio' | 'email' | 'billing'
+type Tab = 'studio' | 'email' | 'billing' | 'mobile'
 
 export function SettingsPage() {
   const { t } = useTranslation()
@@ -27,6 +28,10 @@ export function SettingsPage() {
   const [emailSaveError, setEmailSaveError] = useState<string | null>(null)
   const [testEmailMsg, setTestEmailMsg] = useState<{ text: string; ok: boolean } | null>(null)
   const [emailSettingsSaved, setEmailSettingsSaved] = useState(false)
+
+  // Mobile tab state
+  const [mobileUrl, setMobileUrl] = useState('')
+  const [mobileUrlSaved, setMobileUrlSaved] = useState(false)
 
   // Billing tab state
   const [billingForm, setBillingForm] = useState<{
@@ -59,6 +64,12 @@ export function SettingsPage() {
   }, [settings])
 
   useEffect(() => {
+    if (settings && !mobileUrl) {
+      setMobileUrl(settings.tunnel_url || settings.lan_url || 'http://localhost:8000')
+    }
+  }, [settings])
+
+  useEffect(() => {
     if (emailSettings) setEmailForm({ ...emailSettings, email_smtp_password: '' })
   }, [emailSettings])
 
@@ -73,6 +84,15 @@ export function SettingsPage() {
     onError: (err: ApiError) => {
       setSaveError(err.message ?? t('settings.failedSave'))
       setSaveSuccess(false)
+    },
+  })
+
+  const mobileUrlMutation = useMutation({
+    mutationFn: (url: string) => studioApi.update({ tunnel_url: url }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['studio'] })
+      setMobileUrlSaved(true)
+      setTimeout(() => setMobileUrlSaved(false), 3000)
     },
   })
 
@@ -183,6 +203,9 @@ export function SettingsPage() {
           </button>
           <button className={tabClass('billing')} onClick={() => setActiveTab('billing')} role="tab" aria-selected={activeTab === 'billing'}>
             {t('billing.tab')}
+          </button>
+          <button className={tabClass('mobile')} onClick={() => setActiveTab('mobile')} role="tab" aria-selected={activeTab === 'mobile'}>
+            {t('settings.tabMobile')}
           </button>
         </nav>
       </div>
@@ -614,6 +637,65 @@ export function SettingsPage() {
                   {t('settings.sendTestEmail')}
                 </button>
               </div>
+            </div>
+          )}
+        </div>
+      )}
+      {/* Mobile Tab */}
+      {activeTab === 'mobile' && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6 max-w-2xl">
+          {isLoading ? (
+            <LoadingSpinner />
+          ) : (
+            <div className="space-y-6">
+              {/* URL editor */}
+              <section>
+                <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-1">
+                  {t('settings.mobileUrlLabel')}
+                </h3>
+                <p className="text-sm text-gray-500 mb-3">
+                  {t('settings.mobileUrlHint', { ip: settings?.lan_url ?? 'http://localhost:8000' })}
+                </p>
+                <div className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    value={mobileUrl}
+                    onChange={(e) => setMobileUrl(e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+                    placeholder={settings?.lan_url ?? 'http://192.168.x.x:8000'}
+                  />
+                  <button
+                    onClick={() => mobileUrlMutation.mutate(mobileUrl)}
+                    disabled={mobileUrlMutation.isPending}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors shrink-0"
+                  >
+                    {mobileUrlSaved ? t('settings.mobileUrlSaved') : t('settings.mobileUrlSave')}
+                  </button>
+                </div>
+              </section>
+
+              {/* QR code */}
+              <section className="border-t border-gray-100 pt-6">
+                <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-1">
+                  {t('settings.mobileTitle')}
+                </h3>
+                <p className="text-sm text-gray-500 mb-6">{t('settings.mobileSubtitle')}</p>
+                <StudioQRCode
+                  studioName={settings?.studio_name ?? 'Agon Studio'}
+                  studioUrl={mobileUrl || settings?.lan_url || 'http://localhost:8000'}
+                />
+              </section>
+
+              <section className="border-t border-gray-100 pt-6">
+                <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3">
+                  {t('settings.mobileHowToShare')}
+                </h3>
+                <ol className="space-y-2 text-sm text-gray-600 list-decimal list-inside">
+                  <li>{t('settings.mobileStep1')}</li>
+                  <li>{t('settings.mobileStep2')}</li>
+                  <li>{t('settings.mobileStep3')}</li>
+                </ol>
+              </section>
             </div>
           )}
         </div>

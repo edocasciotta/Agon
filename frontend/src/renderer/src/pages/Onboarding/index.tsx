@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { studioApi } from '../../api/studio'
 import { LoadingSpinner } from '../../components/LoadingSpinner'
+import { StudioQRCode } from '../../components/StudioQRCode'
 
 export function OnboardingPage() {
   const { t } = useTranslation()
@@ -227,10 +228,15 @@ export function OnboardingPage() {
             <div>
               <h2 className="text-xl font-bold text-gray-900 mb-1">{t('onboarding.step6Title')}</h2>
               <p className="text-gray-500 text-sm mb-6">{t('onboarding.step6Subtitle')}</p>
-              <div className="rounded-md bg-gray-100 border border-gray-200 p-8 mb-6 flex flex-col items-center gap-2">
-                <div className="w-32 h-32 bg-gray-300 rounded-md flex items-center justify-center text-gray-500 text-xs text-center">
-                  {t('onboarding.qrPlaceholder')}
-                </div>
+              <div className="rounded-md bg-gray-50 border border-gray-200 p-6 mb-6 flex flex-col items-center">
+                <StudioQRCode
+                  studioName={studioName || 'Agon Studio'}
+                  studioUrl="http://localhost:8000"
+                  size={160}
+                />
+                <p className="text-xs text-gray-500 text-center mt-4 max-w-xs">
+                  {t('onboarding.qrInstruction')}
+                </p>
               </div>
               <button
                 onClick={() => navigate('/dashboard')}

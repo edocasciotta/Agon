@@ -13,6 +13,7 @@ import { MembershipsPage } from './pages/Memberships'
 import { ReportsPage } from './pages/Reports'
 import { SettingsPage } from './pages/Settings'
 import { OnboardingPage } from './pages/Onboarding/index'
+import { SetPassword } from './pages/SetPassword'
 import { EmailTemplatesPage } from './pages/EmailTemplates/index'
 import { EmailEventsPage } from './pages/EmailEvents/index'
 import { SmartListsPage } from './pages/SmartLists/index'
@@ -154,6 +155,7 @@ function App(): JSX.Element {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/set-password" element={<SetPassword />} />
           <Route path="/onboarding" element={<OnboardingPage />} />
           <Route
             path="/"

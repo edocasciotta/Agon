@@ -121,7 +121,8 @@
     "step6Title": "Configuração concluída!",
     "step6Subtitle": "Seu estúdio está pronto. Conecte o aplicativo móvel para começar.",
     "qrPlaceholder": "O código QR aparecerá aqui — escaneie para conectar o aplicativo móvel",
-    "goToDashboard": "Ir ao painel"
+    "goToDashboard": "Ir ao painel",
+    "qrInstruction": "Compartilhe este QR code com seus membros. Eles podem escane-lo com o app Agon para se conectar ao seu estudio."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -176,7 +177,25 @@
     "zoom15m": "15 min",
     "zoom30m": "30 min",
     "zoom1h": "1 hora",
-    "allEstablishments": "Todos os estabelecimentos"
+    "allEstablishments": "Todos os estabelecimentos",
+    "manageBookings": "Gerir reservas"
+  },
+  "manageBookings": {
+    "title": "Gerir reservas",
+    "booked": "Reservados",
+    "spotsLeft": "{{count}} vagas restantes",
+    "full": "Lotado",
+    "loading": "A carregar lista...",
+    "noBookings": "Sem reservas.",
+    "unknownClient": "Cliente desconhecido",
+    "removeBooking": "Remover",
+    "addBooking": "Adicionar reserva",
+    "searchClient": "Pesquisar cliente por nome ou email...",
+    "noClientsFound": "Nenhum cliente encontrado",
+    "confirmBooking": "Reservar",
+    "booking": "A reservar...",
+    "bookingFailed": "Não foi possível criar a reserva.",
+    "cancelFailed": "Não foi possível cancelar a reserva."
   },
   "classTypes": {
     "title": "Tipos de aula",
@@ -385,7 +404,18 @@
     "sectionColors": "Aparência",
     "primaryColor": "Cor primária",
     "secondaryColor": "Cor secundária",
-    "resetDefault": "Restaurar padrão"
+    "resetDefault": "Restaurar padrão",
+    "mobileUrlLabel": "URL de acesso móvel",
+    "mobileUrlHint": "Endereço LAN detectado automaticamente: {{ip}}. Você pode substituir por uma URL pública.",
+    "mobileUrlSave": "Salvar",
+    "mobileUrlSaved": "Salvo!",
+    "tabMobile": "Mobile",
+    "mobileTitle": "App Mobile",
+    "mobileSubtitle": "Compartilhe este QR code com seus membros para que conectem o app Agon ao seu estudio.",
+    "mobileHowToShare": "Como compartilhar",
+    "mobileStep1": "Abra o app Agon no dispositivo do membro",
+    "mobileStep2": "Toque em \"Escanear QR Code\" na tela de boas-vindas",
+    "mobileStep3": "Aponte a camera para o QR code acima"
   },
   "scheduleModal": {
     "title": "Agendar aula",
@@ -555,5 +585,30 @@
     "saving": "Saving...",
     "saveChanges": "Save Changes",
     "failedSave": "Failed to save changes. Please try again."
+  },
+  "qr": {
+    "copyUrl": "Copiar URL",
+    "copied": "Copiado!",
+    "download": "Baixar QR",
+    "localWarning": "Esta URL so funciona na mesma rede Wi-Fi. Configure um tunnel URL para acesso remoto."
+  },
+  "setPassword": {
+    "title": "Definir senha",
+    "subtitle": "Bem-vindo ao Agon! Crie uma senha para acessar sua conta.",
+    "passwordLabel": "Nova senha",
+    "passwordPlaceholder": "Pelo menos 8 caracteres",
+    "confirmLabel": "Confirmar senha",
+    "confirmPlaceholder": "Repita sua senha",
+    "submit": "Definir senha",
+    "submitting": "Salvando…",
+    "successTitle": "Senha definida!",
+    "successMsg": "Agora você pode fazer login com seu email e nova senha.",
+    "goToLogin": "Ir para login",
+    "errorMismatch": "As senhas não coincidem.",
+    "errorTooShort": "A senha deve ter pelo menos 8 caracteres.",
+    "errorInvalidToken": "Este link de convite é inválido ou já foi utilizado.",
+    "errorExpiredToken": "Este link de convite expirou. Peça ao seu gerente de estúdio para enviar um novo.",
+    "errorGeneric": "Algo deu errado. Por favor, tente novamente.",
+    "loading": "Verificando seu link de convite…"
   }
 }

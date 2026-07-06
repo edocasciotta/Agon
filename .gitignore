@@ -30,18 +30,26 @@ mobile/android/
 .env
 backend/.env
 
-# Databases
+# Databases (never commit — may contain live member PII)
+agon.db
+agon.db-shm
+agon.db-wal
 backend/agon.db
 backend/agon.db-shm
 backend/agon.db-wal
 backend/test_agon.db
+*.db
+*.db-shm
+*.db-wal
 
 # Misc
 *.log
 .coverage
 htmlcov/
 
-# Runtime-generated directories
+# Runtime-generated directories (may contain live PII — never commit)
+backups/
+uploads/
 backend/backups/
 backend/uploads/
 

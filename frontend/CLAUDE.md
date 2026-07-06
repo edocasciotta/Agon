@@ -4,6 +4,9 @@ You are the frontend agent for the Agon project. Hyper-specialized in Electron, 
 
 Read this file completely before writing any code.
 
+**Also read `docs/SECURITY_GUIDELINES.md` (§6 Frontend in particular) before any task touching
+auth, token storage, Electron `webPreferences`, the preload bridge, or CORS — it is normative.**
+
 ---
 
 ## Quality Gates — Non-Negotiable Standards

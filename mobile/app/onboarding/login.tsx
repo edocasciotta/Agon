@@ -9,9 +9,11 @@ import {
   ScrollView,
 } from 'react-native'
 import { useRouter } from 'expo-router'
+import { ChevronLeft } from 'lucide-react-native'
 import { authApi } from '../../src/api/auth'
 import { clientsApi } from '../../src/api/memberships'
 import { useAuthStore } from '../../src/store/authStore'
+import { useStudioStore } from '../../src/store/studioStore'
 import { registerForPushNotifications } from '../../src/notifications'
 import { getErrorMessage } from '../../src/lib/errorMessages'
 import type { ApiError } from '../../src/api/client'
@@ -53,8 +55,16 @@ export default function LoginScreen() {
     }
   }
 
+  const handleBack = () => {
+    useStudioStore.getState().clearStudio()
+    router.replace('/onboarding/scan')
+  }
+
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+        <ChevronLeft size={22} color="#6B7280" />
+      </TouchableOpacity>
       <Text style={styles.title}>Welcome back</Text>
       <Text style={styles.subtitle}>Sign in to your studio account</Text>
 
@@ -102,8 +112,16 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: 24,
+    paddingTop: 56,
     backgroundColor: '#fff',
     justifyContent: 'center',
+  },
+  backButton: {
+    position: 'absolute',
+    top: 16,
+    left: 16,
+    padding: 8,
+    borderRadius: 8,
   },
   title: {
     fontSize: 28,

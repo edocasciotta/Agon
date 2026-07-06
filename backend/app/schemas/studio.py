@@ -26,6 +26,7 @@ class StudioSettingsUpdate(BaseModel):
     calendar_end_hour: Optional[int] = None
     primary_color: Optional[str] = None
     secondary_color: Optional[str] = None
+    tunnel_url: Optional[str] = None
 
 
 class StudioSettingsResponse(BaseModel):
@@ -47,6 +48,7 @@ class StudioSettingsResponse(BaseModel):
     secondary_color: Optional[str] = None
     stripe_connected: bool
     tunnel_url: Optional[str] = None
+    lan_url: Optional[str] = None
     last_backup_at: Optional[datetime] = None
     updated_at: datetime
     model_config = {"from_attributes": True}

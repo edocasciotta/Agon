@@ -10,4 +10,12 @@ export const authApi = {
     const res = await apiClient.get('/api/v1/auth/me', { headers })
     return res.data
   },
+  validateInvite: async (token: string) => {
+    const res = await apiClient.get(`/api/v1/auth/invite/${token}`)
+    return res.data as { client_id: number; email: string; full_name: string; token_valid: boolean }
+  },
+  resetPassword: async (token: string, new_password: string) => {
+    const res = await apiClient.post('/api/v1/auth/reset-password', { token, new_password })
+    return res.data as { message: string }
+  },
 }

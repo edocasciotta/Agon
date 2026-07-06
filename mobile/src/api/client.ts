@@ -1,5 +1,6 @@
 import axios, { type AxiosError } from 'axios'
 import * as SecureStore from 'expo-secure-store'
+import { useSessionStore } from '../store/sessionStore'
 
 export interface ApiError {
   code: string
@@ -8,6 +9,7 @@ export interface ApiError {
 
 export const TOKEN_KEY = 'agon_access_token'
 export const STUDIO_URL_KEY = 'agon_studio_url'
+export const STUDIO_NAME_KEY = 'agon_studio_name'
 
 export const apiClient = axios.create({
   headers: { 'Content-Type': 'application/json' },
@@ -25,10 +27,14 @@ apiClient.interceptors.request.use(async (config) => {
   return config
 })
 
-// Normalise error shape
+// Normalise error shape + handle 401 (expired token → redirect to login without losing studio)
 apiClient.interceptors.response.use(
   (response) => response,
-  (error: AxiosError<{ detail: { error: ApiError } }>) => {
+  async (error: AxiosError<{ detail: { error: ApiError } }>) => {
+    if (error.response?.status === 401) {
+      await SecureStore.deleteItemAsync(TOKEN_KEY)
+      useSessionStore.getState().setNeedsReauth(true)
+    }
     const apiError: ApiError = error.response?.data?.detail?.error ?? {
       code: 'SERVER_ERROR',
       message: error.message ?? 'An unexpected error occurred',

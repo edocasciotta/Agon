@@ -121,7 +121,8 @@
     "step6Title": "Configurazione completata!",
     "step6Subtitle": "Il tuo studio è pronto. Connetti l'app mobile per iniziare.",
     "qrPlaceholder": "Il codice QR apparirà qui — scansionalo per connettere l'app mobile",
-    "goToDashboard": "Vai alla Dashboard"
+    "goToDashboard": "Vai alla Dashboard",
+    "qrInstruction": "Condividi questo QR code con i tuoi membri. Possono scansionarlo con l'app Agon per connettersi al tuo studio."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -176,7 +177,25 @@
     "zoom15m": "15 min",
     "zoom30m": "30 min",
     "zoom1h": "1 ora",
-    "allEstablishments": "Tutti gli stabilimenti"
+    "allEstablishments": "Tutti gli stabilimenti",
+    "manageBookings": "Gestisci prenotazioni"
+  },
+  "manageBookings": {
+    "title": "Gestisci prenotazioni",
+    "booked": "Prenotati",
+    "spotsLeft": "{{count}} posti rimasti",
+    "full": "Pieno",
+    "loading": "Caricamento lista...",
+    "noBookings": "Nessuna prenotazione.",
+    "unknownClient": "Cliente sconosciuto",
+    "removeBooking": "Rimuovi",
+    "addBooking": "Aggiungi prenotazione",
+    "searchClient": "Cerca cliente per nome o email...",
+    "noClientsFound": "Nessun cliente trovato",
+    "confirmBooking": "Prenota",
+    "booking": "Prenotazione...",
+    "bookingFailed": "Impossibile creare la prenotazione.",
+    "cancelFailed": "Impossibile annullare la prenotazione."
   },
   "editModal": {
     "title": "Modifica lezione",
@@ -393,7 +412,18 @@
     "sectionColors": "Aspetto",
     "primaryColor": "Colore primario",
     "secondaryColor": "Colore secondario",
-    "resetDefault": "Ripristina predefinito"
+    "resetDefault": "Ripristina predefinito",
+    "mobileUrlLabel": "URL accesso mobile",
+    "mobileUrlHint": "Indirizzo LAN rilevato automaticamente: {{ip}}. Puoi sovrascriverlo con un URL pubblico.",
+    "mobileUrlSave": "Salva",
+    "mobileUrlSaved": "Salvato!",
+    "tabMobile": "Mobile",
+    "mobileTitle": "App Mobile",
+    "mobileSubtitle": "Condividi questo QR code con i tuoi membri per connetterli all'app Agon.",
+    "mobileHowToShare": "Come condividere",
+    "mobileStep1": "Apri l'app Agon sul dispositivo del membro",
+    "mobileStep2": "Tocca \"Scansiona QR Code\" nella schermata di benvenuto",
+    "mobileStep3": "Punta la fotocamera sul QR code qui sopra"
   },
   "scheduleModal": {
     "title": "Pianifica lezione",
@@ -555,5 +585,30 @@
     "emailPlaceholder": "es. jane@studio.com",
     "noResults": "Nessun istruttore corrisponde alla ricerca.",
     "reactivate": "Riattiva"
+  },
+  "qr": {
+    "copyUrl": "Copia URL",
+    "copied": "Copiato!",
+    "download": "Scarica QR",
+    "localWarning": "Questo URL funziona solo sulla stessa rete Wi-Fi. Configura un tunnel URL per l'accesso remoto."
+  },
+  "setPassword": {
+    "title": "Imposta la tua password",
+    "subtitle": "Benvenuto su Agon! Crea una password per accedere al tuo account.",
+    "passwordLabel": "Nuova password",
+    "passwordPlaceholder": "Almeno 8 caratteri",
+    "confirmLabel": "Conferma password",
+    "confirmPlaceholder": "Ripeti la password",
+    "submit": "Imposta password",
+    "submitting": "Salvataggio…",
+    "successTitle": "Password impostata!",
+    "successMsg": "Ora puoi accedere con la tua email e la nuova password.",
+    "goToLogin": "Vai al login",
+    "errorMismatch": "Le password non coincidono.",
+    "errorTooShort": "La password deve contenere almeno 8 caratteri.",
+    "errorInvalidToken": "Questo link di invito non è valido o è già stato utilizzato.",
+    "errorExpiredToken": "Questo link di invito è scaduto. Chiedi al tuo studio manager di inviarne uno nuovo.",
+    "errorGeneric": "Si è verificato un errore. Riprova.",
+    "loading": "Verifica il tuo link di invito…"
   }
 }
