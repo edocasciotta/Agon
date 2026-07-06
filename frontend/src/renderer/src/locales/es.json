@@ -169,6 +169,7 @@
     "end": "Fin",
     "statusLabel": "Estado",
     "capacityLabel": "Capacidad",
+    "booked": "reservados",
     "notesLabel": "Notas",
     "cancelClass": "Cancelar clase",
     "cancelling": "Cancelando...",

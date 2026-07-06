@@ -169,6 +169,7 @@
     "end": "End",
     "statusLabel": "Status",
     "capacityLabel": "Capacity",
+    "booked": "booked",
     "notesLabel": "Notes",
     "editClass": "Edit",
     "cancelClass": "Cancel Class",

@@ -57,6 +57,65 @@ function getEventHeight(startsAt: string, endsAt: string, rowH: number): number 
   return Math.max((durationMins / 60) * rowH, 2)
 }
 
+interface OverlapLayout {
+  column: number
+  totalColumns: number
+}
+
+function computeOverlapLayout(classes: ScheduledClass[]): Map<number, OverlapLayout> {
+  const result = new Map<number, OverlapLayout>()
+  if (classes.length === 0) return result
+
+  const sorted = [...classes].sort(
+    (a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime()
+  )
+
+  const groups: ScheduledClass[][] = []
+  let currentGroup: ScheduledClass[] = [sorted[0]]
+  let groupEnd = new Date(sorted[0].ends_at).getTime()
+
+  for (let i = 1; i < sorted.length; i++) {
+    const cls = sorted[i]
+    const start = new Date(cls.starts_at).getTime()
+    if (start < groupEnd) {
+      currentGroup.push(cls)
+      groupEnd = Math.max(groupEnd, new Date(cls.ends_at).getTime())
+    } else {
+      groups.push(currentGroup)
+      currentGroup = [cls]
+      groupEnd = new Date(cls.ends_at).getTime()
+    }
+  }
+  groups.push(currentGroup)
+
+  for (const group of groups) {
+    const columns: ScheduledClass[][] = []
+    for (const cls of group) {
+      const clsStart = new Date(cls.starts_at).getTime()
+      let placed = false
+      for (let c = 0; c < columns.length; c++) {
+        const lastInCol = columns[c][columns[c].length - 1]
+        if (new Date(lastInCol.ends_at).getTime() <= clsStart) {
+          columns[c].push(cls)
+          placed = true
+          break
+        }
+      }
+      if (!placed) {
+        columns.push([cls])
+      }
+    }
+    const total = columns.length
+    for (let c = 0; c < columns.length; c++) {
+      for (const cls of columns[c]) {
+        result.set(cls.id, { column: c, totalColumns: total })
+      }
+    }
+  }
+
+  return result
+}
+
 function formatHour(h: number): string {
   return `${String(h).padStart(2, '0')}:00`
 }
@@ -362,49 +421,59 @@ export function CalendarPage() {
                       ))}
 
                       {/* Events */}
-                      {dayClasses.map((cls) => {
-                        const tpl = templateMap[cls.template_id]
-                        const color = resolveColor(tpl?.color)
-                        const rgb = hexToRgb(color)
-                        const top = getEventTop(cls.starts_at, rowH, gridStart)
-                        const height = getEventHeight(cls.starts_at, cls.ends_at, rowH)
-                        const label = tpl?.name ?? `#${cls.id}`
-                        const showText = height >= 16
-                        const showSecondary = height >= 32
+                      {(() => {
+                        const overlapMap = computeOverlapLayout(dayClasses)
+                        return dayClasses.map((cls) => {
+                          const tpl = templateMap[cls.template_id]
+                          const color = resolveColor(tpl?.color)
+                          const rgb = hexToRgb(color)
+                          const top = getEventTop(cls.starts_at, rowH, gridStart)
+                          const height = getEventHeight(cls.starts_at, cls.ends_at, rowH)
+                          const label = tpl?.name ?? `#${cls.id}`
+                          const showText = height >= 16
+                          const showSecondary = height >= 32
 
-                        return (
-                          <button
-                            key={cls.id}
-                            onClick={(e) => { e.stopPropagation(); setActionMenuClass({ cls, x: e.clientX, y: e.clientY }); setTooltip(null) }}
-                            onMouseEnter={(e) => setTooltip({ cls, x: e.clientX, y: e.clientY })}
-                            onMouseLeave={() => setTooltip(null)}
-                            className="absolute left-1 right-1 rounded-md text-left transition-all overflow-hidden"
-                            style={{
-                              top: `${top}px`,
-                              height: `${height}px`,
-                              background: `rgba(${rgb}, 0.12)`,
-                              borderLeft: `3px solid ${color}`,
-                              color: color,
-                            }}
-                          >
-                            {showText && (
-                              <div className="px-1.5 py-0.5">
-                                <div className="text-[11px] font-semibold leading-tight truncate">
-                                  {label}
-                                </div>
-                                {showSecondary && (
-                                  <div className="text-[10px] opacity-70 leading-tight truncate">
-                                    {format(new Date(cls.starts_at), 'HH:mm')}
-                                    {cls.instructor_id && instructorMap[cls.instructor_id]
-                                      ? ` · ${instructorMap[cls.instructor_id].split(' ')[0]}`
-                                      : ''}
+                          const layout = overlapMap.get(cls.id) ?? { column: 0, totalColumns: 1 }
+                          const widthPct = 100 / layout.totalColumns
+                          const leftPct = layout.column * widthPct
+
+                          return (
+                            <button
+                              key={cls.id}
+                              onClick={(e) => { e.stopPropagation(); setActionMenuClass({ cls, x: e.clientX, y: e.clientY }); setTooltip(null) }}
+                              onMouseEnter={(e) => setTooltip({ cls, x: e.clientX, y: e.clientY })}
+                              onMouseLeave={() => setTooltip(null)}
+                              className="absolute rounded-md text-left transition-all overflow-hidden"
+                              style={{
+                                top: `${top}px`,
+                                height: `${height}px`,
+                                left: `calc(${leftPct}% + 2px)`,
+                                width: `calc(${widthPct}% - 4px)`,
+                                background: `rgba(${rgb}, 0.12)`,
+                                borderLeft: `3px solid ${color}`,
+                                color: color,
+                              }}
+                            >
+                              {showText && (
+                                <div className="px-1.5 py-0.5">
+                                  <div className="text-[11px] font-semibold leading-tight truncate">
+                                    {label}
                                   </div>
-                                )}
-                              </div>
-                            )}
-                          </button>
-                        )
-                      })}
+                                  {showSecondary && (
+                                    <div className="text-[10px] opacity-70 leading-tight truncate">
+                                      {format(new Date(cls.starts_at), 'HH:mm')}
+                                      {cls.instructor_id && instructorMap[cls.instructor_id]
+                                        ? ` · ${instructorMap[cls.instructor_id].split(' ')[0]}`
+                                        : ''}
+                                      {` · ${cls.booking_count}/${cls.capacity}`}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </button>
+                          )
+                        })
+                      })()}
                     </div>
                   )
                 })}
@@ -469,7 +538,7 @@ export function CalendarPage() {
                   <svg className="w-3 h-3 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  {t('calendar.capacityLabel')}: {cls.capacity}
+                  {cls.booking_count}/{cls.capacity} {t('calendar.booked')}
                 </div>
               </div>
             </div>

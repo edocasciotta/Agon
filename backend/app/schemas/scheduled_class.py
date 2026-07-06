@@ -59,6 +59,7 @@ class ScheduledClassResponse(BaseModel):
     starts_at: datetime
     ends_at: datetime
     capacity: int
+    booking_count: int = 0
     status: str
     recurrence_group_id: Optional[str] = None
     notes: Optional[str] = None
