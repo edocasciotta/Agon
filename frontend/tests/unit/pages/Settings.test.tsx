@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { SettingsPage } from '../../../src/renderer/src/pages/Settings'
@@ -94,5 +94,64 @@ describe('SettingsPage', () => {
     const billingTab = await screen.findByRole('tab', { name: /billing/i })
     fireEvent.click(billingTab)
     expect(await screen.findByText(/stripe connection/i)).toBeTruthy()
+  })
+
+  it('does not resend an empty SMTP password on a save that only touches an unrelated field', async () => {
+    const { studioApi } = await import('../../../src/renderer/src/api/studio')
+    renderPage()
+
+    const emailTab = await screen.findByRole('tab', { name: /email/i })
+    fireEvent.click(emailTab)
+
+    // 1) User types a new password and saves. The payload must include it.
+    const passwordInput = await screen.findByPlaceholderText(/leave blank to keep current/i)
+    fireEvent.change(passwordInput, { target: { value: 'hunter2' } })
+
+    // Simulate the post-save refetch that queryClient.invalidateQueries triggers:
+    // the server never echoes back the real password, so the form resets it to ''.
+    // (email_smtp_tls is flipped to false here so this response is structurally
+    // distinct from the initial load — otherwise TanStack Query v5's structural
+    // sharing would reuse the same object reference and the sync useEffect would
+    // never re-run, since nothing "changed" from the query's point of view.)
+    vi.mocked(studioApi.getEmailSettings).mockResolvedValueOnce({
+      email_from_name: 'Test Studio',
+      email_from_address: 'studio@example.com',
+      email_smtp_host: 'smtp.gmail.com',
+      email_smtp_port: 587,
+      email_smtp_user: 'user@example.com',
+      email_smtp_password: '***',
+      email_smtp_tls: false,
+    })
+
+    const saveButton = await screen.findByRole('button', { name: /save settings/i })
+    fireEvent.click(saveButton)
+
+    await waitFor(() => {
+      expect(studioApi.saveEmailSettings).toHaveBeenCalledTimes(1)
+    })
+    expect(studioApi.saveEmailSettings).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ email_smtp_password: 'hunter2' })
+    )
+
+    // Wait for the refetch triggered by invalidateQueries to land and reset the
+    // password field back to '' (confirming the "reload" half of the scenario).
+    await waitFor(() => {
+      expect((passwordInput as HTMLInputElement).value).toBe('')
+    })
+
+    // 2) User changes only an unrelated field (does not touch the password field again).
+    const tlsCheckbox = await screen.findByLabelText(/tls/i)
+    fireEvent.click(tlsCheckbox)
+
+    fireEvent.click(await screen.findByRole('button', { name: /save settings/i }))
+
+    await waitFor(() => {
+      expect(studioApi.saveEmailSettings).toHaveBeenCalledTimes(2)
+    })
+    const secondCallPayload = vi.mocked(studioApi.saveEmailSettings).mock.calls[1][0]
+    expect(
+      !('email_smtp_password' in secondCallPayload) || secondCallPayload.email_smtp_password === undefined
+    ).toBe(true)
   })
 })

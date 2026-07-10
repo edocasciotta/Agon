@@ -11,12 +11,13 @@
 | Suite | Count | Status |
 |---|---|---|
 | Backend (pytest) | 288 | ✅ |
-| Frontend (Vitest) | 53 | ✅ |
+| Frontend (Vitest) | 54 | ✅ |
 | Mobile (jest-expo) | 44 | ✅ |
 | Docs build | — | ✅ |
 
 ### Active branch
 `main` — all changes committed and pushed (`a33dd7e`).
+Worktree branch `claude/distracted-ramanujan-043037` has one **uncommitted** fix (see below) — not yet committed or merged.
 
 ### Local dev
 - Backend: `cd backend && .venv/bin/uvicorn app.main:app --reload`
@@ -118,6 +119,35 @@ Full security audit. Normative doc: `docs/SECURITY_GUIDELINES.md`.
 - Source: `landing/` — Next.js 15 static export, deployed via `npx vercel --prod` from `landing/` dir.
 - After deploy: `vercel alias set <url> agon-studio.dev && vercel alias set <url> www.agon-studio.dev`.
 - Do NOT run vercel from monorepo root — it uploads 15 GB.
+
+---
+
+## Bug Fix — Email settings secret wipe (2026-07-10, uncommitted)
+
+**Symptom:** Saving the Settings → Email tab for any reason (e.g. toggling TLS) silently cleared
+the stored SMTP password server-side, breaking outbound email (password resets, invites) with no
+visible error.
+
+**Root cause:** `GET /api/v1/studio/email` never returns the real password (masked `"***"`).
+`Settings.tsx`'s sync effect reset `emailForm.email_smtp_password` to `''` on every load. The old
+`handleEmailSave` sent the whole form unconditionally, so `''` was always in the payload unless the
+user retyped the password that session. Backend contract (`email_settings.py`, unchanged, correct):
+`None`/absent = don't touch, `""` = explicit clear — so every such save hit the "clear it" branch.
+
+**Fix (frontend only):** `Settings.tsx` now tracks `emailPasswordTouched`, true only when the user
+edits that specific field, reset to `false` whenever `emailSettings` (re)loads. `handleEmailSave`
+omits `email_smtp_password` from the payload entirely (object destructure, not `undefined`/`''`)
+unless the flag is set. Regression test added to `Settings.test.tsx` (54th frontend test) exercising
+the full type→save→refetch→unrelated-change→save flow; verified to fail without the fix.
+
+**Note:** the same investigation described an identical bug in a "SMS settings tab" — no such tab,
+router, or Twilio integration exists anywhere in this codebase (verified via grep + `git log --all` +
+both spec docs). Not built; nothing to fix there. If a future task references SMS settings, treat it
+as a new-feature request, not a continuation of this fix.
+
+**Files touched:** `frontend/src/renderer/src/pages/Settings.tsx`, `frontend/tests/unit/pages/Settings.test.tsx`, `CHANGELOG.md`. No backend changes. Verified independently by the orchestrator: `npm run build`/`lint`/`test -- --run` all clean; lint warning count (15) diffed against baseline via `git stash` — identical, no new warnings introduced.
+
+**Status:** working-tree changes only, not committed — commit only if/when requested.
 
 ---
 

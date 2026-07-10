@@ -28,6 +28,7 @@ export function SettingsPage() {
   const [emailSaveError, setEmailSaveError] = useState<string | null>(null)
   const [testEmailMsg, setTestEmailMsg] = useState<{ text: string; ok: boolean } | null>(null)
   const [emailSettingsSaved, setEmailSettingsSaved] = useState(false)
+  const [emailPasswordTouched, setEmailPasswordTouched] = useState(false)
 
   // Mobile tab state
   const [mobileUrl, setMobileUrl] = useState('')
@@ -71,6 +72,7 @@ export function SettingsPage() {
 
   useEffect(() => {
     if (emailSettings) setEmailForm({ ...emailSettings, email_smtp_password: '' })
+    setEmailPasswordTouched(false)
   }, [emailSettings])
 
   const updateMutation = useMutation({
@@ -131,6 +133,7 @@ export function SettingsPage() {
   const handleEmailChange = (field: keyof EmailSettings, value: string | number | boolean) => {
     setEmailForm((prev) => ({ ...prev, [field]: value }))
     setEmailSettingsSaved(false)
+    if (field === 'email_smtp_password') setEmailPasswordTouched(true)
   }
 
   const billingSaveMutation = useMutation({
@@ -150,7 +153,20 @@ export function SettingsPage() {
   })
 
   const handleSave = () => updateMutation.mutate(form)
-  const handleEmailSave = () => emailUpdateMutation.mutate(emailForm)
+  const handleEmailSave = () => {
+    // The password field is never populated with the real stored value (see the
+    // useEffect above), so unless the user actually retyped it in this session,
+    // omit it entirely from the payload. Sending '' would hit the backend's
+    // "explicit empty string clears the credential" branch and silently wipe
+    // the configured SMTP password on every unrelated save.
+    if (emailPasswordTouched) {
+      emailUpdateMutation.mutate(emailForm)
+      return
+    }
+    const { email_smtp_password, ...rest } = emailForm
+    void email_smtp_password
+    emailUpdateMutation.mutate(rest)
+  }
 
   const handleBillingSave = () => {
     const billingSchema = z.object({
