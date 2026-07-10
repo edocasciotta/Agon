@@ -9,8 +9,8 @@ import type {
 
 export const clientMembershipsApi = {
   getOwn: async (): Promise<Membership[]> => {
-    const res = await apiClient.get('/api/v1/memberships')
-    return res.data
+    const res = await apiClient.get('/api/v1/memberships', { params: { page_size: 100 } })
+    return res.data.items
   },
 }
 

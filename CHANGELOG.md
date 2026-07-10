@@ -12,6 +12,7 @@ Agon uses [Semantic Versioning](https://semver.org/).
 ### Added
 - `POST /api/v1/agent/act`: AI Action Mode — studio managers can create scheduled classes from a natural-language request (e.g. "create a Yoga class next Wednesday at Milano with Elena, 1 hour"). The LLM only extracts slots via tool calling; class type, location, instructor, and date are resolved deterministically server-side and a class is created only once every field is unambiguous — otherwise the assistant asks a clarifying question. Manager-only, opt-in toggle in the AI Support chat panel.
 - `GET /api/v1/clients` pagination: `page`/`page_size` query params, response now `{items, total, page, page_size}`
+- `GET /api/v1/memberships` pagination: `page`/`page_size` query params, response now `{items, total, page, page_size}`; Memberships page "All Memberships" table now uses the shared `Pagination` component (page size 50)
 - `search` query param on `GET /api/v1/instructors` and `GET /api/v1/locations`, with matching searchbars on the Instructors and Establishments pages
 - `setup.sh` / `setup.ps1`: one-command dev environment setup
 - `Makefile`: `test`, `lint`, `format`, `build`, `dev` targets for all workspaces

@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -38,6 +38,13 @@ class MembershipResponse(BaseModel):
     client_name: Optional[str] = None
     membership_type_name: Optional[str] = None
     model_config = {"from_attributes": True}
+
+
+class MembershipListPage(BaseModel):
+    items: List[MembershipResponse]
+    total: int
+    page: int
+    page_size: int
 
 
 class MembershipPauseRequest(BaseModel):
