@@ -26,6 +26,8 @@ export const errorMessages: Record<string, string> = {
   STRIPE_API_ERROR: 'A payment error occurred. Please try again.',
   STRIPE_NOT_CONFIGURED: 'Online payments are not set up for this studio yet.',
   STUDIO_NOT_FOUND: 'Studio configuration not found.',
+  // Tags
+  TAG_DUPLICATE: 'A tag with this name already exists.',
   // Generic
   NOT_FOUND: 'The requested resource was not found.',
   VALIDATION_ERROR: 'Some fields are invalid. Please check and try again.',

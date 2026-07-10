@@ -12,7 +12,9 @@ from app.schemas.membership import (
     MembershipResponse,
     MembershipUpdate,
 )
-from app.utils import utcnow
+from app.services.intro_offer_service import can_use_intro_offer
+from app.services.tag_service import evaluate_auto_tags
+from app.utils import raise_api_error, utcnow
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -47,6 +49,15 @@ def _get_or_404(db: Session, membership_id: int) -> Membership:
     return m
 
 
+def _to_membership_response(
+    membership: Membership, client_name: str, membership_type_name: str
+) -> MembershipResponse:
+    data = MembershipResponse.model_validate(membership).model_dump()
+    data["client_name"] = client_name
+    data["membership_type_name"] = membership_type_name
+    return MembershipResponse(**data)
+
+
 @router.get("/memberships", response_model=List[MembershipResponse])
 def list_memberships(
     client_id: int = None,
@@ -54,13 +65,22 @@ def list_memberships(
     db: Session = Depends(get_db),
 ):
     role, subject_id = _resolve_caller(token)
+    query = (
+        db.query(Membership, Client.full_name, MembershipType.name)
+        .join(Client, Membership.client_id == Client.id)
+        .join(MembershipType, Membership.membership_type_id == MembershipType.id)
+    )
+
     if role in ("manager", "instructor"):
-        query = db.query(Membership)
         if client_id:
             query = query.filter(Membership.client_id == client_id)
-        return query.all()
     else:
-        return db.query(Membership).filter(Membership.client_id == subject_id).all()
+        query = query.filter(Membership.client_id == subject_id)
+
+    return [
+        _to_membership_response(membership, client_name, membership_type_name)
+        for membership, client_name, membership_type_name in query.all()
+    ]
 
 
 @router.post("/memberships", response_model=MembershipResponse, status_code=201)
@@ -85,9 +105,22 @@ def assign_membership(
             },
         )
 
+    # Intro offer: enforce one-per-client-per-location
+    if mt.is_intro_offer:
+        if not can_use_intro_offer(db, payload.client_id, mt.location_id):
+            raise_api_error(
+                "INTRO_OFFER_ALREADY_USED",
+                "This client has already used an intro offer at this location.",
+                status_code=409,
+            )
+
     expires_at = payload.expires_at
-    if expires_at is None and mt.validity_days is not None:
-        expires_at = payload.starts_at + timedelta(days=mt.validity_days)
+    if expires_at is None:
+        validity = mt.validity_days
+        if mt.is_intro_offer and mt.intro_validity_days is not None:
+            validity = mt.intro_validity_days
+        if validity is not None:
+            expires_at = payload.starts_at + timedelta(days=validity)
 
     credits_remaining = payload.credits_remaining
     if credits_remaining is None:
@@ -103,6 +136,15 @@ def assign_membership(
         credits_used=0,
     )
     db.add(membership)
+    db.flush()
+
+    evaluate_auto_tags(
+        db,
+        "membership_purchased",
+        payload.client_id,
+        {"membership_type_id": payload.membership_type_id},
+    )
+
     db.commit()
     db.refresh(membership)
     return membership

@@ -5,11 +5,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from app.auth import decode_token, oauth2_scheme
+from app.auth import decode_token, oauth2_scheme, require_manager
 from app.database import get_db
 from app.limiter import get_jwt_sub, limiter
 from app.models.booking import Booking
 from app.models.class_template import ClassTemplate
+from app.models.payment import Payment
 from app.models.scheduled_class import ScheduledClass
 from app.models.waitlist import Waitlist
 from app.schemas.booking import (
@@ -20,6 +21,7 @@ from app.schemas.booking import (
     WaitlistResponse,
 )
 from app.services.booking_service import (
+    calculate_fee,
     can_book,
     deduct_credit,
     get_active_membership,
@@ -27,6 +29,7 @@ from app.services.booking_service import (
     process_waitlist,
     refund_credit,
 )
+from app.services.tag_service import evaluate_auto_tags
 from app.utils import utcnow
 
 logger = logging.getLogger(__name__)
@@ -484,6 +487,10 @@ def create_booking(
     credit_deducted = deduct_credit(db, membership)
     booking.credit_deducted = credit_deducted
 
+    evaluate_auto_tags(
+        db, "booking_created", target_client_id, {"class_id": payload.scheduled_class_id}
+    )
+
     db.commit()
     db.refresh(booking)
 
@@ -491,6 +498,64 @@ def create_booking(
         f"Booking created: client_id={target_client_id}, class_id={payload.scheduled_class_id}"
     )
     return booking
+
+
+# ---------------------------------------------------------------------------
+# POST /bookings/{id}/no-show  (manager-only)
+# ---------------------------------------------------------------------------
+
+
+@router.post("/bookings/{booking_id}/no-show", response_model=BookingResponse)
+def mark_no_show(
+    booking_id: int,
+    manager=Depends(require_manager),
+    db: Session = Depends(get_db),
+):
+    booking = db.query(Booking).filter(Booking.id == booking_id).first()
+    if not booking:
+        raise HTTPException(
+            status_code=404,
+            detail={"error": {"code": "NOT_FOUND", "message": "Booking not found"}},
+        )
+
+    if booking.status != "confirmed":
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": {
+                    "code": "BOOKING_NOT_CONFIRMED",
+                    "message": "Booking is not confirmed",
+                }
+            },
+        )
+
+    booking.status = "no_show"
+
+    fee_charged = None
+    fee_amount = calculate_fee(db, booking.client_id, "no_show")
+    if fee_amount > 0:
+        now = utcnow()
+        payment = Payment(
+            client_id=booking.client_id,
+            amount=fee_amount,
+            currency="EUR",
+            status="completed",
+            provider="system",
+            notes="no_show_fee",
+            paid_at=now,
+        )
+        db.add(payment)
+        fee_charged = fee_amount
+
+    evaluate_auto_tags(db, "no_show", booking.client_id)
+
+    db.commit()
+    db.refresh(booking)
+
+    response = BookingResponse.model_validate(booking)
+    if fee_charged is not None:
+        response.fee_charged = fee_charged
+    return response
 
 
 # ---------------------------------------------------------------------------
@@ -599,6 +664,25 @@ def cancel_booking(
         membership = get_active_membership(db, booking.client_id)
         refund_credit(db, membership, booking.credit_deducted)
 
+    # Late cancel fee
+    fee_charged = None
+    if is_late:
+        fee_amount = calculate_fee(db, booking.client_id, "late_cancel")
+        if fee_amount > 0:
+            payment = Payment(
+                client_id=booking.client_id,
+                amount=fee_amount,
+                currency="EUR",
+                status="completed",
+                provider="system",
+                notes="late_cancel_fee",
+                paid_at=now,
+            )
+            db.add(payment)
+            fee_charged = fee_amount
+
+    evaluate_auto_tags(db, "booking_cancelled", booking.client_id)
+
     db.commit()
     db.refresh(booking)
 
@@ -607,4 +691,7 @@ def cancel_booking(
         process_waitlist(db, booking.scheduled_class_id, studio_settings)
         db.commit()
 
-    return booking
+    response = BookingResponse.model_validate(booking)
+    if fee_charged is not None:
+        response.fee_charged = fee_charged
+    return response

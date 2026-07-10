@@ -16,6 +16,7 @@ class Membership(Base):
     expires_at = Column(Date)
     credits_remaining = Column(Integer)
     credits_used = Column(Integer, nullable=False, default=0)
+    rollover_credits = Column(Integer, nullable=False, default=0)
     paused_at = Column(DateTime)
     pause_ends_at = Column(DateTime)
     stripe_subscription_id = Column(String)

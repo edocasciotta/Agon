@@ -29,6 +29,21 @@ export const membershipTypeSchema = z.object({
     ),
   unlimited: z.boolean(),
   sellable_online: z.boolean(),
+  is_intro_offer: z.boolean(),
+  intro_price: z
+    .string()
+    .optional()
+    .refine(
+      (v) => !v || (!isNaN(Number(v)) && Number(v) >= 0),
+      'Intro price must be 0 or greater'
+    ),
+  intro_validity_days: z
+    .string()
+    .optional()
+    .refine(
+      (v) => !v || (!isNaN(Number(v)) && Number(v) >= 1),
+      'Intro validity must be at least 1 day'
+    ),
 })
 
 export const classTypeSchema = z.object({
@@ -46,14 +61,65 @@ export const classTypeSchema = z.object({
   default_instructor_id: z.string().optional(),
 })
 
+export const promoCodeSchema = z.object({
+  code: z.string().min(1, 'Code is required').max(50),
+  discount_type: z.enum(['percentage', 'fixed']),
+  discount_value: z
+    .string()
+    .refine((v) => !isNaN(Number(v)) && Number(v) > 0, 'Discount value must be greater than 0'),
+  max_uses: z
+    .string()
+    .optional()
+    .refine(
+      (v) => !v || (!isNaN(Number(v)) && Number(v) >= 1),
+      'Max uses must be at least 1'
+    ),
+  one_per_client: z.boolean(),
+  valid_from: z.string().min(1, 'Valid from date is required'),
+  valid_until: z.string().optional(),
+  is_active: z.boolean(),
+})
+
 export const establishmentSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
   address: z.string().max(200).optional(),
   phone: z.string().max(30).optional(),
 })
 
+export const tagSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(50),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Invalid color'),
+})
+
+export const autoTagRuleSchema = z.object({
+  tag_id: z.number().min(1, 'Tag is required'),
+  trigger_event: z.enum([
+    'booking_created',
+    'booking_cancelled',
+    'membership_purchased',
+    'membership_expired',
+    'no_show',
+    'checkin',
+  ]),
+  is_active: z.boolean(),
+})
+
+export const giftCardSchema = z.object({
+  initial_value: z
+    .string()
+    .refine((v) => !isNaN(Number(v)) && Number(v) > 0, 'Initial value must be greater than 0'),
+  recipient_name: z.string().max(100).optional(),
+  recipient_email: z.string().email('Invalid email address').optional().or(z.literal('')),
+  message: z.string().max(500).optional(),
+  expires_at: z.string().optional(),
+})
+
 export type ClientFormData = z.infer<typeof clientSchema>
 export type InstructorFormData = z.infer<typeof instructorSchema>
 export type MembershipTypeFormData = z.infer<typeof membershipTypeSchema>
 export type ClassTypeFormData = z.infer<typeof classTypeSchema>
+export type PromoCodeFormData = z.infer<typeof promoCodeSchema>
 export type EstablishmentFormData = z.infer<typeof establishmentSchema>
+export type TagFormData = z.infer<typeof tagSchema>
+export type AutoTagRuleFormData = z.infer<typeof autoTagRuleSchema>
+export type GiftCardFormData = z.infer<typeof giftCardSchema>

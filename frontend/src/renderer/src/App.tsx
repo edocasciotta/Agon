@@ -16,9 +16,14 @@ import { OnboardingPage } from './pages/Onboarding/index'
 import { SetPassword } from './pages/SetPassword'
 import { EmailTemplatesPage } from './pages/EmailTemplates/index'
 import { EmailEventsPage } from './pages/EmailEvents/index'
+import { SmsTemplatesPage } from './pages/SmsTemplates/index'
+import { SmsEventsPage } from './pages/SmsEvents/index'
 import { SmartListsPage } from './pages/SmartLists/index'
 import { EstablishmentsPage } from './pages/Establishments'
 import { InstructorsPage } from './pages/Instructors'
+import { PromoCodesPage } from './pages/PromoCodes'
+import { TagsPage } from './pages/Tags'
+import { GiftCardsPage } from './pages/GiftCards'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -176,9 +181,14 @@ function App(): JSX.Element {
             <Route path="settings" element={<SettingsPage />} />
             <Route path="marketing/templates" element={<EmailTemplatesPage />} />
             <Route path="marketing/events" element={<EmailEventsPage />} />
+            <Route path="marketing/sms-templates" element={<SmsTemplatesPage />} />
+            <Route path="marketing/sms-events" element={<SmsEventsPage />} />
             <Route path="marketing/smartlists" element={<SmartListsPage />} />
             <Route path="establishments" element={<EstablishmentsPage />} />
             <Route path="instructors" element={<InstructorsPage />} />
+            <Route path="promo-codes" element={<PromoCodesPage />} />
+            <Route path="tags" element={<TagsPage />} />
+            <Route path="gift-cards" element={<GiftCardsPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

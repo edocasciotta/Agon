@@ -234,6 +234,23 @@ async def forgot_password(
         except Exception:
             pass  # Silently fail — don't reveal email existence
 
+        if client.phone and studio_settings and studio_settings.sms_enabled:
+            try:
+                from app.services.sms_service import send_event_sms
+
+                send_event_sms(
+                    db,
+                    "password_reset",
+                    client.phone,
+                    {
+                        "reset_url": reset_url,
+                        "studio_name": studio_name,
+                        "client_name": client.full_name,
+                    },
+                )
+            except Exception:
+                pass  # Silently fail — don't reveal email/phone existence
+
         db.commit()
 
     return {"message": "If that email exists, a reset link has been sent"}

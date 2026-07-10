@@ -1,12 +1,13 @@
 from datetime import date, timedelta
 from typing import Optional
 
+from sqlalchemy.orm import Session
+
 from app.models.membership import Membership
 from app.models.membership_type import MembershipType
 from app.models.studio_settings import StudioSettings
 from app.models.waitlist import Waitlist
 from app.utils import utcnow
-from sqlalchemy.orm import Session
 
 
 def get_studio_settings(db: Session) -> Optional[StudioSettings]:
@@ -82,6 +83,35 @@ def refund_credit(db: Session, membership: Optional[Membership], credit_deducted
     if membership.credits_remaining is not None:
         membership.credits_remaining += 1
     membership.credits_used = max(0, (membership.credits_used or 0) - 1)
+
+
+def calculate_fee(db: Session, client_id: int, fee_type: str) -> float:
+    """Calculate the applicable fee for a client.
+
+    fee_type: 'late_cancel' or 'no_show'
+    Resolution: MembershipType override > StudioSettings default > 0.0
+    """
+    membership = get_active_membership(db, client_id)
+    if membership is not None:
+        mt = (
+            db.query(MembershipType)
+            .filter(MembershipType.id == membership.membership_type_id)
+            .first()
+        )
+        if mt is not None:
+            if fee_type == "late_cancel" and mt.late_cancel_fee_override is not None:
+                return mt.late_cancel_fee_override
+            if fee_type == "no_show" and mt.no_show_fee_override is not None:
+                return mt.no_show_fee_override
+
+    studio_settings = get_studio_settings(db)
+    if studio_settings is not None:
+        if fee_type == "late_cancel":
+            return getattr(studio_settings, "late_cancel_fee", 0.0) or 0.0
+        if fee_type == "no_show":
+            return getattr(studio_settings, "no_show_fee", 0.0) or 0.0
+
+    return 0.0
 
 
 def process_waitlist(db: Session, scheduled_class_id: int, studio_settings) -> Optional[Waitlist]:

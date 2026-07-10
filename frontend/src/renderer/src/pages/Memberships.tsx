@@ -3,11 +3,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { membershipTypesApi, membershipsApi } from '../api/memberships'
-import { clientsApi } from '../api/clients'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { PageHeader } from '../components/PageHeader'
 import { EmptyState } from '../components/EmptyState'
-import type { MembershipType } from '../types'
+import type { Membership, MembershipType } from '../types'
 import { membershipTypeSchema } from '../lib/formSchemas'
 import { resolveApiError } from '../lib/errorMessages'
 
@@ -19,6 +18,13 @@ const EMPTY_CREATE = {
   credits_included: '',
   unlimited: false,
   sellable_online: false,
+  late_cancel_fee_override: '',
+  no_show_fee_override: '',
+  rollover_enabled: false,
+  max_rollover_credits: '',
+  is_intro_offer: false,
+  intro_price: '',
+  intro_validity_days: '',
 }
 
 export function MembershipsPage() {
@@ -37,6 +43,13 @@ export function MembershipsPage() {
     price: '',
     sellable_online: false,
     is_active: true,
+    late_cancel_fee_override: '',
+    no_show_fee_override: '',
+    rollover_enabled: false,
+    max_rollover_credits: '',
+    is_intro_offer: false,
+    intro_price: '',
+    intro_validity_days: '',
   })
   const [editError, setEditError] = useState<string | null>(null)
 
@@ -53,18 +66,6 @@ export function MembershipsPage() {
     queryKey: ['memberships', statusFilter],
     queryFn: () => membershipsApi.list(),
   })
-
-  const { data: clientsPage, isLoading: clientsLoading } = useQuery({
-    queryKey: ['clients', 'all-for-memberships'],
-    queryFn: () => clientsApi.list(undefined, 1, 1000),
-  })
-
-  const clientMap: Record<number, string> = Object.fromEntries(
-    (clientsPage?.items ?? []).map((c) => [c.id, c.full_name])
-  )
-  const typeMap: Record<number, string> = Object.fromEntries(
-    (membershipTypes ?? []).map((mt) => [mt.id, mt.name])
-  )
 
   const createTypeMutation = useMutation({
     mutationFn: (data: Partial<MembershipType>) => membershipTypesApi.create(data),
@@ -132,6 +133,13 @@ export function MembershipsPage() {
       credits_included: formData.credits_included ? Number(formData.credits_included) : undefined,
       unlimited: formData.unlimited,
       sellable_online: formData.sellable_online,
+      late_cancel_fee_override: formData.late_cancel_fee_override ? Number(formData.late_cancel_fee_override) : null,
+      no_show_fee_override: formData.no_show_fee_override ? Number(formData.no_show_fee_override) : null,
+      rollover_enabled: formData.rollover_enabled,
+      max_rollover_credits: formData.max_rollover_credits ? Number(formData.max_rollover_credits) : null,
+      is_intro_offer: formData.is_intro_offer,
+      intro_price: formData.intro_price ? Number(formData.intro_price) : null,
+      intro_validity_days: formData.intro_validity_days ? Number(formData.intro_validity_days) : null,
     })
   }
 
@@ -142,6 +150,13 @@ export function MembershipsPage() {
       price: String(mt.price),
       sellable_online: mt.sellable_online,
       is_active: mt.is_active,
+      late_cancel_fee_override: mt.late_cancel_fee_override != null ? String(mt.late_cancel_fee_override) : '',
+      no_show_fee_override: mt.no_show_fee_override != null ? String(mt.no_show_fee_override) : '',
+      rollover_enabled: mt.rollover_enabled,
+      max_rollover_credits: mt.max_rollover_credits != null ? String(mt.max_rollover_credits) : '',
+      is_intro_offer: mt.is_intro_offer,
+      intro_price: mt.intro_price != null ? String(mt.intro_price) : '',
+      intro_validity_days: mt.intro_validity_days != null ? String(mt.intro_validity_days) : '',
     })
     setEditError(null)
   }
@@ -159,12 +174,19 @@ export function MembershipsPage() {
         price: Number(editFormData.price),
         sellable_online: editFormData.sellable_online,
         is_active: editFormData.is_active,
+        late_cancel_fee_override: editFormData.late_cancel_fee_override ? Number(editFormData.late_cancel_fee_override) : null,
+        no_show_fee_override: editFormData.no_show_fee_override ? Number(editFormData.no_show_fee_override) : null,
+        rollover_enabled: editFormData.rollover_enabled,
+        max_rollover_credits: editFormData.max_rollover_credits ? Number(editFormData.max_rollover_credits) : null,
+        is_intro_offer: editFormData.is_intro_offer,
+        intro_price: editFormData.intro_price ? Number(editFormData.intro_price) : null,
+        intro_validity_days: editFormData.intro_validity_days ? Number(editFormData.intro_validity_days) : null,
       },
     })
   }
 
   const filteredMemberships = statusFilter
-    ? (memberships ?? []).filter((m: { status: string }) => m.status === statusFilter)
+    ? (memberships ?? []).filter((m: Membership) => m.status === statusFilter)
     : (memberships ?? [])
 
   const confirmRemoveType = membershipTypes?.find((mt) => mt.id === confirmRemoveId)
@@ -217,7 +239,16 @@ export function MembershipsPage() {
               <tbody className="divide-y divide-gray-200">
                 {membershipTypes.map((mt) => (
                   <tr key={mt.id} className={mt.is_active ? '' : 'bg-gray-50 opacity-60'}>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{mt.name}</td>
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                      <span className="flex items-center gap-2">
+                        {mt.name}
+                        {mt.is_intro_offer && (
+                          <span className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase bg-amber-100 text-amber-700">
+                            {t('memberships.introOfferBadge')}
+                          </span>
+                        )}
+                      </span>
+                    </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
                       {mt.type === 'recurring' ? t('memberships.recurring') : t('memberships.creditPack')}
                     </td>
@@ -295,7 +326,7 @@ export function MembershipsPage() {
             <option value="cancelled">{t('memberships.cancelled')}</option>
           </select>
         </div>
-        {membershipsLoading || clientsLoading ? (
+        {membershipsLoading ? (
           <LoadingSpinner />
         ) : (
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -309,17 +340,17 @@ export function MembershipsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredMemberships.map((m: { id: number; client_id: number; membership_type_id: number; status: string; credits_remaining?: number }) => (
+                {filteredMemberships.map((m: Membership) => (
                   <tr
                     key={m.id}
                     className="hover:bg-gray-50 cursor-pointer"
                     onClick={() => navigate(`/clients/${m.client_id}`)}
                   >
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                      {clientMap[m.client_id] ?? `#${m.client_id}`}
+                      {m.client_name ?? `#${m.client_id}`}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
-                      {typeMap[m.membership_type_id] ?? `#${m.membership_type_id}`}
+                      {m.membership_type_name ?? `#${m.membership_type_id}`}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">{m.status}</td>
                     <td className="px-6 py-4 text-sm text-gray-500">{m.credits_remaining ?? '∞'}</td>
@@ -417,6 +448,107 @@ export function MembershipsPage() {
                 />
                 <label htmlFor="sellable_online" className="text-sm text-gray-700">{t('memberships.sellableOnlineLabel')}</label>
               </div>
+              {/* Intro Offer */}
+              <div className="border-t border-gray-200 pt-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <input
+                    type="checkbox"
+                    id="is_intro_offer"
+                    checked={formData.is_intro_offer}
+                    onChange={(e) => setFormData({ ...formData, is_intro_offer: e.target.checked })}
+                    className="w-4 h-4"
+                  />
+                  <label htmlFor="is_intro_offer" className="text-sm text-gray-700">{t('memberships.introOffer')}</label>
+                </div>
+                {formData.is_intro_offer && (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('memberships.introPrice')}</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={formData.intro_price}
+                        onChange={(e) => setFormData({ ...formData, intro_price: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder={t('memberships.pricePlaceholder')}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">{t('memberships.introPriceHint')}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('memberships.introValidityDays')}</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={formData.intro_validity_days}
+                        onChange={(e) => setFormData({ ...formData, intro_validity_days: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder="30"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+              {/* Rollover Credits — only for non-unlimited memberships */}
+              {!formData.unlimited && (
+                <div className="border-t border-gray-200 pt-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <input
+                      type="checkbox"
+                      id="rollover_enabled"
+                      checked={formData.rollover_enabled}
+                      onChange={(e) => setFormData({ ...formData, rollover_enabled: e.target.checked })}
+                      className="w-4 h-4"
+                    />
+                    <label htmlFor="rollover_enabled" className="text-sm text-gray-700">{t('memberships.rolloverEnabled')}</label>
+                  </div>
+                  {formData.rollover_enabled && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('memberships.maxRolloverCredits')}</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={formData.max_rollover_credits}
+                        onChange={(e) => setFormData({ ...formData, max_rollover_credits: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder={t('memberships.rolloverHint')}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">{t('memberships.rolloverHint')}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+              {/* Fee Overrides */}
+              <div className="border-t border-gray-200 pt-4">
+                <h3 className="text-sm font-semibold text-gray-900 mb-1">{t('memberships.sectionFees')}</h3>
+                <p className="text-xs text-gray-500 mb-3">{t('memberships.feeOverrideHint')}</p>
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('memberships.lateCancelFeeOverride')}</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.late_cancel_fee_override}
+                      onChange={(e) => setFormData({ ...formData, late_cancel_fee_override: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('memberships.noShowFeeOverride')}</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.no_show_fee_override}
+                      onChange={(e) => setFormData({ ...formData, no_show_fee_override: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+              </div>
               {createError && (
                 <div className="rounded-md bg-red-50 p-3 text-sm text-red-700 border border-red-200">{createError}</div>
               )}
@@ -483,6 +615,107 @@ export function MembershipsPage() {
                   className="w-4 h-4"
                 />
                 <label htmlFor="edit_is_active" className="text-sm text-gray-700">{t('memberships.isActive')}</label>
+              </div>
+              {/* Intro Offer */}
+              <div className="border-t border-gray-200 pt-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <input
+                    type="checkbox"
+                    id="edit_is_intro_offer"
+                    checked={editFormData.is_intro_offer}
+                    onChange={(e) => setEditFormData({ ...editFormData, is_intro_offer: e.target.checked })}
+                    className="w-4 h-4"
+                  />
+                  <label htmlFor="edit_is_intro_offer" className="text-sm text-gray-700">{t('memberships.introOffer')}</label>
+                </div>
+                {editFormData.is_intro_offer && (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('memberships.introPrice')}</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={editFormData.intro_price}
+                        onChange={(e) => setEditFormData({ ...editFormData, intro_price: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder={t('memberships.pricePlaceholder')}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">{t('memberships.introPriceHint')}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('memberships.introValidityDays')}</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={editFormData.intro_validity_days}
+                        onChange={(e) => setEditFormData({ ...editFormData, intro_validity_days: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder="30"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+              {/* Rollover Credits — only for non-unlimited memberships */}
+              {editingType && !editingType.unlimited && (
+                <div className="border-t border-gray-200 pt-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <input
+                      type="checkbox"
+                      id="edit_rollover_enabled"
+                      checked={editFormData.rollover_enabled}
+                      onChange={(e) => setEditFormData({ ...editFormData, rollover_enabled: e.target.checked })}
+                      className="w-4 h-4"
+                    />
+                    <label htmlFor="edit_rollover_enabled" className="text-sm text-gray-700">{t('memberships.rolloverEnabled')}</label>
+                  </div>
+                  {editFormData.rollover_enabled && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('memberships.maxRolloverCredits')}</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={editFormData.max_rollover_credits}
+                        onChange={(e) => setEditFormData({ ...editFormData, max_rollover_credits: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder={t('memberships.rolloverHint')}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">{t('memberships.rolloverHint')}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+              {/* Fee Overrides */}
+              <div className="border-t border-gray-200 pt-4">
+                <h3 className="text-sm font-semibold text-gray-900 mb-1">{t('memberships.sectionFees')}</h3>
+                <p className="text-xs text-gray-500 mb-3">{t('memberships.feeOverrideHint')}</p>
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('memberships.lateCancelFeeOverride')}</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={editFormData.late_cancel_fee_override}
+                      onChange={(e) => setEditFormData({ ...editFormData, late_cancel_fee_override: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('memberships.noShowFeeOverride')}</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={editFormData.no_show_fee_override}
+                      onChange={(e) => setEditFormData({ ...editFormData, no_show_fee_override: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
               </div>
               {editError && (
                 <div className="rounded-md bg-red-50 p-3 text-sm text-red-700 border border-red-200">{editError}</div>

@@ -27,6 +27,7 @@ export interface Membership {
   expires_at?: string
   credits_remaining?: number
   credits_used: number
+  rollover_credits: number
 }
 
 export interface MembershipType {
@@ -39,6 +40,43 @@ export interface MembershipType {
   unlimited: boolean
   sellable_online: boolean
   is_active?: boolean
+  is_intro_offer: boolean
+  intro_price?: number | null
+  intro_validity_days?: number | null
+}
+
+export interface PromoCodeValidateResponse {
+  valid: boolean
+  discount_type: string
+  discount_value: number
+  discount_amount: number
+  original_price: number
+  final_price: number
+}
+
+export interface GiftCardValidateResponse {
+  valid: boolean
+  remaining_balance: number
+  currency: string
+}
+
+export interface GiftCardPurchaseRequest {
+  amount: number
+  recipient_name?: string
+  recipient_email?: string
+  message?: string
+  success_url: string
+  cancel_url: string
+}
+
+export interface ClientTag {
+  id: number
+  client_id: number
+  tag_id: number
+  tag_name: string
+  tag_color: string
+  assigned_at: string
+  assigned_by: number | null
 }
 
 export interface NotificationLog {
@@ -48,4 +86,8 @@ export interface NotificationLog {
   body: string
   status: string
   created_at: string
+}
+
+export interface CalendarSyncResponse {
+  feed_url: string
 }

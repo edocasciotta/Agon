@@ -16,6 +16,8 @@ class StudioSettingsUpdate(BaseModel):
     timezone: Optional[str] = None
     cancellation_hours: Optional[int] = None
     cancellation_deducts_credit: Optional[bool] = None
+    late_cancel_fee: Optional[float] = None
+    no_show_fee: Optional[float] = None
     checkin_open_minutes_before: Optional[int] = None
     checkin_close_minutes_after: Optional[int] = None
     waitlist_confirm_minutes: Optional[int] = None
@@ -36,6 +38,8 @@ class StudioSettingsResponse(BaseModel):
     timezone: str
     cancellation_hours: int
     cancellation_deducts_credit: bool
+    late_cancel_fee: float
+    no_show_fee: float
     checkin_open_minutes_before: int
     checkin_close_minutes_after: int
     waitlist_confirm_minutes: int
