@@ -1,10 +1,6 @@
 import logging
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
-from sqlalchemy import func
-from sqlalchemy.orm import Session
-
 from app.auth import decode_token, oauth2_scheme, require_manager
 from app.database import get_db
 from app.limiter import get_jwt_sub, limiter
@@ -26,11 +22,15 @@ from app.services.booking_service import (
     deduct_credit,
     get_active_membership,
     get_studio_settings,
+    get_unsigned_required_waivers,
     process_waitlist,
     refund_credit,
 )
 from app.services.tag_service import evaluate_auto_tags
 from app.utils import utcnow
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -387,6 +387,22 @@ def create_booking(
         target_client_id = payload.client_id
     else:
         target_client_id = subject_id
+
+    # Waiver compliance: applies regardless of whether the caller is the
+    # client themselves or a manager booking on their behalf, since the
+    # requirement is about the target client's consent status.
+    unsigned = get_unsigned_required_waivers(db, target_client_id)
+    if unsigned:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": {
+                    "code": "WAIVER_SIGNATURE_REQUIRED",
+                    "message": "This client must sign a required waiver before booking.",
+                    "details": {"waiver_ids": [w.id for w in unsigned]},
+                }
+            },
+        )
 
     # Fetch class
     sc = db.query(ScheduledClass).filter(ScheduledClass.id == payload.scheduled_class_id).first()

@@ -31,6 +31,8 @@ from app.models.studio_settings import StudioSettings
 from app.models.tag import Tag
 from app.models.user import User
 from app.models.waitlist import Waitlist
+from app.models.waiver import Waiver
+from app.models.waiver_signature import WaiverSignature
 
 __all__ = [
     "User",
@@ -66,4 +68,6 @@ __all__ = [
     "StripeSubscription",
     "StripeCheckoutSession",
     "StripeWebhookEvent",
+    "Waiver",
+    "WaiverSignature",
 ]
