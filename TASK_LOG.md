@@ -112,7 +112,22 @@ of touching app logic. `agent_tools.py` untouched — no bug there.
 
 - Only file touched: `backend/tests/test_agent.py` (single test function).
 - Full backend suite: 288 passed after fix. `black`/`isort`/`ruff` clean.
-- Not yet committed.
+- Committed `eb9823f`; PR [#8](https://github.com/edocasciotta/Agon/pull/8).
+
+---
+
+## Infra Fix (2026-07-10) — Vercel landing deploy broken since project creation
+
+The "Vercel" GitHub check had been failing on every branch, including `main` (confirmed on
+`main`@`c9e1486`), since the `landing` Vercel project was created (2026-07-04): `next build`
+errored with "Couldn't find any `pages` or `app` directory" because the project's **Root
+Directory** setting was `.` (monorepo root) instead of `landing`. Not a code issue —
+`landing/app/` was present and correct the whole time.
+
+Fixed via the Vercel REST API (`PATCH /v9/projects/{id}` with `rootDirectory: "landing"`) since
+the `vercel project` CLI has no subcommand for this setting. Verified by redeploying the failed
+deployment (`vercel redeploy`) — build succeeded in 57s. This is a project-level setting, so it
+fixes deploys for all branches going forward, not just PR #8.
 
 ---
 
