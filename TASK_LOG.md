@@ -27,6 +27,37 @@
 
 ---
 
+## Known Hazard: Shared Main Checkout + `git reset` (2026-07-10)
+
+Sessions routinely run with cwd directly in `/Users/edoardo/Projects/Agon` instead of an isolated
+`.claude/worktrees/*` dir, so they share **one** working tree and index. On 2026-07-09/10 this
+caused a real incident: a waivers-feature session's uncommitted edits, and a concurrent
+memberships-pagination session's, were silently wiped. Root-caused via reflog forensics to repeated
+`git reset --hard` calls (main checkout reflog showed five same-commit `reset: moving to HEAD`
+events across 07-09/07-10), permitted by a blanket `Bash(git reset *)` entry in
+`.claude/settings.local.json`. Each reset discards *all* uncommitted changes tree-wide, not just
+the issuing task's own edits — worktrees themselves were confirmed properly isolated (separate
+index/HEAD per `git worktree list --porcelain`) and were not the mechanism.
+
+Both silently-wiped feature sets (waivers, and the rest of the 1.1–1.9 competitive-gap push) were
+independently redone and merged via PR #12 before this note landed — no work was permanently lost,
+but the underlying hazard needed a real fix, not just a lucky recovery.
+
+**Fix applied:** removed the blanket `git reset` entry from the main checkout's
+`.claude/settings.local.json` — resets there now require per-invocation confirmation instead of
+running unattended.
+
+**Still true going forward:**
+- Prefer an isolated worktree for concurrent feature work (`isolation: "worktree"` on sub-agent
+  Task calls, or a separate top-level session worktree) — the `.claude/worktrees/*` dirs in this
+  repo never cross-contaminate each other or the main checkout.
+- If working directly in the main checkout anyway, commit early/often as a checkpoint — nothing
+  already committed can be `git reset --hard`'d away.
+- A reflog full of repeated `reset: moving to HEAD` at the same commit is the diagnostic signature
+  of this pattern — check `git reflog` first if files mysteriously revert.
+
+---
+
 ### Completed Build Phases (0–11)
 Scaffolding → DB models → Core API → Booking engine → Check-in → Memberships/payments → Notifications/tasks → Reports/GDPR → Migration assistant → Frontend desktop → Mobile → Docs site.
 
