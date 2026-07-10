@@ -6,9 +6,12 @@ import { membershipTypesApi, membershipsApi } from '../api/memberships'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { PageHeader } from '../components/PageHeader'
 import { EmptyState } from '../components/EmptyState'
+import { Pagination } from '../components/Pagination'
 import type { Membership, MembershipType } from '../types'
 import { membershipTypeSchema } from '../lib/formSchemas'
 import { resolveApiError } from '../lib/errorMessages'
+
+const MEMBERSHIPS_PAGE_SIZE = 50
 
 const EMPTY_CREATE = {
   name: '',
@@ -33,6 +36,7 @@ export function MembershipsPage() {
   const navigate = useNavigate()
 
   const [statusFilter, setStatusFilter] = useState('')
+  const [page, setPage] = useState(1)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
   const [formData, setFormData] = useState(EMPTY_CREATE)
@@ -62,9 +66,10 @@ export function MembershipsPage() {
     queryFn: () => membershipTypesApi.list(true),
   })
 
-  const { data: memberships, isLoading: membershipsLoading } = useQuery({
-    queryKey: ['memberships', statusFilter],
-    queryFn: () => membershipsApi.list(),
+  const { data: membershipsPage, isLoading: membershipsLoading } = useQuery({
+    queryKey: ['memberships', page, statusFilter],
+    queryFn: () =>
+      membershipsApi.list(undefined, page, MEMBERSHIPS_PAGE_SIZE, statusFilter || undefined),
   })
 
   const createTypeMutation = useMutation({
@@ -185,9 +190,7 @@ export function MembershipsPage() {
     })
   }
 
-  const filteredMemberships = statusFilter
-    ? (memberships ?? []).filter((m: Membership) => m.status === statusFilter)
-    : (memberships ?? [])
+  const filteredMemberships = membershipsPage?.items ?? []
 
   const confirmRemoveType = membershipTypes?.find((mt) => mt.id === confirmRemoveId)
 
@@ -317,7 +320,10 @@ export function MembershipsPage() {
           <h2 className="text-lg font-semibold text-gray-900">{t('memberships.allMemberships')}</h2>
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => {
+              setStatusFilter(e.target.value)
+              setPage(1)
+            }}
             className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             <option value="">{t('memberships.allStatuses')}</option>
@@ -364,6 +370,14 @@ export function MembershipsPage() {
               </tbody>
             </table>
           </div>
+        )}
+        {membershipsPage && (
+          <Pagination
+            page={membershipsPage.page}
+            pageSize={membershipsPage.page_size}
+            total={membershipsPage.total}
+            onPage={setPage}
+          />
         )}
       </section>
 

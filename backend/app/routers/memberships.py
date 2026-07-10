@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import List
+from typing import Optional
 
 from app.auth import decode_token, oauth2_scheme, require_manager
 from app.database import get_db
@@ -8,6 +8,7 @@ from app.models.membership import Membership
 from app.models.membership_type import MembershipType
 from app.schemas.membership import (
     MembershipCreate,
+    MembershipListPage,
     MembershipPauseRequest,
     MembershipResponse,
     MembershipUpdate,
@@ -15,7 +16,7 @@ from app.schemas.membership import (
 from app.services.intro_offer_service import can_use_intro_offer
 from app.services.tag_service import evaluate_auto_tags
 from app.utils import raise_api_error, utcnow
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1", tags=["memberships"])
@@ -58,9 +59,12 @@ def _to_membership_response(
     return MembershipResponse(**data)
 
 
-@router.get("/memberships", response_model=List[MembershipResponse])
+@router.get("/memberships", response_model=MembershipListPage)
 def list_memberships(
     client_id: int = None,
+    status: Optional[str] = Query(None),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=100),
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
 ):
@@ -77,10 +81,21 @@ def list_memberships(
     else:
         query = query.filter(Membership.client_id == subject_id)
 
-    return [
+    if status:
+        query = query.filter(Membership.status == status)
+
+    total = query.count()
+    rows = (
+        query.order_by(Membership.created_at.desc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+        .all()
+    )
+    items = [
         _to_membership_response(membership, client_name, membership_type_name)
-        for membership, client_name, membership_type_name in query.all()
+        for membership, client_name, membership_type_name in rows
     ]
+    return MembershipListPage(items=items, total=total, page=page, page_size=page_size)
 
 
 @router.post("/memberships", response_model=MembershipResponse, status_code=201)
