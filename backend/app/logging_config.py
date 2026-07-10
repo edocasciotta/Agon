@@ -11,6 +11,7 @@ _PHONE_RE = re.compile(r"(?<!\d)(\+?[\d\s\-().]{7,15})(?!\d)")
 # the URL path — no redesign needed.
 _ACCESS_LOG_SECRET_PATTERNS = [
     (re.compile(r"(/api/v1/auth/invite/)[^/?#]+"), r"\1[redacted-token]"),
+    (re.compile(r"(/api/v1/calendar/)[^/?#]+"), r"\1[redacted-token]"),
 ]
 
 
