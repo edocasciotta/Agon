@@ -62,6 +62,17 @@ def test_list_memberships_as_manager(client, manager_auth_headers, client_member
     assert len(data) >= 1
 
 
+def test_list_memberships_as_manager_includes_names(
+    client, manager_auth_headers, client_membership, membership_type
+):
+    response = client.get("/api/v1/memberships", headers=manager_auth_headers)
+    assert response.status_code == 200
+    data = response.json()
+    match = next(m for m in data if m["id"] == client_membership.id)
+    assert match["client_name"] == "Test Client"
+    assert match["membership_type_name"] == membership_type.name
+
+
 def test_list_memberships_as_client(client, client_auth_headers, client_membership):
     response = client.get("/api/v1/memberships", headers=client_auth_headers)
     assert response.status_code == 200
