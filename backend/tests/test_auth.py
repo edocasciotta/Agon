@@ -207,3 +207,59 @@ def test_reset_password_invalid_token(client):
         },
     )
     assert response.status_code == 404
+
+
+# ---------------------------------------------------------------------------
+# Rate limit decorators — presence checks
+#
+# Rate limiting is disabled in AGON_ENV=test (set in conftest), so these tests
+# verify the @limiter.limit decorator is present on the route (via the route
+# state) without actually triggering a 429 during the test run — which would
+# break other tests sharing the same limiter store.
+# ---------------------------------------------------------------------------
+
+
+def test_invite_endpoint_rate_limit_decorator_present():
+    """GET /api/v1/auth/invite/{token} has a rate limit decorator (@limiter.limit)."""
+    from app.routers.auth import router as auth_router
+
+    # Router prefix is /api/v1/auth, so route.path already includes it.
+    invite_route = None
+    for route in auth_router.routes:
+        if (
+            hasattr(route, "path")
+            and route.path == "/api/v1/auth/invite/{token}"
+            and "GET" in getattr(route, "methods", set())
+        ):
+            invite_route = route
+            break
+
+    assert invite_route is not None, "GET /api/v1/auth/invite/{token} route not found"
+    # slowapi's @limiter.limit wraps the function; __wrapped__ is set by functools.wraps
+    endpoint = invite_route.endpoint
+    assert (
+        getattr(endpoint, "__wrapped__", None) is not None
+    ), "GET /api/v1/auth/invite/{token} does not have a rate limit decorator (@limiter.limit)"
+
+
+def test_reset_password_rate_limit_decorator_present():
+    """POST /api/v1/auth/reset-password has a rate limit decorator (@limiter.limit)."""
+    from app.routers.auth import router as auth_router
+
+    # Router prefix is /api/v1/auth, so route.path already includes it.
+    reset_password_route = None
+    for route in auth_router.routes:
+        if (
+            hasattr(route, "path")
+            and route.path == "/api/v1/auth/reset-password"
+            and "POST" in getattr(route, "methods", set())
+        ):
+            reset_password_route = route
+            break
+
+    assert reset_password_route is not None, "POST /api/v1/auth/reset-password route not found"
+    # slowapi's @limiter.limit wraps the function; __wrapped__ is set by functools.wraps
+    endpoint = reset_password_route.endpoint
+    assert (
+        getattr(endpoint, "__wrapped__", None) is not None
+    ), "POST /api/v1/auth/reset-password does not have a rate limit decorator (@limiter.limit)"
