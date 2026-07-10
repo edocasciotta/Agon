@@ -1,10 +1,12 @@
 import logging
+import secrets
 import uuid
 from datetime import timedelta
 
 from app.logging_config import AccessLogTokenRedactionFilter
 from app.models.client import Client
 from app.models.invitation_token import InvitationToken
+from app.services.calendar_sync_service import get_or_create_calendar_token
 from app.utils import utcnow
 from uvicorn.logging import AccessFormatter
 
@@ -44,6 +46,26 @@ def test_access_log_filter_redacts_invite_token():
     assert token not in formatted
     assert "[redacted-token]" in formatted
     assert "/api/v1/auth/invite/[redacted-token]" in formatted
+
+
+def test_access_log_filter_redacts_calendar_token():
+    """A synthetic uvicorn.access record for the calendar feed endpoint has its
+    token replaced with [redacted-token] once run through the real
+    AccessFormatter — including the literal ".ics" suffix appended directly
+    after the token with no separator (the real route is
+    GET /api/v1/calendar/{token}.ics)."""
+    token = secrets.token_urlsafe(32)
+    record = _make_access_record(f"/api/v1/calendar/{token}.ics")
+
+    filt = AccessLogTokenRedactionFilter()
+    assert filt.filter(record) is True
+
+    formatter = AccessFormatter(use_colors=False)
+    formatted = formatter.format(record)
+
+    assert token not in formatted
+    assert "[redacted-token]" in formatted
+    assert "/api/v1/calendar/[redacted-token]" in formatted
 
 
 def test_access_log_filter_leaves_unrelated_paths_unchanged():
@@ -142,6 +164,63 @@ def test_invite_endpoint_e2e_token_never_appears_in_access_log(client, db_sessio
             "127.0.0.1:54321",
             "GET",
             f"/api/v1/auth/invite/{token}",
+            "1.1",
+            response.status_code,
+        )
+    finally:
+        access_logger.removeHandler(handler)
+        access_logger.setLevel(previous_level)
+
+    output = stream.getvalue()
+    assert token not in output
+    assert "[redacted-token]" in output
+
+
+def test_calendar_feed_endpoint_e2e_token_never_appears_in_access_log(client, db_session):
+    """End-to-end: hitting the real calendar feed endpoint through TestClient
+    must never leak the raw token into the uvicorn.access logger's captured
+    output.
+
+    Same limitation as test_invite_endpoint_e2e_token_never_appears_in_access_log
+    above: TestClient does not run through a real uvicorn server, so nothing
+    logs to uvicorn.access on its own. We drive the same access_logger.info(...)
+    call uvicorn's h11 implementation makes (with the real request path,
+    including the ".ics" suffix), through the now-configured filter chain, to
+    prove the end-to-end wiring in configure_logging() redacts this endpoint's
+    token too.
+    """
+    client_obj = Client(
+        email="calendar-sync@example.com",
+        password_hash=None,
+        full_name="Calendar Sync Person",
+        is_active=True,
+    )
+    db_session.add(client_obj)
+    db_session.commit()
+    db_session.refresh(client_obj)
+
+    token = get_or_create_calendar_token(db_session, client_obj.id)
+    db_session.commit()
+
+    access_logger = logging.getLogger("uvicorn.access")
+
+    import io
+
+    stream = io.StringIO()
+    handler = logging.StreamHandler(stream)
+    handler.setFormatter(AccessFormatter(use_colors=False))
+    access_logger.addHandler(handler)
+    previous_level = access_logger.level
+    access_logger.setLevel(logging.INFO)
+    try:
+        response = client.get(f"/api/v1/calendar/{token}.ics")
+        assert response.status_code == 200
+
+        access_logger.info(
+            '%s - "%s %s HTTP/%s" %d',
+            "127.0.0.1:54321",
+            "GET",
+            f"/api/v1/calendar/{token}.ics",
             "1.1",
             response.status_code,
         )
