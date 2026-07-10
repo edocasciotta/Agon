@@ -97,6 +97,25 @@ Full security audit. Normative doc: `docs/SECURITY_GUIDELINES.md`.
 
 ---
 
+## Test Fix (2026-07-10) — uncommitted, branch `claude/youthful-feynman-84d711`
+
+`test_multi_turn_conversation_accumulates_slots_correctly` (`backend/tests/test_agent.py`) was
+flagged as failing reproducibly. Investigation found it was a daily flake, not the double-resolution
+bug it was first suspected to be: the test computed its expected date via raw
+`datetime.utcnow().date()`, while production (`_studio_local_today` in `app/routers/agent.py`)
+correctly anchors "domani"/"tomorrow" resolution to the studio's *local* timezone (default
+Europe/Rome) — intentional, documented behavior already locked in by the sibling regression test
+`test_relative_date_anchored_to_studio_timezone_not_utc`. The two diverge for ~1-2 hours every day
+(whenever Rome's calendar date has advanced past UTC's), causing a reproducible one-day-off failure.
+Fixed by freezing the clock in the test (same `FrozenDateTime` pattern as the sibling test) instead
+of touching app logic. `agent_tools.py` untouched — no bug there.
+
+- Only file touched: `backend/tests/test_agent.py` (single test function).
+- Full backend suite: 288 passed after fix. `black`/`isort`/`ruff` clean.
+- Not yet committed.
+
+---
+
 ## Key Implementation Decisions (non-obvious)
 
 - **LLM agent:** Ollama `ollama_chat/agon-assistant` (locally fine-tuned Llama 3.2 3B 4-bit). Tools API skipped for Ollama — model emits JSON in content; intercepted by `_parse_llama_json_tool_call`. Env: `LLM_PROVIDER=ollama`, `LLM_MODEL=ollama_chat/agon-assistant`.
