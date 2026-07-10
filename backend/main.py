@@ -38,6 +38,7 @@ from app.routers import (
     studio,
     support,
     tags,
+    waivers,
 )
 from app.tasks.class_reminders import run_class_reminder_loop
 from app.tasks.membership_expiry import run_membership_expiry_loop
@@ -151,6 +152,7 @@ app.include_router(sms_send.router)
 app.include_router(smart_lists.router)
 app.include_router(locations.router)
 app.include_router(tags.router)
+app.include_router(waivers.router)
 app.include_router(agent.router)
 
 

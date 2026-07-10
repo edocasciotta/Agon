@@ -19,11 +19,42 @@
 `main` — all changes committed and pushed (`a33dd7e`).
 
 ### Local dev
-- Backend: `cd backend && .venv/bin/uvicorn app.main:app --reload`
+- Backend: `cd backend && .venv/bin/uvicorn main:app --reload` (entry point is top-level `backend/main.py`, not `app/main.py`)
 - Frontend: `cd frontend && npm run dev`
 - Mobile: `cd mobile && npx expo start`
 - Local DB: `admin@example.com` / `password`
 - Ollama: model `agon-assistant` must be loaded; if missing, agent calls fail silently.
+
+---
+
+## Known Hazard: Shared Main Checkout + `git reset` (2026-07-10)
+
+Sessions routinely run with cwd directly in `/Users/edoardo/Projects/Agon` instead of an isolated
+`.claude/worktrees/*` dir, so they share **one** working tree and index. On 2026-07-09/10 this
+caused a real incident: a waivers-feature session's uncommitted edits, and a concurrent
+memberships-pagination session's, were silently wiped. Root-caused via reflog forensics to repeated
+`git reset --hard` calls (main checkout reflog showed five same-commit `reset: moving to HEAD`
+events across 07-09/07-10), permitted by a blanket `Bash(git reset *)` entry in
+`.claude/settings.local.json`. Each reset discards *all* uncommitted changes tree-wide, not just
+the issuing task's own edits — worktrees themselves were confirmed properly isolated (separate
+index/HEAD per `git worktree list --porcelain`) and were not the mechanism.
+
+Both silently-wiped feature sets (waivers, and the rest of the 1.1–1.9 competitive-gap push) were
+independently redone and merged via PR #12 before this note landed — no work was permanently lost,
+but the underlying hazard needed a real fix, not just a lucky recovery.
+
+**Fix applied:** removed the blanket `git reset` entry from the main checkout's
+`.claude/settings.local.json` — resets there now require per-invocation confirmation instead of
+running unattended.
+
+**Still true going forward:**
+- Prefer an isolated worktree for concurrent feature work (`isolation: "worktree"` on sub-agent
+  Task calls, or a separate top-level session worktree) — the `.claude/worktrees/*` dirs in this
+  repo never cross-contaminate each other or the main checkout.
+- If working directly in the main checkout anyway, commit early/often as a checkpoint — nothing
+  already committed can be `git reset --hard`'d away.
+- A reflog full of repeated `reset: moving to HEAD` at the same commit is the diagnostic signature
+  of this pattern — check `git reflog` first if files mysteriously revert.
 
 ---
 
@@ -94,6 +125,37 @@ Full security audit. Normative doc: `docs/SECURITY_GUIDELINES.md`.
 - Classes list + detail: `template_name` shown instead of "Class #19"
 - Home tab: language switcher in header
 - Purchase screen: filtered by `is_active && sellable_online`
+
+---
+
+## Security Hardening (2026-07-10) — PRs #11, #13
+
+Secret invitation token leaked via uvicorn's own access log. `GET /api/v1/auth/invite/{token}`
+(`auth.py:300`) puts a long-lived (7-day), single-use `uuid.uuid4()` token in the URL path — the
+only viable auth mechanism before the client has a password. uvicorn's `uvicorn.access` logger is
+configured with `propagate=False` and its own handler (confirmed against installed uvicorn
+source), so the app's `PIIRedactionFilter` (attached to the root logger only) never saw these
+lines — every request printed the raw token to stdout unredacted, on both the dev
+(`uvicorn main:app --reload`) and Electron-spawned (`frontend/src/main/index.ts`) launch paths.
+
+| # | Severity | Fix |
+|---|---|---|
+| 1 | Medium | `AccessLogTokenRedactionFilter` added to `app/logging_config.py`, attached directly to the `uvicorn.access` logger. Redacts `/api/v1/auth/invite/{token}` path segments to `[redacted-token]` while preserving uvicorn's positional 5-tuple `record.args` shape (naively nulling `args` the way `PIIRedactionFilter` does breaks `AccessFormatter`'s unpacking). Pattern list is extensible for future secret-in-URL endpoints. Tests in `tests/test_logging_config.py`, mutation-tested — confirmed they fail when the redaction is sabotaged. No DB/API changes — no migration, no docs-site page needed. (PR #11) |
+| 2 | Low | `GET /invite/{token}` and `POST /reset-password` (both in `auth.py`) validate a secret token but had no `@limiter.limit`, unlike every sibling auth endpoint — inconsistent with `SECURITY_GUIDELINES.md` §1.5. Added `@limiter.limit("10/minute")` (per-IP, matching `login`/`refresh`) to both. Tokens are `uuid.uuid4()` (122 bits) so brute force wasn't practical either way — this is guideline-consistency/defense-in-depth, not an urgent exploit. Tests in `test_auth.py` follow the existing `test_booking_rate_limit_disabled_in_test_env` convention (decorator-presence check, since `AGON_ENV=test` disables actual enforcement). `POST /clients` (invite creation) was checked and left alone — already gated by `require_manager`, not an anonymous target. (PR #11) |
+| 3 | Medium | `GET /api/v1/calendar/{token}.ics` (`calendar_sync.py`, landed separately via the competitive-gap work after #1/#2 above) had a docstring claiming its token "is never logged" that wasn't actually true — that commit never touched `logging_config.py`. Extended `_ACCESS_LOG_SECRET_PATTERNS` with one line for `/api/v1/calendar/`, same mechanism as #1. This token (`secrets.token_urlsafe(32)`) is long-lived and repeatedly polled by external calendar apps over months, so more cumulative exposure than the single-use invite token. Tests added to `tests/test_logging_config.py` mirroring the invite-token tests exactly. (PR #13) |
+
+**Note:** #1/#2 were originally investigated as a hypothetical `GET /api/v1/calendar/{token}.ics` in
+a `calendar_sync.py` that did not exist anywhere in this repo, on any branch, or in the specs, at
+the time. Confirmed real equivalents instead (`/invite/{token}`, `/reset-password`) before
+delegating those two fixes. `calendar_sync.py` then landed for real via concurrent, unrelated
+competitive-gap work shortly after — and turned out to have exactly the originally-hypothesized bug
+once it existed, closed by #3.
+
+Aside: `ruff check` flags a pre-existing `I001` (import order) finding on `auth.py`, confirmed via
+`git stash` to already exist at HEAD before either fix — a `pyproject.toml` gap where
+`[tool.isort]` sets `profile = "black"` but `[tool.ruff.lint]` has no matching isort sub-config, so
+ruff's built-in sorter disagrees with the real `isort` binary (which considers the file clean).
+Cosmetic, unrelated to this work, left untouched.
 
 ---
 

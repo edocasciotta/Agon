@@ -257,7 +257,10 @@ async def forgot_password(
 
 
 @router.post("/reset-password", status_code=200)
-async def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+async def reset_password(
+    request: Request, payload: ResetPasswordRequest, db: Session = Depends(get_db)
+):
     """Reset password using a token."""
     inv = db.query(InvitationToken).filter(InvitationToken.token == payload.token).first()
     if not inv:
@@ -315,7 +318,8 @@ async def reset_password(payload: ResetPasswordRequest, db: Session = Depends(ge
 
 
 @router.get("/invite/{token}", status_code=200)
-async def validate_invite_token(token: str, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+async def validate_invite_token(request: Request, token: str, db: Session = Depends(get_db)):
     """Validate an invitation token and return basic client info."""
     inv = db.query(InvitationToken).filter(InvitationToken.token == token).first()
     if not inv:

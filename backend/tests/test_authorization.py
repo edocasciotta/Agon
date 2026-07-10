@@ -560,3 +560,114 @@ def test_manager_can_get_any_client_calendar_sync(
     client_a = db_session.query(Client).filter_by(email=registered_client["email"]).first()
     resp = client.get(f"/api/v1/clients/{client_a.id}/calendar-sync", headers=manager_auth_headers)
     assert resp.status_code == 200
+
+
+# ── IDOR: waivers ────────────────────────────────────────────────────────────
+
+
+def _create_waiver_as_manager(client, manager_auth_headers, **overrides):
+    payload = {
+        "title": "Liability Waiver",
+        "body": "I assume all risk.",
+        "requires_before_booking": False,
+    }
+    payload.update(overrides)
+    resp = client.post("/api/v1/waivers", json=payload, headers=manager_auth_headers)
+    assert resp.status_code == 201, resp.text
+    return resp.json()
+
+
+def test_client_b_cannot_view_client_a_waivers(
+    client, client_b_headers, registered_client, db_session
+):
+    """Client B must receive 403 when listing Client A's waiver status."""
+    from app.models.client import Client
+
+    client_a = db_session.query(Client).filter_by(email=registered_client["email"]).first()
+    resp = client.get(f"/api/v1/clients/{client_a.id}/waivers", headers=client_b_headers)
+    assert resp.status_code == 403
+    assert resp.json()["detail"]["error"]["code"] == "FORBIDDEN"
+
+
+def test_client_a_can_view_own_waivers(client, client_auth_headers, registered_client, db_session):
+    """A client CAN view their own waiver status (not 403)."""
+    from app.models.client import Client
+
+    client_a = db_session.query(Client).filter_by(email=registered_client["email"]).first()
+    resp = client.get(f"/api/v1/clients/{client_a.id}/waivers", headers=client_auth_headers)
+    assert resp.status_code == 200
+
+
+def test_client_cannot_create_waiver(client, client_auth_headers):
+    """Client must not be able to create a waiver (manager-only CRUD)."""
+    resp = client.post(
+        "/api/v1/waivers",
+        json={"title": "Unauthorized", "body": "Nope"},
+        headers=client_auth_headers,
+    )
+    assert resp.status_code == 403
+
+
+def test_client_cannot_list_waivers_backoffice_endpoint(client, client_auth_headers):
+    """Client must not be able to hit the manager-only GET /waivers list."""
+    resp = client.get("/api/v1/waivers", headers=client_auth_headers)
+    assert resp.status_code == 403
+
+
+def test_client_cannot_update_waiver(client, client_auth_headers, manager_auth_headers):
+    """Client must not be able to update a waiver (manager-only CRUD)."""
+    created = _create_waiver_as_manager(client, manager_auth_headers)
+    resp = client.put(
+        f"/api/v1/waivers/{created['id']}",
+        json={"title": "Hacked"},
+        headers=client_auth_headers,
+    )
+    assert resp.status_code == 403
+
+
+def test_client_cannot_deactivate_waiver(client, client_auth_headers, manager_auth_headers):
+    """Client must not be able to deactivate a waiver (manager-only CRUD)."""
+    created = _create_waiver_as_manager(client, manager_auth_headers)
+    resp = client.delete(f"/api/v1/waivers/{created['id']}", headers=client_auth_headers)
+    assert resp.status_code == 403
+
+
+def test_instructor_cannot_create_waiver(client, instructor_headers):
+    """Instructor role must not be able to author waivers (manager-only)."""
+    resp = client.post(
+        "/api/v1/waivers",
+        json={"title": "Unauthorized", "body": "Nope"},
+        headers=instructor_headers,
+    )
+    assert resp.status_code == 403
+
+
+def test_unauthenticated_cannot_sign_waiver(client, manager_auth_headers):
+    """The sign endpoint requires a valid access token."""
+    created = _create_waiver_as_manager(client, manager_auth_headers)
+    resp = client.post(f"/api/v1/waivers/{created['id']}/sign", json={"signed_name": "Nobody"})
+    assert resp.status_code == 401
+
+
+def test_manager_cannot_sign_waiver_on_clients_behalf(client, manager_auth_headers):
+    """A manager token must be rejected by the client-only sign endpoint."""
+    created = _create_waiver_as_manager(client, manager_auth_headers)
+    resp = client.post(
+        f"/api/v1/waivers/{created['id']}/sign",
+        json={"signed_name": "Manager Impersonating"},
+        headers=manager_auth_headers,
+    )
+    assert resp.status_code == 403
+
+
+def test_instructor_cannot_sign_waiver_on_clients_behalf(
+    client, instructor_headers, manager_auth_headers
+):
+    """An instructor token must also be rejected by the client-only sign endpoint."""
+    created = _create_waiver_as_manager(client, manager_auth_headers)
+    resp = client.post(
+        f"/api/v1/waivers/{created['id']}/sign",
+        json={"signed_name": "Instructor Impersonating"},
+        headers=instructor_headers,
+    )
+    assert resp.status_code == 403

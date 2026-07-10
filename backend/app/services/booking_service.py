@@ -1,13 +1,14 @@
 from datetime import date, timedelta
 from typing import Optional
 
-from sqlalchemy.orm import Session
-
 from app.models.membership import Membership
 from app.models.membership_type import MembershipType
 from app.models.studio_settings import StudioSettings
 from app.models.waitlist import Waitlist
+from app.models.waiver import Waiver
+from app.models.waiver_signature import WaiverSignature
 from app.utils import utcnow
+from sqlalchemy.orm import Session
 
 
 def get_studio_settings(db: Session) -> Optional[StudioSettings]:
@@ -53,6 +54,45 @@ def can_book(db: Session, client_id: int, studio_settings) -> bool:
         return True
 
     return guest_enabled
+
+
+def get_unsigned_required_waivers(
+    db: Session, client_id: int, location_id: int = 1
+) -> list[Waiver]:
+    """Return active, requires_before_booking waivers the client has not signed at the current version.
+
+    A waiver counts as unsigned if there is no WaiverSignature for this client
+    at waiver.version, even if they signed an older version.
+
+    Deliberately a straightforward per-waiver existence check rather than a
+    single complex SQL join — the qualifying waiver list is expected to be
+    small (a handful per studio, not thousands), so clarity wins here.
+    """
+    required_waivers = (
+        db.query(Waiver)
+        .filter(
+            Waiver.location_id == location_id,
+            Waiver.is_active.is_(True),
+            Waiver.requires_before_booking.is_(True),
+        )
+        .all()
+    )
+
+    unsigned: list[Waiver] = []
+    for waiver in required_waivers:
+        signed_current_version = (
+            db.query(WaiverSignature)
+            .filter(
+                WaiverSignature.waiver_id == waiver.id,
+                WaiverSignature.client_id == client_id,
+                WaiverSignature.waiver_version == waiver.version,
+            )
+            .first()
+        )
+        if signed_current_version is None:
+            unsigned.append(waiver)
+
+    return unsigned
 
 
 def deduct_credit(db: Session, membership: Optional[Membership]) -> bool:
