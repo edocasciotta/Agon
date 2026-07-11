@@ -102,8 +102,14 @@ This means the class filled up and no spots opened before the class started. You
 **I missed the confirmation window for a waitlist spot**
 Your waitlist position expired. You would need to re-join the waitlist if you still want to attend a future session.
 
+**I got a message saying I need to sign a waiver before booking**
+Some studios require you to digitally sign a waiver (for example, a liability release) before your first booking, or after the studio updates its waiver text. This message means you have an unsigned required waiver on file.
+
+At this time, the Agon mobile app does not yet have a screen for reviewing and signing a waiver — contact your studio directly, and they can tell you how to complete your signature so you can book.
+
 ## Related pages
 
 - [Check-in](check-in)
 - [Your membership](memberships)
 - [Notifications](notifications)
+- [Calendar sync](calendar-sync)

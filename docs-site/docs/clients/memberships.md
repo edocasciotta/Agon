@@ -42,7 +42,14 @@ If you cancel a booking:
 - **Cancelled early** (before the cancellation window): your credit is refunded
 - **Cancelled late** (inside the cancellation window, e.g. within 2 hours of class start): depending on your studio's policy, you may or may not get the credit back. The app always tells you before you confirm a cancellation.
 
-If you have a **recurring subscription** with credits, your credits reset when your subscription renews. Unused credits from the previous period do not carry over.
+If you have a **recurring subscription** with credits, your credits reset when your subscription renews. Whether unused credits from the previous period carry over depends on your studio's settings for that membership type:
+
+- If your studio has **credit rollover** enabled for your membership type, your unused credits carry over into the new period (up to a maximum set by your studio, if any) instead of being lost.
+- If rollover is not enabled, unused credits from the previous period do not carry over — this is the default.
+
+Check your membership details on the **Membership** screen, or ask your studio, to find out whether your plan includes rollover.
+
+Some late cancellations or no-shows may also incur a fee set by your studio — the app always tells you before you confirm a cancellation whether a fee applies, and any fee charged will appear in your payment history.
 
 ---
 
@@ -54,8 +61,11 @@ If your studio has enabled online purchases, you can buy a membership directly f
 2. Tap **Browse memberships**.
 3. Select the membership type you want.
 4. Tap **Purchase**.
-5. You're taken to a secure Stripe payment screen to enter your card details.
-6. After payment, your membership is activated immediately.
+5. If you have a **promo code** and/or a **gift card**, you can enter them at this step — a promo code applies a percentage or fixed discount, and a gift card deducts from its remaining balance. Both can be applied to the same purchase, and the app shows you the final price before you confirm.
+6. You're taken to a secure Stripe payment screen to enter your card details (unless a gift card already covers the full price, in which case your membership activates immediately with no card needed).
+7. After payment, your membership is activated immediately.
+
+If this is your **first purchase** of a membership type that has an **intro offer** configured, you'll automatically see a reduced intro price instead of the regular price — no code needed. Intro pricing only applies once per client across your studio's intro-offer membership types.
 
 If online purchases are not available, contact your studio directly to purchase a membership.
 
@@ -94,3 +104,4 @@ Contact your studio manager directly — membership cancellations are handled by
 
 - [Booking a Class](booking-a-class)
 - [Notifications](notifications)
+- [Calendar sync](calendar-sync)
