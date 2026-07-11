@@ -52,6 +52,33 @@ IT: *Prenotazioni e cancellazioni* · FR: *Réservations* · DE: *Buchungsrichtl
 |---|---|---|---|---|---|
 | Waitlist confirmation window (minutes) | Waitlist confirmation window | Finestra conferma lista attesa | Délai de confirmation liste d'attente | Wartelistenbestätigungsfenster | Ventana de confirmación lista de espera |
 
+### Late cancellation and no-show fees
+
+| Setting | EN | IT | FR | DE | ES |
+|---|---|---|---|---|---|
+| Late cancellation fee | Late cancellation fee | Penale cancellazione tardiva | Frais d'annulation tardive | Gebühr für späte Stornierung | Tarifa de cancelación tardía |
+| No-show fee | No-show fee | Penale mancata presentazione | Frais d'absence | No-Show-Gebühr | Tarifa por inasistencia |
+
+(Locale keys: `settings.lateCancelFee` / `settings.noShowFee`.)
+
+These are the studio-wide **default** fee amounts. They apply automatically only when:
+- A client cancels a booking inside the cancellation window (a "late cancellation") **and** your
+  **Late cancellation deducts credit** setting is enabled, or
+- A studio manager or instructor explicitly marks a booking as a **no-show** at check-in.
+
+A fee never triggers on its own just because it's set here — it always requires one of the two
+triggers above to actually fire.
+
+Each membership type can override either fee for its own members (see
+[Memberships — fee overrides](memberships#fee-overrides)). The resolution order is: **membership
+type override → studio default (this section) → no fee** if neither is set.
+
+**How the fee is recorded:** a fee is not an automatic card charge. It's recorded as a `Payment` row
+(`provider: "system"`, `notes: "no_show_fee"` or `"late_cancel_fee"`) so it appears in the client's
+payment history and in your Reports revenue figures — but your studio still needs to actually
+collect it from the client (cash, card terminal, added to their next invoice, etc.) through your own
+process.
+
 ---
 
 ## Client access
@@ -96,3 +123,4 @@ Click **Restart tunnel**. If it remains inactive, check your internet connection
 - [Payments](payments)
 - [Check-in](check-in)
 - [Classes](classes)
+- [Memberships — fee overrides](memberships#fee-overrides)
