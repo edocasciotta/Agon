@@ -372,75 +372,97 @@ def test_multi_turn_conversation_accumulates_slots_correctly(
 ):
     _make_class_type(db_session)
     _make_location(db_session, name="Agon Genova")
-    today = datetime.datetime.utcnow().date()
-    tomorrow_iso = (today + datetime.timedelta(days=1)).isoformat()
 
-    # Turn 1: "create a class" -> only location extracted this turn
-    with patch(
-        "app.routers.agent.completion",
-        return_value=_make_tool_call_response("create_class", {"location": "Genova"}),
-    ):
-        resp1 = client.post(
-            ACT_URL,
-            json={"messages": [{"role": "user", "content": "create a class"}], "draft": None},
-            headers=manager_auth_headers,
-        )
-    assert resp1.status_code == 200
-    data1 = resp1.json()
-    assert data1["action"] is None
-    assert data1["draft"]["location"] == "Genova"
+    # Freeze the clock so this test doesn't flake: _studio_local_today() anchors
+    # "today" to the studio's local timezone (Europe/Rome by default), which can
+    # be a different calendar day than raw UTC for part of every day. A fixed,
+    # safe mid-day UTC instant (not a midnight/DST boundary — that case is
+    # covered separately by test_relative_date_anchored_to_studio_timezone_not_utc)
+    # keeps "domani" resolving to the same date on every run.
+    fixed_utc = datetime.datetime(2026, 7, 10, 12, 0, tzinfo=datetime.timezone.utc)
+    # utcnow() in agent_tools returns a naive UTC datetime — freeze it to the
+    # same instant so the "is class in the past?" guard sees consistent time.
+    fixed_utcnow = datetime.datetime(2026, 7, 10, 12, 0)
+    # Rome-local "today" at this instant is also July 10th (mid-day, no
+    # boundary skew), so "domani" resolves to July 11th.
+    tomorrow_iso = "2026-07-11"
 
-    # Turn 2: "domani" -> only date extracted this turn; location must survive from the draft
-    with patch(
-        "app.routers.agent.completion",
-        return_value=_make_tool_call_response("create_class", {"date": "domani"}),
-    ):
-        resp2 = client.post(
-            ACT_URL,
-            json={
-                "messages": [
-                    {"role": "user", "content": "create a class"},
-                    {"role": "assistant", "content": data1["reply"]},
-                    {"role": "user", "content": "domani"},
-                ],
-                "draft": data1["draft"],
-            },
-            headers=manager_auth_headers,
-        )
-    assert resp2.status_code == 200
-    data2 = resp2.json()
-    assert data2["action"] is None
-    assert data2["draft"]["location"] == "Genova"
-    # The draft carries the raw slot forward (resolved fresh each time by
-    # handle_create_class) — the point of this test is that it survives to
-    # the next turn unresolved, not that it's pre-resolved here.
-    assert data2["draft"]["date"] == "domani"
+    class FrozenDateTime(datetime.datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return fixed_utc.astimezone(tz) if tz else fixed_utc
 
-    # Turn 3: "8.45 AM" -> only time extracted; everything else must still be resolved
-    with patch(
-        "app.routers.agent.completion",
-        return_value=_make_tool_call_response("create_class", {"start_time": "08:45"}),
-    ):
-        resp3 = client.post(
-            ACT_URL,
-            json={
-                "messages": [
-                    {"role": "user", "content": "create a class"},
-                    {"role": "assistant", "content": data1["reply"]},
-                    {"role": "user", "content": "domani"},
-                    {"role": "assistant", "content": data2["reply"]},
-                    {"role": "user", "content": "8.45 AM"},
-                ],
-                "draft": data2["draft"],
-            },
-            headers=manager_auth_headers,
-        )
-    assert resp3.status_code == 200, resp3.text
-    data3 = resp3.json()
-    assert data3["action"] is not None
-    created = data3["action"]["scheduled_class"]
-    assert created["starts_at"].startswith(tomorrow_iso)
-    assert created["starts_at"].endswith("08:45:00")
+    with patch("app.routers.agent.datetime", FrozenDateTime):
+        with patch("app.services.agent_tools.utcnow", return_value=fixed_utcnow):
+            # Turn 1: "create a class" -> only location extracted this turn
+            with patch(
+                "app.routers.agent.completion",
+                return_value=_make_tool_call_response("create_class", {"location": "Genova"}),
+            ):
+                resp1 = client.post(
+                    ACT_URL,
+                    json={
+                        "messages": [{"role": "user", "content": "create a class"}],
+                        "draft": None,
+                    },
+                    headers=manager_auth_headers,
+                )
+            assert resp1.status_code == 200
+            data1 = resp1.json()
+            assert data1["action"] is None
+            assert data1["draft"]["location"] == "Genova"
+
+            # Turn 2: "domani" -> only date extracted this turn; location must survive from the draft
+            with patch(
+                "app.routers.agent.completion",
+                return_value=_make_tool_call_response("create_class", {"date": "domani"}),
+            ):
+                resp2 = client.post(
+                    ACT_URL,
+                    json={
+                        "messages": [
+                            {"role": "user", "content": "create a class"},
+                            {"role": "assistant", "content": data1["reply"]},
+                            {"role": "user", "content": "domani"},
+                        ],
+                        "draft": data1["draft"],
+                    },
+                    headers=manager_auth_headers,
+                )
+            assert resp2.status_code == 200
+            data2 = resp2.json()
+            assert data2["action"] is None
+            assert data2["draft"]["location"] == "Genova"
+            # The draft carries the raw slot forward (resolved fresh each time by
+            # handle_create_class) — the point of this test is that it survives to
+            # the next turn unresolved, not that it's pre-resolved here.
+            assert data2["draft"]["date"] == "domani"
+
+            # Turn 3: "8.45 AM" -> only time extracted; everything else must still be resolved
+            with patch(
+                "app.routers.agent.completion",
+                return_value=_make_tool_call_response("create_class", {"start_time": "08:45"}),
+            ):
+                resp3 = client.post(
+                    ACT_URL,
+                    json={
+                        "messages": [
+                            {"role": "user", "content": "create a class"},
+                            {"role": "assistant", "content": data1["reply"]},
+                            {"role": "user", "content": "domani"},
+                            {"role": "assistant", "content": data2["reply"]},
+                            {"role": "user", "content": "8.45 AM"},
+                        ],
+                        "draft": data2["draft"],
+                    },
+                    headers=manager_auth_headers,
+                )
+            assert resp3.status_code == 200, resp3.text
+            data3 = resp3.json()
+            assert data3["action"] is not None
+            created = data3["action"]["scheduled_class"]
+            assert created["starts_at"].startswith(tomorrow_iso)
+            assert created["starts_at"].endswith("08:45:00")
 
 
 def test_later_correction_overrides_earlier_draft_value(client, manager_auth_headers, db_session):
