@@ -451,10 +451,22 @@ it's harmless and not something any agent touched today).
 
 ## Next Task Candidates
 
-- **1.9 Forms / Waivers** (backend + frontend + mobile) — last Phase 1 item
+*(Audited 2026-07-11 against the actual state of `main` — several items below had already landed
+via concurrent sessions during this branch's lifetime without being crossed off here.)*
+
+- **1.9 Forms / Waivers — backend done, frontend + mobile still open.** Backend (`waivers.py`,
+  `test_waivers.py`, migration `ba57122d7494`) is on `main` via PR #12. Verified no frontend
+  (`App.tsx` routes, any `waiver`/`signature`/`consent` component) or mobile equivalent exists yet —
+  this is genuinely the remaining piece of "last Phase 1 item," not the whole thing.
 - ~~**Bug fix**: Settings save silently clears SMTP/Twilio secrets on unrelated saves (`task_fcd35817`)~~ — done, see "Bug Fix — Email + SMS settings secret wipe" above (PR #9)
-- **Bug fix**: uvicorn access log leaks secret tokens embedded in URLs (`task_549372fa`)
-- **Consider**: a checkpoint commit — nothing from 1.4 onward (promo codes through calendar sync) has
-  been committed yet; everything today has lived in the working tree only
-- Docs-site batch pass for 1.1–1.9 once 1.9 lands (see "Docs-site debt" note above)
+- ~~**Bug fix**: uvicorn access log leaks secret tokens embedded in URLs (`task_549372fa`)~~ — done,
+  see "Security Hardening (2026-07-10) — PRs #11, #13" above (invite-token + calendar-sync-token
+  redaction, both with tests)
+- ~~**Consider**: a checkpoint commit — nothing from 1.4 onward...~~ — moot, all of it is committed
+  and merged to `main` via PR #12
+- **Docs-site batch pass for 1.1–1.9**: still fully open — zero docs-site pages exist for any of
+  promo codes, gift cards, tags, SMS, calendar sync, fees/rollover, intro offers, or waivers
+  (verified: no matching files under `docs-site/docs`). No longer blocked on "1.9 landing" in the
+  literal sense (1.9 backend is on `main`) — could start now for 1.1–1.8 + 1.9-backend, with a
+  follow-up once 1.9 frontend/mobile lands.
 - Phase 2: Appointments, Marketing Automations, Web Widgets, Online Classes, Custom Roles, Payroll, Invoicing
