@@ -31,6 +31,7 @@
     "promoCodes": "Promo-Codes",
     "tags": "Tags",
     "giftCards": "Geschenkgutscheine",
+    "waivers": "Haftungsausschlüsse",
     "smsTemplates": "SMS-Vorlagen",
     "smsEvents": "SMS-Ereignisse"
   },
@@ -802,5 +803,35 @@
     "regenerating": "Wird erneuert...",
     "failedLoad": "Der Kalendersynchronisierungslink konnte nicht geladen werden",
     "failedRegenerate": "Der Kalenderlink konnte nicht erneuert werden"
+  },
+  "waivers": {
+    "title": "Haftungsausschlüsse",
+    "newWaiver": "Neuer Haftungsausschluss",
+    "editWaiver": "Haftungsausschluss bearbeiten",
+    "formTitle": "Titel",
+    "titlePlaceholder": "z.B. Haftungsausschluss",
+    "body": "Text",
+    "bodyPlaceholder": "Geben Sie den vollständigen Text des Haftungsausschlusses ein, den die Kunden lesen und unterschreiben werden.",
+    "requiresBeforeBooking": "Unterschrift vor der Buchung erforderlich",
+    "requiredBadge": "Erforderlich",
+    "version": "Version",
+    "versionBumpNote": "Das Bearbeiten des Textes erstellt eine neue Version, und Kunden müssen erneut unterschreiben.",
+    "versionBumpWarning": "Sie haben den Text geändert – beim Speichern wird eine neue Version erstellt und Kunden müssen erneut unterschreiben.",
+    "deactivate": "Deaktivieren",
+    "deactivateConfirmTitle": "Diesen Haftungsausschluss deaktivieren?",
+    "deactivateConfirmDesc": "Durch die Deaktivierung wird dieser Haftungsausschluss für Kunden ausgeblendet. Es wird nichts gelöscht – bestehende Unterschriften bleiben für Ihre Unterlagen erhalten.",
+    "noWaivers": "Noch keine Haftungsausschlüsse",
+    "emptyDesc": "Erstellen Sie einen Haftungsausschluss, den Kunden vor der Buchung unterschreiben müssen, z. B. eine Haftungsfreistellung oder Studio-Richtlinien.",
+    "failedCreate": "Erstellen des Haftungsausschlusses fehlgeschlagen",
+    "failedEdit": "Aktualisieren des Haftungsausschlusses fehlgeschlagen",
+    "failedLoad": "Haftungsausschlüsse konnten nicht geladen werden",
+    "clientSectionTitle": "Haftungsausschlüsse",
+    "clientSectionDescription": "Haftungsausschlüsse werden vom Kunden auf seinem eigenen Gerät unterschrieben. Manager können nicht im Namen eines Kunden unterschreiben.",
+    "noWaiversForClient": "Keine aktiven Haftungsausschlüsse für dieses Studio",
+    "signed": "Unterschrieben",
+    "unsigned": "Unsigniert",
+    "notSigned": "Nicht unterschrieben",
+    "signedOn": "Unterschrieben am {{date}}",
+    "blocksBookingBadge": "Blockiert Buchung"
   }
 }

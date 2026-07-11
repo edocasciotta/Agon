@@ -9,6 +9,7 @@ export const errorMessages: Record<string, string> = {
   BOOKING_CLASS_ALREADY_STARTED: 'This class has already started.',
   BOOKING_ALREADY_CANCELLED: 'This booking has already been cancelled.',
   BOOKING_WAITLIST_DUPLICATE: 'This client is already on the waitlist.',
+  WAIVER_SIGNATURE_REQUIRED: 'This client must sign a required waiver before this booking can be made.',
   // Waitlist
   WAITLIST_OFFER_EXPIRED: 'The waitlist offer has expired.',
   WAITLIST_OFFER_NOT_ACTIVE: 'The waitlist offer is no longer active.',

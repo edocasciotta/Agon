@@ -341,3 +341,33 @@ export interface GiftCardValidateResponse {
 export interface CalendarSyncResponse {
   feed_url: string
 }
+
+// Waivers
+export interface WaiverResponse {
+  id: number
+  location_id: number
+  title: string
+  body: string
+  version: number
+  requires_before_booking: boolean
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface WaiverCreate {
+  title: string
+  body: string
+  requires_before_booking: boolean
+}
+
+export interface WaiverUpdate {
+  title?: string
+  body?: string
+  requires_before_booking?: boolean
+}
+
+export interface WaiverWithStatus extends WaiverResponse {
+  is_signed: boolean
+  signed_at: string | null
+}

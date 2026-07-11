@@ -10,6 +10,7 @@ import { billingApi } from '../../api/billing'
 import { tagsApi } from '../../api/tags'
 import { smsApi } from '../../api/sms'
 import { calendarSyncApi } from '../../api/calendarSync'
+import { waiversApi } from '../../api/waivers'
 import { LoadingSpinner } from '../../components/LoadingSpinner'
 import { ErrorMessage } from '../../components/ErrorMessage'
 import { PageHeader } from '../../components/PageHeader'
@@ -84,6 +85,15 @@ export function ClientDetail() {
   } = useQuery({
     queryKey: ['client-calendar-sync', clientId],
     queryFn: () => calendarSyncApi.get(clientId),
+  })
+
+  const {
+    data: clientWaivers,
+    isLoading: clientWaiversLoading,
+    error: clientWaiversError,
+  } = useQuery({
+    queryKey: ['client-waivers', clientId],
+    queryFn: () => waiversApi.listForClient(clientId),
   })
 
   const assignTagMutation = useMutation({
@@ -448,6 +458,63 @@ export function ClientDetail() {
             )}
           </div>
         ) : null}
+      </div>
+
+      {/* Waivers */}
+      <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+        <h3 className="text-sm font-semibold text-gray-700 mb-1">{t('waivers.clientSectionTitle')}</h3>
+        <p className="text-xs text-gray-500 mb-3">{t('waivers.clientSectionDescription')}</p>
+
+        {clientWaiversLoading ? (
+          <div className="flex justify-center py-2">
+            <LoadingSpinner />
+          </div>
+        ) : clientWaiversError ? (
+          <ErrorMessage
+            code={(clientWaiversError as ApiError).code}
+            message={(clientWaiversError as ApiError).message ?? t('waivers.failedLoad')}
+          />
+        ) : !clientWaivers || clientWaivers.length === 0 ? (
+          <p className="text-xs text-gray-400">{t('waivers.noWaiversForClient')}</p>
+        ) : (
+          <ul className="divide-y divide-gray-100">
+            {clientWaivers.map((waiver) => {
+              const blocksBooking = waiver.requires_before_booking && !waiver.is_signed
+              return (
+                <li key={waiver.id} className="py-2 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-800 truncate">{waiver.title}</p>
+                    {waiver.is_signed && waiver.signed_at ? (
+                      <p className="text-xs text-gray-500">
+                        {t('waivers.signedOn', {
+                          date: format(new Date(waiver.signed_at), 'MMM d, yyyy'),
+                        })}
+                      </p>
+                    ) : (
+                      <p className="text-xs text-gray-500">{t('waivers.notSigned')}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {blocksBooking && (
+                      <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                        {t('waivers.blocksBookingBadge')}
+                      </span>
+                    )}
+                    <span
+                      className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
+                        waiver.is_signed
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}
+                    >
+                      {waiver.is_signed ? t('waivers.signed') : t('waivers.unsigned')}
+                    </span>
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        )}
       </div>
 
       {/* Tabs */}

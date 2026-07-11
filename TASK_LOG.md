@@ -11,15 +11,17 @@
 | Suite | Count | Status |
 |---|---|---|
 | Backend (pytest) | 523 | ✅ |
-| Frontend (Vitest) | 70 | ✅ |
+| Frontend (Vitest) | 79 | ✅ |
 | Mobile (jest-expo) | 44 | ✅ |
 | Docs build | — | ✅ |
 
-Counts as of the `claude/distracted-ramanujan-043037` branch (PR #9) after merging `origin/main`
-(PR #12 competitive-gap work) in — see "Bug Fix — Email + SMS settings secret wipe" below.
+Frontend count (79) as of `feat/waivers-frontend` (this branch, 1.9 desktop frontend) on top of
+`origin/main`@`e30003d` (through PR #15). Backend/mobile counts unchanged, carried from the
+`claude/distracted-ramanujan-043037`/PR #9 merge of PR #12's competitive-gap work.
 
 ### Active branch
-`main` — all changes merged and pushed, through PR #9 (`aefe8fd`).
+`main` — through PR #15 (`e30003d`). `feat/waivers-frontend` (1.9 desktop frontend) not yet merged —
+see "1.9 Forms/Waivers — desktop frontend" below.
 
 ### Local dev
 - Backend: `cd backend && .venv/bin/uvicorn main:app --reload` (entry point is top-level `backend/main.py`, not `app/main.py`)
@@ -58,6 +60,40 @@ running unattended.
   already committed can be `git reset --hard`'d away.
 - A reflog full of repeated `reset: moving to HEAD` at the same commit is the diagnostic signature
   of this pattern — check `git reflog` first if files mysteriously revert.
+
+---
+
+## Known Hazard: Nested Sub-Agent Delegation Silently Produces Nothing (2026-07-11)
+
+Delegating the 1.9 Waivers desktop-frontend task went through two attempts. The first: an
+orchestrator-level agent spawned a frontend sub-agent, which — instead of writing the code itself —
+spawned a *second-level* nested sub-agent (`spawnDepth: 3`) to do the actual work. That inner agent
+hit a worktree-not-on-disk race, worked around it by manually recreating the worktree, then its
+transcript **ended mid-task** right after a research/planning message, with zero `Write`/`Edit` calls
+ever made and no commit. The outer agent reported back "waiting for it to complete" and moved on —
+that status was never actually verified, just assumed. The failure was only caught because the
+orchestrator independently checked `git status`/`find ... -iname "*waiver*"` after the "completed"
+notification and found literally nothing on disk.
+
+Confusingly, the same first-attempt agent **later resumed on its own** (many minutes afterward,
+unprompted) via a stray notification, recreated its worktree again, and this time completed the
+work for real — producing a fully independent, parallel implementation of the same feature, committed
+to a separate branch (`worktree-agent-a4e8a1cac472597f3` / `b36f69e`). This happened concurrently with
+a second, direct (non-nested) re-attempt the orchestrator had already dispatched in the shared
+checkout, which is the version that actually got verified (build/lint/test independently re-run, plus
+a live browser click-through) and kept. The duplicate branch/worktree was discarded after confirming
+no unique content was in it.
+
+**Takeaways:**
+- Don't trust a sub-agent's "in progress" self-report as a completion signal — a `Task`-tool
+  "completed" notification means the agent *stopped*, not that it *finished*. Verify with `git
+  status`/`git diff`/file existence before accepting, every time, not just when something feels off.
+- Explicitly instruct sub-agents not to spawn further nested sub-agents for a single well-scoped
+  implementation task — nesting adds a layer where failures (and, as here, delayed unprompted resumes)
+  are much harder to see.
+- A "completed" notification can arrive **very late** for an agent that appeared to have already
+  finished (or been abandoned) earlier in the session — don't assume an old task ID is dead just
+  because you already got a report from it once.
 
 ---
 
@@ -454,10 +490,14 @@ it's harmless and not something any agent touched today).
 *(Audited 2026-07-11 against the actual state of `main` — several items below had already landed
 via concurrent sessions during this branch's lifetime without being crossed off here.)*
 
-- **1.9 Forms / Waivers — backend done, frontend + mobile still open.** Backend (`waivers.py`,
-  `test_waivers.py`, migration `ba57122d7494`) is on `main` via PR #12. Verified no frontend
-  (`App.tsx` routes, any `waiver`/`signature`/`consent` component) or mobile equivalent exists yet —
-  this is genuinely the remaining piece of "last Phase 1 item," not the whole thing.
+- ~~**1.9 Forms / Waivers — backend done, frontend + mobile still open.**~~ — desktop frontend done
+  (this branch): manager CRUD page (`Waivers/index.tsx`), nav entry, read-only waiver-status card on
+  `ClientDetail.tsx` (signed/unsigned + amber "blocks booking" badge), `WAIVER_SIGNATURE_REQUIRED`
+  booking-error message, 27 i18n keys × 7 locales. No sign-on-behalf-of-client UI anywhere — deliberate,
+  the backend rejects manager/instructor tokens on `POST /waivers/{id}/sign` with 403 (client-self
+  consent only). Verified with a live browser click-through (create → edit → version-bump note →
+  deactivate → client-detail badge), not just the test suite. **Mobile signing UI is still open** —
+  that's where the client actually signs, out of scope for this task.
 - ~~**Bug fix**: Settings save silently clears SMTP/Twilio secrets on unrelated saves (`task_fcd35817`)~~ — done, see "Bug Fix — Email + SMS settings secret wipe" above (PR #9)
 - ~~**Bug fix**: uvicorn access log leaks secret tokens embedded in URLs (`task_549372fa`)~~ — done,
   see "Security Hardening (2026-07-10) — PRs #11, #13" above (invite-token + calendar-sync-token
