@@ -1,12 +1,14 @@
 import React from 'react'
 import { render, fireEvent, waitFor } from '@testing-library/react-native'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { Linking } from 'react-native'
+import { Linking, Alert } from 'react-native'
 import PurchaseScreen from '../app/membership/purchase'
-import { membershipTypesApi, billingApi } from '../src/api/memberships'
+import { membershipTypesApi, billingApi, giftCardsApi } from '../src/api/memberships'
 import { useAuthStore } from '../src/store/authStore'
 
 // --- module mocks ---
+
+const mockRouterReplace = jest.fn()
 
 jest.mock('expo-secure-store', () => ({
   getItemAsync: jest.fn(),
@@ -15,7 +17,7 @@ jest.mock('expo-secure-store', () => ({
 }))
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ replace: jest.fn(), push: jest.fn() }),
+  useRouter: () => ({ replace: mockRouterReplace, push: jest.fn() }),
   Stack: { Screen: () => null },
 }))
 
@@ -25,6 +27,9 @@ jest.mock('../src/api/memberships', () => ({
   },
   billingApi: {
     createCheckoutSession: jest.fn(),
+  },
+  giftCardsApi: {
+    validate: jest.fn(),
   },
 }))
 
@@ -156,6 +161,8 @@ describe('PurchaseScreen', () => {
     ;(billingApi.createCheckoutSession as jest.Mock).mockResolvedValue({
       checkout_url: 'https://checkout.stripe.com/test',
       session_id: 'cs_test',
+      already_completed: false,
+      membership_id: null,
     })
     ;(Linking.openURL as jest.Mock).mockResolvedValue(undefined)
 
@@ -167,6 +174,79 @@ describe('PurchaseScreen', () => {
     await waitFor(() => {
       expect(billingApi.createCheckoutSession).toHaveBeenCalledWith(42, 1)
       expect(Linking.openURL).toHaveBeenCalledWith('https://checkout.stripe.com/test')
+    })
+  })
+
+  it('validates and applies a gift card code, then passes it to createCheckoutSession', async () => {
+    ;(membershipTypesApi.list as jest.Mock).mockResolvedValue([mockTypeA])
+    ;(giftCardsApi.validate as jest.Mock).mockResolvedValue({
+      valid: true,
+      remaining_balance: 30,
+      currency: 'eur',
+    })
+    ;(billingApi.createCheckoutSession as jest.Mock).mockResolvedValue({
+      checkout_url: 'https://checkout.stripe.com/test',
+      session_id: 'cs_test',
+      already_completed: false,
+      membership_id: null,
+    })
+    ;(Linking.openURL as jest.Mock).mockResolvedValue(undefined)
+
+    const { getByText, getAllByText, getByPlaceholderText } = renderScreen(makeClient())
+    await waitFor(() => expect(getByText('Monthly Unlimited')).toBeTruthy())
+
+    fireEvent.changeText(getByPlaceholderText('Enter gift card code'), 'GIFT123')
+    // Both the promo and gift-card "Apply" buttons share the same label —
+    // the gift-card section renders after the promo section, so it's the last one.
+    const applyButtons = getAllByText('Apply')
+    fireEvent.press(applyButtons[applyButtons.length - 1])
+
+    await waitFor(() => expect(getByText('Gift card applied!')).toBeTruthy())
+
+    fireEvent.press(getByText('Purchase'))
+
+    await waitFor(() => {
+      expect(billingApi.createCheckoutSession).toHaveBeenCalledWith(42, 1, {
+        giftCardCode: 'GIFT123',
+      })
+      expect(Linking.openURL).toHaveBeenCalledWith('https://checkout.stripe.com/test')
+    })
+  })
+
+  it('shows the purchase-complete state and does not open a URL when already_completed is true', async () => {
+    ;(membershipTypesApi.list as jest.Mock).mockResolvedValue([mockTypeA])
+    ;(giftCardsApi.validate as jest.Mock).mockResolvedValue({
+      valid: true,
+      remaining_balance: 100,
+      currency: 'eur',
+    })
+    ;(billingApi.createCheckoutSession as jest.Mock).mockResolvedValue({
+      checkout_url: null,
+      session_id: null,
+      already_completed: true,
+      membership_id: 7,
+    })
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {})
+
+    const { getByText, getAllByText, getByPlaceholderText } = renderScreen(makeClient())
+    await waitFor(() => expect(getByText('Monthly Unlimited')).toBeTruthy())
+
+    fireEvent.changeText(getByPlaceholderText('Enter gift card code'), 'FULLCOVER')
+    // Both the promo and gift-card "Apply" buttons share the same label —
+    // the gift-card section renders after the promo section, so it's the last one.
+    const applyButtons = getAllByText('Apply')
+    fireEvent.press(applyButtons[applyButtons.length - 1])
+    await waitFor(() => expect(getByText('Gift card applied!')).toBeTruthy())
+
+    fireEvent.press(getByText('Purchase'))
+
+    await waitFor(() => {
+      expect(billingApi.createCheckoutSession).toHaveBeenCalledWith(42, 1, {
+        giftCardCode: 'FULLCOVER',
+      })
+      expect(alertSpy).toHaveBeenCalledWith('Purchase complete! Your membership is now active.')
+      expect(mockRouterReplace).toHaveBeenCalledWith('/(tabs)/membership')
+      expect(Linking.openURL).not.toHaveBeenCalled()
     })
   })
 })

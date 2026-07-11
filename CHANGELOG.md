@@ -12,6 +12,7 @@ Agon uses [Semantic Versioning](https://semver.org/).
 ### Added
 - `POST /api/v1/agent/act`: AI Action Mode — studio managers can create scheduled classes from a natural-language request (e.g. "create a Yoga class next Wednesday at Milano with Elena, 1 hour"). The LLM only extracts slots via tool calling; class type, location, instructor, and date are resolved deterministically server-side and a class is created only once every field is unambiguous — otherwise the assistant asks a clarifying question. Manager-only, opt-in toggle in the AI Support chat panel.
 - `GET /api/v1/clients` pagination: `page`/`page_size` query params, response now `{items, total, page, page_size}`
+- `GET /api/v1/memberships` pagination: `page`/`page_size` query params, response now `{items, total, page, page_size}`; Memberships page "All Memberships" table now uses the shared `Pagination` component (page size 50)
 - `search` query param on `GET /api/v1/instructors` and `GET /api/v1/locations`, with matching searchbars on the Instructors and Establishments pages
 - `setup.sh` / `setup.ps1`: one-command dev environment setup
 - `Makefile`: `test`, `lint`, `format`, `build`, `dev` targets for all workspaces
@@ -32,6 +33,9 @@ Agon uses [Semantic Versioning](https://semver.org/).
 - Backend load tests: 100 concurrent bookings, capacity enforcement
 - Backend validation tests: edge cases for all schemas (12 tests)
 - Backend migration tests: upgrade/downgrade verification
+- Desktop Gift Cards management page (`/gift-cards`): manager-only issue/list/deactivate flow against `POST/GET/DELETE /api/v1/gift-cards`, with recipient, initial value vs. remaining balance, and active/inactive/expired status shown per card
+- Mobile Gift Cards: membership purchase screen (`app/membership/purchase.tsx`) now accepts an optional gift card code alongside the existing promo code — validated via `POST /api/v1/gift-cards/validate`, shown with remaining balance, removable, independent of promo codes. When a gift card fully covers the membership price, `POST /api/billing/checkout-session` grants the membership synchronously (`already_completed: true`) and the app shows a success state instead of opening a Stripe URL. New self-purchase screen (`app/gift-card/purchase.tsx`, reachable from the Membership tab via "Give a Gift Card") lets a client buy a gift card as a present via `POST /api/v1/gift-cards/checkout-session`. Translated across all 7 locales.
+- Desktop SMS (Twilio) messaging, mirroring the existing Email system: a new SMS tab in Settings (`GET/PUT /api/v1/sms/settings`, masked auth token, test-send via `POST /api/v1/sms/settings/test`), SMS Templates page (`/marketing/sms-templates`, CRUD against `/api/v1/sms/templates`, with a live character/segment counter), SMS Events page (`/marketing/sms-events`, assigns a template per event type via `PUT /api/v1/sms/events/{event_type}`), and a manual one-off "Send SMS" action on the client detail page (`POST /api/v1/sms/send`, shown only when the client has a phone on file). Translated across all 7 locales.
 
 ### Changed
 - `require_manager` and `require_staff` now check JWT role claim before DB lookup (403 for wrong role, not 401)
@@ -42,6 +46,7 @@ Agon uses [Semantic Versioning](https://semver.org/).
 - Alembic migration `086528153a55`: removed erroneous `op.drop_table('locations')` artifact
 - Performance test seed: `clients[i // 4]` ensures unique `(client_id, scheduled_class_id)` pairs
 - Email settings: saving the form no longer clears the configured SMTP password unless it was actually changed
+- SMS settings: saving the form no longer clears the configured Twilio auth token unless it was actually changed (same bug as Email settings, mirrored onto the new SMS tab)
 
 ---
 

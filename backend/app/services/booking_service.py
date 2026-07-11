@@ -5,6 +5,8 @@ from app.models.membership import Membership
 from app.models.membership_type import MembershipType
 from app.models.studio_settings import StudioSettings
 from app.models.waitlist import Waitlist
+from app.models.waiver import Waiver
+from app.models.waiver_signature import WaiverSignature
 from app.utils import utcnow
 from sqlalchemy.orm import Session
 
@@ -54,6 +56,45 @@ def can_book(db: Session, client_id: int, studio_settings) -> bool:
     return guest_enabled
 
 
+def get_unsigned_required_waivers(
+    db: Session, client_id: int, location_id: int = 1
+) -> list[Waiver]:
+    """Return active, requires_before_booking waivers the client has not signed at the current version.
+
+    A waiver counts as unsigned if there is no WaiverSignature for this client
+    at waiver.version, even if they signed an older version.
+
+    Deliberately a straightforward per-waiver existence check rather than a
+    single complex SQL join — the qualifying waiver list is expected to be
+    small (a handful per studio, not thousands), so clarity wins here.
+    """
+    required_waivers = (
+        db.query(Waiver)
+        .filter(
+            Waiver.location_id == location_id,
+            Waiver.is_active.is_(True),
+            Waiver.requires_before_booking.is_(True),
+        )
+        .all()
+    )
+
+    unsigned: list[Waiver] = []
+    for waiver in required_waivers:
+        signed_current_version = (
+            db.query(WaiverSignature)
+            .filter(
+                WaiverSignature.waiver_id == waiver.id,
+                WaiverSignature.client_id == client_id,
+                WaiverSignature.waiver_version == waiver.version,
+            )
+            .first()
+        )
+        if signed_current_version is None:
+            unsigned.append(waiver)
+
+    return unsigned
+
+
 def deduct_credit(db: Session, membership: Optional[Membership]) -> bool:
     """
     Deducts a credit from the membership.
@@ -82,6 +123,35 @@ def refund_credit(db: Session, membership: Optional[Membership], credit_deducted
     if membership.credits_remaining is not None:
         membership.credits_remaining += 1
     membership.credits_used = max(0, (membership.credits_used or 0) - 1)
+
+
+def calculate_fee(db: Session, client_id: int, fee_type: str) -> float:
+    """Calculate the applicable fee for a client.
+
+    fee_type: 'late_cancel' or 'no_show'
+    Resolution: MembershipType override > StudioSettings default > 0.0
+    """
+    membership = get_active_membership(db, client_id)
+    if membership is not None:
+        mt = (
+            db.query(MembershipType)
+            .filter(MembershipType.id == membership.membership_type_id)
+            .first()
+        )
+        if mt is not None:
+            if fee_type == "late_cancel" and mt.late_cancel_fee_override is not None:
+                return mt.late_cancel_fee_override
+            if fee_type == "no_show" and mt.no_show_fee_override is not None:
+                return mt.no_show_fee_override
+
+    studio_settings = get_studio_settings(db)
+    if studio_settings is not None:
+        if fee_type == "late_cancel":
+            return getattr(studio_settings, "late_cancel_fee", 0.0) or 0.0
+        if fee_type == "no_show":
+            return getattr(studio_settings, "no_show_fee", 0.0) or 0.0
+
+    return 0.0
 
 
 def process_waitlist(db: Session, scheduled_class_id: int, studio_settings) -> Optional[Waitlist]:

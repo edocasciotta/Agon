@@ -2,9 +2,6 @@ import uuid
 from datetime import timedelta
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-
 from app.auth import get_current_client, require_manager, require_staff
 from app.database import get_db
 from app.models.booking import Booking
@@ -20,6 +17,8 @@ from app.schemas.client import (
     ClientUpdate,
 )
 from app.utils import utcnow
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1/clients", tags=["clients"])
 
@@ -156,6 +155,24 @@ async def create_client(
         email_sent = True
     except Exception:
         pass  # Don't fail if email sending fails
+
+    # Try to send SMS (best-effort, mirrors email above)
+    if client.phone and studio_settings and studio_settings.sms_enabled:
+        try:
+            from app.services.sms_service import send_event_sms
+
+            send_event_sms(
+                db,
+                "client_invite",
+                client.phone,
+                {
+                    "invite_url": invite_url,
+                    "studio_name": studio_name,
+                    "client_name": client.full_name,
+                },
+            )
+        except Exception:
+            pass  # Don't fail if SMS sending fails
 
     db.commit()
     db.refresh(client)

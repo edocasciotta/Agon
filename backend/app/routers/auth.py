@@ -234,13 +234,33 @@ async def forgot_password(
         except Exception:
             pass  # Silently fail — don't reveal email existence
 
+        if client.phone and studio_settings and studio_settings.sms_enabled:
+            try:
+                from app.services.sms_service import send_event_sms
+
+                send_event_sms(
+                    db,
+                    "password_reset",
+                    client.phone,
+                    {
+                        "reset_url": reset_url,
+                        "studio_name": studio_name,
+                        "client_name": client.full_name,
+                    },
+                )
+            except Exception:
+                pass  # Silently fail — don't reveal email/phone existence
+
         db.commit()
 
     return {"message": "If that email exists, a reset link has been sent"}
 
 
 @router.post("/reset-password", status_code=200)
-async def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+async def reset_password(
+    request: Request, payload: ResetPasswordRequest, db: Session = Depends(get_db)
+):
     """Reset password using a token."""
     inv = db.query(InvitationToken).filter(InvitationToken.token == payload.token).first()
     if not inv:
@@ -298,7 +318,8 @@ async def reset_password(payload: ResetPasswordRequest, db: Session = Depends(ge
 
 
 @router.get("/invite/{token}", status_code=200)
-async def validate_invite_token(token: str, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+async def validate_invite_token(request: Request, token: str, db: Session = Depends(get_db)):
     """Validate an invitation token and return basic client info."""
     inv = db.query(InvitationToken).filter(InvitationToken.token == token).first()
     if not inv:

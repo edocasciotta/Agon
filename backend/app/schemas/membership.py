@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -31,10 +31,20 @@ class MembershipResponse(BaseModel):
     credits_used: int
     paused_at: Optional[datetime] = None
     pause_ends_at: Optional[datetime] = None
+    rollover_credits: int = 0
     stripe_subscription_id: Optional[str] = None
     created_at: datetime
     updated_at: datetime
+    client_name: Optional[str] = None
+    membership_type_name: Optional[str] = None
     model_config = {"from_attributes": True}
+
+
+class MembershipListPage(BaseModel):
+    items: List[MembershipResponse]
+    total: int
+    page: int
+    page_size: int
 
 
 class MembershipPauseRequest(BaseModel):

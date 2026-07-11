@@ -5,6 +5,8 @@ export interface StudioSettings {
   timezone: string
   cancellation_hours: number
   cancellation_deducts_credit: boolean
+  late_cancel_fee: number
+  no_show_fee: number
   checkin_open_minutes_before: number
   checkin_close_minutes_after: number
   waitlist_confirm_minutes: number
@@ -67,6 +69,13 @@ export interface MembershipType {
   unlimited: boolean
   is_active: boolean
   sellable_online: boolean
+  late_cancel_fee_override?: number | null
+  no_show_fee_override?: number | null
+  rollover_enabled: boolean
+  max_rollover_credits?: number | null
+  is_intro_offer: boolean
+  intro_price?: number | null
+  intro_validity_days?: number | null
 }
 
 export interface Membership {
@@ -78,6 +87,9 @@ export interface Membership {
   expires_at?: string
   credits_remaining?: number
   credits_used: number
+  rollover_credits: number
+  client_name?: string | null
+  membership_type_name?: string | null
 }
 
 export interface Booking {
@@ -116,6 +128,35 @@ export interface EmailTemplateCreate {
 
 // Email Events
 export interface EmailEventAssignment {
+  event_type: string
+  label: string
+  template: { id: number; name: string } | null
+}
+
+// SMS Settings
+export interface SmsSettings {
+  sms_provider_account_sid: string | null
+  sms_provider_auth_token: string
+  sms_from_number: string | null
+  sms_enabled: boolean
+}
+
+// SMS Templates
+export interface SmsTemplateListItem {
+  id: number
+  name: string
+  body: string
+  created_at: string
+  updated_at: string
+}
+export type SmsTemplateResponse = SmsTemplateListItem
+export interface SmsTemplateCreate {
+  name: string
+  body: string
+}
+
+// SMS Events
+export interface SmsEventAssignment {
   event_type: string
   label: string
   template: { id: number; name: string } | null
@@ -167,6 +208,44 @@ export interface RevenueReport {
   by_membership_type: { name: string; revenue: number; count: number }[]
 }
 
+export interface PromoCode {
+  id: number
+  location_id: number
+  code: string
+  discount_type: 'percentage' | 'fixed'
+  discount_value: number
+  applicable_membership_type_ids?: number[] | null
+  max_uses?: number | null
+  current_uses: number
+  one_per_client: boolean
+  valid_from: string
+  valid_until?: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface PromoCodeCreate {
+  code: string
+  discount_type: 'percentage' | 'fixed'
+  discount_value: number
+  applicable_membership_type_ids?: number[] | null
+  max_uses?: number | null
+  one_per_client: boolean
+  valid_from: string
+  valid_until?: string | null
+  is_active: boolean
+}
+
+export interface PromoCodeValidateResponse {
+  valid: boolean
+  discount_type: string
+  discount_value: number
+  discount_amount: number
+  original_price: number
+  final_price: number
+}
+
 export interface RetentionReport {
   period: { start: string; end: string }
   total_clients: number
@@ -174,4 +253,91 @@ export interface RetentionReport {
   new_clients: number
   churned_clients: number
   retention_rate: number
+}
+
+// Tags
+export interface Tag {
+  id: number
+  name: string
+  color: string
+  created_at: string
+  updated_at: string
+}
+
+export interface TagCreate {
+  name: string
+  color?: string
+}
+
+export interface ClientTag {
+  id: number
+  client_id: number
+  tag_id: number
+  tag_name: string
+  tag_color: string
+  assigned_at: string
+  assigned_by: string
+}
+
+// Auto-Tag Rules
+export type AutoTagTriggerEvent =
+  | 'booking_created'
+  | 'booking_cancelled'
+  | 'membership_purchased'
+  | 'membership_expired'
+  | 'no_show'
+  | 'checkin'
+
+export interface AutoTagRule {
+  id: number
+  tag_id: number
+  trigger_event: AutoTagTriggerEvent
+  condition_json: Record<string, unknown> | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface AutoTagRuleCreate {
+  tag_id: number
+  trigger_event: AutoTagTriggerEvent
+  condition_json?: Record<string, unknown> | null
+  is_active?: boolean
+}
+
+// Gift Cards
+export interface GiftCard {
+  id: number
+  location_id: number
+  code: string
+  initial_value: number
+  remaining_balance: number
+  currency: string
+  purchaser_client_id: number | null
+  recipient_name: string | null
+  recipient_email: string | null
+  message: string | null
+  is_active: boolean
+  expires_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface GiftCardIssue {
+  initial_value: number
+  recipient_name?: string | null
+  recipient_email?: string | null
+  message?: string | null
+  expires_at?: string | null
+}
+
+export interface GiftCardValidateResponse {
+  valid: boolean
+  remaining_balance: number
+  currency: string
+}
+
+// Calendar Sync (iCal)
+export interface CalendarSyncResponse {
+  feed_url: string
 }

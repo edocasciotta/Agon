@@ -18,6 +18,7 @@ from app.auth import decode_token, oauth2_scheme, require_manager
 from app.config import settings
 from app.database import get_db
 from app.models.client import Client
+from app.models.gift_card import GiftCard
 from app.models.membership import Membership
 from app.models.membership_type import MembershipType
 from app.models.payment import Payment
@@ -27,6 +28,14 @@ from app.models.stripe_price import StripePrice
 from app.models.stripe_subscription import StripeSubscription
 from app.models.stripe_webhook_event import StripeWebhookEvent
 from app.models.studio_settings import StudioSettings
+from app.services.gift_card_service import (
+    generate_gift_card_code,
+    redeem_gift_card,
+    validate_gift_card,
+)
+from app.services.intro_offer_service import can_use_intro_offer
+from app.services.promo_code_service import record_usage, validate_promo_code
+from app.services.rollover_service import process_rollover
 from app.utils import raise_api_error, utcnow
 
 router = APIRouter(prefix="/api/billing", tags=["stripe-billing"])
@@ -190,6 +199,8 @@ class CheckoutSessionRequest(BaseModel):
     membership_type_id: int
     success_url: str
     cancel_url: str
+    promo_code: str | None = None
+    gift_card_code: str | None = None
 
 
 @router.post("/checkout-session", status_code=200)
@@ -247,9 +258,104 @@ def create_checkout_session(
             status_code=400,
         )
 
+    # 4b. Intro offer: enforce one-per-client-per-location
+    if mt.is_intro_offer:
+        if not can_use_intro_offer(db, client.id, mt.location_id):
+            raise_api_error(
+                "INTRO_OFFER_ALREADY_USED",
+                "This client has already used an intro offer at this location.",
+                status_code=409,
+            )
+
+    # Determine the effective price (intro_price overrides for intro offers)
+    effective_price = mt.price
+    if mt.is_intro_offer and mt.intro_price is not None:
+        effective_price = mt.intro_price
+
+    # Validate and apply promo code if provided
+    promo_code_id = None
+    if body.promo_code:
+        promo, discount_amount, final_price = validate_promo_code(
+            db=db,
+            code=body.promo_code,
+            membership_type_id=body.membership_type_id,
+            client_id=body.client_id,
+            location_id=1,
+        )
+        effective_price = final_price
+        promo_code_id = promo.id
+
+    # Validate and apply a gift card if provided. The balance is not deducted
+    # here — only recorded in metadata and redeemed on webhook completion, so
+    # an abandoned checkout does not burn the gift card (mirrors how promo
+    # code usage is only recorded in _handle_checkout_completed).
+    gift_card_code = None
+    gift_card_amount_to_apply = 0.0
+    if body.gift_card_code:
+        gift_card = validate_gift_card(db, code=body.gift_card_code, location_id=1)
+        gift_card_amount_to_apply = min(gift_card.remaining_balance, effective_price)
+        effective_price = round(effective_price - gift_card_amount_to_apply, 2)
+        gift_card_code = gift_card.code
+
     # Determine checkout mode and Stripe interval (recurring types only)
     is_recurring = mt.type == "recurring"
     stripe_interval = _BILLING_INTERVAL_MAP.get(mt.billing_interval or "", "month")
+
+    # Edge case: the gift card fully covers the price. Stripe Checkout
+    # Sessions in mode="payment" cannot have a $0 line item, so skip Stripe
+    # entirely — grant the membership immediately, redeem the gift card, and
+    # return a response the frontend can treat as already complete.
+    if gift_card_code is not None and effective_price <= 0 and not is_recurring:
+        starts_at = date.today()
+        validity = mt.validity_days
+        if mt.is_intro_offer and mt.intro_validity_days is not None:
+            validity = mt.intro_validity_days
+        expires_at = starts_at + timedelta(days=validity) if validity else None
+
+        membership = Membership(
+            client_id=client.id,
+            membership_type_id=mt.id,
+            status="active",
+            starts_at=starts_at,
+            expires_at=expires_at,
+            credits_remaining=mt.credits_included,
+            credits_used=0,
+        )
+        db.add(membership)
+        db.flush()  # populate membership.id
+
+        original_price = mt.price
+        if mt.is_intro_offer and mt.intro_price is not None:
+            original_price = mt.intro_price
+
+        payment = Payment(
+            client_id=client.id,
+            membership_id=membership.id,
+            amount=original_price,
+            currency=mt.currency,
+            status="completed",
+            provider="gift_card",
+            provider_payment_id=None,
+            paid_at=utcnow(),
+        )
+        db.add(payment)
+
+        redeem_gift_card(
+            db=db,
+            code=gift_card_code,
+            client_id=client.id,
+            amount=gift_card_amount_to_apply,
+            location_id=1,
+        )
+
+        db.commit()
+
+        return {
+            "checkout_url": None,
+            "session_id": None,
+            "already_completed": True,
+            "membership_id": membership.id,
+        }
 
     # 4. Stripe must be configured
     if not settings.STRIPE_SECRET_KEY:
@@ -293,7 +399,7 @@ def create_checkout_session(
             product = stripe.Product.create(name=mt.name)
             if is_recurring:
                 price = stripe.Price.create(
-                    unit_amount=int(mt.price * 100),
+                    unit_amount=int(effective_price * 100),
                     currency=mt.currency.lower(),
                     product=product.id,
                     recurring={"interval": stripe_interval},
@@ -307,7 +413,7 @@ def create_checkout_session(
                 )
             else:
                 price = stripe.Price.create(
-                    unit_amount=int(mt.price * 100),
+                    unit_amount=int(effective_price * 100),
                     currency=mt.currency.lower(),
                     product=product.id,
                 )
@@ -334,6 +440,15 @@ def create_checkout_session(
                 "client_id": str(client.id),
                 "membership_type_id": str(mt.id),
                 "agon_mode": checkout_mode,
+                **({"promo_code_id": str(promo_code_id)} if promo_code_id else {}),
+                **(
+                    {
+                        "gift_card_code": gift_card_code,
+                        "gift_card_amount_applied": str(gift_card_amount_to_apply),
+                    }
+                    if gift_card_code is not None
+                    else {}
+                ),
             },
         )
 
@@ -355,12 +470,63 @@ def create_checkout_session(
         raise_api_error("STRIPE_API_ERROR", "A Stripe API error occurred.", status_code=502)
 
     # 11. Return checkout URL
-    return {"checkout_url": session.url, "session_id": session.id}
+    return {
+        "checkout_url": session.url,
+        "session_id": session.id,
+        "already_completed": False,
+        "membership_id": None,
+    }
 
 
 # ---------------------------------------------------------------------------
 # Private helpers — called from webhook handler only
 # ---------------------------------------------------------------------------
+
+
+def _handle_gift_card_checkout_completed(session_obj: dict, db: Session) -> None:
+    """Process a checkout.session.completed event for a gift card self-purchase.
+
+    The gift card is created entirely from the session metadata — there is no
+    pending-session tracking row for gift cards (unlike memberships), since
+    there's nothing to look up beforehand. Does NOT commit — the webhook
+    handler commits after storing the event.
+    """
+    metadata = session_obj.get("metadata") or {}
+    amount = float(metadata.get("amount", "0") or "0")
+    purchaser_client_id_str = metadata.get("purchaser_client_id") or ""
+    purchaser_client_id = int(purchaser_client_id_str) if purchaser_client_id_str else None
+    recipient_name = metadata.get("recipient_name") or None
+    recipient_email = metadata.get("recipient_email") or None
+    message = metadata.get("message") or None
+
+    code = generate_gift_card_code(db)
+    gift_card = GiftCard(
+        code=code,
+        initial_value=amount,
+        remaining_balance=amount,
+        purchaser_client_id=purchaser_client_id,
+        recipient_name=recipient_name,
+        recipient_email=recipient_email,
+        message=message,
+    )
+    db.add(gift_card)
+
+    # Only attribute a Payment when there's a purchaser client to attach it
+    # to — a manager-initiated purchase with no client context has nowhere
+    # to record the payment against.
+    if purchaser_client_id is not None:
+        payment = Payment(
+            client_id=purchaser_client_id,
+            membership_id=None,
+            amount=amount,
+            currency="EUR",
+            status="completed",
+            provider="stripe",
+            provider_payment_id=session_obj.get("payment_intent"),
+            paid_at=utcnow(),
+        )
+        db.add(payment)
+    # caller commits
 
 
 def _handle_checkout_completed(session_obj: dict, db: Session) -> None:
@@ -370,6 +536,11 @@ def _handle_checkout_completed(session_obj: dict, db: Session) -> None:
     mode="payment") grants the membership and records the payment.
     Does NOT commit — the webhook handler commits after storing the event.
     """
+    metadata = session_obj.get("metadata") or {}
+    if metadata.get("purchase_type") == "gift_card":
+        _handle_gift_card_checkout_completed(session_obj, db)
+        return
+
     cs_row = (
         db.query(StripeCheckoutSession)
         .filter(StripeCheckoutSession.stripe_session_id == session_obj["id"])
@@ -387,7 +558,11 @@ def _handle_checkout_completed(session_obj: dict, db: Session) -> None:
             return
 
         starts_at = date.today()
-        expires_at = starts_at + timedelta(days=mt.validity_days) if mt.validity_days else None
+        # Intro offers may override validity_days
+        validity = mt.validity_days
+        if mt.is_intro_offer and mt.intro_validity_days is not None:
+            validity = mt.intro_validity_days
+        expires_at = starts_at + timedelta(days=validity) if validity else None
 
         membership = Membership(
             client_id=cs_row.client_id,
@@ -401,10 +576,15 @@ def _handle_checkout_completed(session_obj: dict, db: Session) -> None:
         db.add(membership)
         db.flush()  # populate membership.id
 
+        # Use intro_price for intro offers, otherwise regular price
+        payment_amount = mt.price
+        if mt.is_intro_offer and mt.intro_price is not None:
+            payment_amount = mt.intro_price
+
         payment = Payment(
             client_id=cs_row.client_id,
             membership_id=membership.id,
-            amount=mt.price,
+            amount=payment_amount,
             currency=mt.currency,
             status="completed",
             provider="stripe",
@@ -412,6 +592,38 @@ def _handle_checkout_completed(session_obj: dict, db: Session) -> None:
             paid_at=utcnow(),
         )
         db.add(payment)
+
+        # Record promo code usage if one was applied
+        metadata = session_obj.get("metadata") or {}
+        promo_code_id_str = metadata.get("promo_code_id")
+        if promo_code_id_str:
+            original_price = mt.price
+            if mt.is_intro_offer and mt.intro_price is not None:
+                original_price = mt.intro_price
+            discount_amount = round(original_price - payment_amount, 2)
+            if discount_amount < 0:
+                discount_amount = 0.0
+            record_usage(
+                db=db,
+                promo_code_id=int(promo_code_id_str),
+                client_id=cs_row.client_id,
+                discount_amount=discount_amount,
+            )
+
+        # Redeem the gift card if one was applied at checkout. The balance
+        # was NOT deducted at session-creation time — only now, on confirmed
+        # completion, so an abandoned checkout never burns the gift card.
+        gift_card_code_str = metadata.get("gift_card_code")
+        gift_card_amount_str = metadata.get("gift_card_amount_applied")
+        if gift_card_code_str and gift_card_amount_str:
+            redeem_gift_card(
+                db=db,
+                code=gift_card_code_str,
+                client_id=cs_row.client_id,
+                amount=float(gift_card_amount_str),
+                location_id=1,
+                stripe_checkout_session_id=session_obj["id"],
+            )
         # caller commits
 
     # mode == "subscription" → membership granted when customer.subscription.created fires
@@ -580,6 +792,20 @@ def _handle_invoice_paid(invoice_obj: dict, db: Session) -> None:
             if period_end_ts is not None:
                 active_membership.expires_at = datetime.utcfromtimestamp(period_end_ts).date()
         active_membership.status = "active"
+
+        # Process rollover credits before resetting for the new billing cycle
+        mt = (
+            db.query(MembershipType)
+            .filter(MembershipType.id == active_membership.membership_type_id)
+            .first()
+        )
+        if mt is not None and not mt.unlimited:
+            process_rollover(db, active_membership)
+            # If rollover was not applied (disabled), do a plain reset
+            if not mt.rollover_enabled:
+                active_membership.credits_remaining = mt.credits_per_interval
+                active_membership.credits_used = 0
+                active_membership.rollover_credits = 0
 
     # 4. Record payment
     payment = Payment(

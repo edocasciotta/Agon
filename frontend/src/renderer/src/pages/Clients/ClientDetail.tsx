@@ -7,6 +7,9 @@ import { ChevronLeft } from 'lucide-react'
 import { clientsApi } from '../../api/clients'
 import { membershipTypesApi, membershipsApi } from '../../api/memberships'
 import { billingApi } from '../../api/billing'
+import { tagsApi } from '../../api/tags'
+import { smsApi } from '../../api/sms'
+import { calendarSyncApi } from '../../api/calendarSync'
 import { LoadingSpinner } from '../../components/LoadingSpinner'
 import { ErrorMessage } from '../../components/ErrorMessage'
 import { PageHeader } from '../../components/PageHeader'
@@ -28,6 +31,12 @@ export function ClientDetail() {
   const [assignTypeId, setAssignTypeId] = useState<number | ''>('')
   const [assignStartDate, setAssignStartDate] = useState(format(new Date(), 'yyyy-MM-dd'))
   const [assignError, setAssignError] = useState<string | null>(null)
+  const [showTagDropdown, setShowTagDropdown] = useState(false)
+  const [showSmsForm, setShowSmsForm] = useState(false)
+  const [smsBody, setSmsBody] = useState('')
+  const [smsMsg, setSmsMsg] = useState<{ text: string; ok: boolean } | null>(null)
+  const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false)
+  const [feedUrlCopied, setFeedUrlCopied] = useState(false)
 
   const { data: client, isLoading: clientLoading, error: clientError } = useQuery({
     queryKey: ['client', clientId],
@@ -58,6 +67,52 @@ export function ClientDetail() {
     enabled: activeTab === 'memberships',
   })
 
+  const { data: clientTags } = useQuery({
+    queryKey: ['client-tags', clientId],
+    queryFn: () => tagsApi.listClientTags(clientId),
+  })
+
+  const { data: allTags } = useQuery({
+    queryKey: ['tags'],
+    queryFn: () => tagsApi.list(),
+  })
+
+  const {
+    data: calendarSync,
+    isLoading: calendarSyncLoading,
+    error: calendarSyncError,
+  } = useQuery({
+    queryKey: ['client-calendar-sync', clientId],
+    queryFn: () => calendarSyncApi.get(clientId),
+  })
+
+  const assignTagMutation = useMutation({
+    mutationFn: (tagId: number) => tagsApi.assignClientTag(clientId, tagId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['client-tags', clientId] })
+      setShowTagDropdown(false)
+    },
+  })
+
+  const removeTagMutation = useMutation({
+    mutationFn: (tagId: number) => tagsApi.removeClientTag(clientId, tagId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['client-tags', clientId] })
+    },
+  })
+
+  const availableTags = (allTags ?? []).filter(
+    (tag) => !(clientTags ?? []).some((ct) => ct.tag_id === tag.id)
+  )
+
+  const regenerateCalendarSyncMutation = useMutation({
+    mutationFn: () => calendarSyncApi.regenerate(clientId),
+    onSuccess: (data) => {
+      queryClient.setQueryData(['client-calendar-sync', clientId], data)
+      setShowRegenerateConfirm(false)
+    },
+  })
+
   const cancelSubscriptionMutation = useMutation({
     mutationFn: () => billingApi.cancelSubscription(clientId),
     onSuccess: () => {
@@ -71,6 +126,18 @@ export function ClientDetail() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['client', clientId] })
       setEditing(false)
+    },
+  })
+
+  const sendSmsMutation = useMutation({
+    mutationFn: (body: string) => smsApi.send(clientId, body),
+    onSuccess: () => {
+      setSmsMsg({ text: t('sms.sentSuccess'), ok: true })
+      setSmsBody('')
+      setTimeout(() => setSmsMsg(null), 4000)
+    },
+    onError: (err: ApiError) => {
+      setSmsMsg({ text: err.message ?? t('sms.failedSend'), ok: false })
     },
   })
 
@@ -97,6 +164,18 @@ export function ClientDetail() {
 
   const handleSave = () => {
     updateMutation.mutate({ full_name: editName, phone: editPhone || undefined })
+  }
+
+  const handleSendSms = () => {
+    if (!smsBody.trim()) return
+    sendSmsMutation.mutate(smsBody)
+  }
+
+  const handleCopyFeedUrl = () => {
+    if (!calendarSync?.feed_url) return
+    navigator.clipboard.writeText(calendarSync.feed_url)
+    setFeedUrlCopied(true)
+    setTimeout(() => setFeedUrlCopied(false), 2000)
   }
 
   const handleAssign = () => {
@@ -173,7 +252,17 @@ export function ClientDetail() {
           <div className="flex items-start justify-between">
             <div className="space-y-2">
               <p className="text-sm text-gray-600"><span className="font-medium">{t('clientDetail.email')}:</span> {client.email}</p>
-              <p className="text-sm text-gray-600"><span className="font-medium">{t('clientDetail.phone')}:</span> {client.phone ?? '—'}</p>
+              <p className="text-sm text-gray-600 flex items-center gap-2">
+                <span><span className="font-medium">{t('clientDetail.phone')}:</span> {client.phone ?? '—'}</span>
+                {client.phone && (
+                  <button
+                    onClick={() => setShowSmsForm((v) => !v)}
+                    className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                  >
+                    {t('sms.sendSms')}
+                  </button>
+                )}
+              </p>
               <p className="text-sm text-gray-600">
                 <span className="font-medium">{t('clientDetail.status')}:</span>{' '}
                 <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
@@ -194,6 +283,171 @@ export function ClientDetail() {
             </button>
           </div>
         )}
+
+        {/* Send SMS inline form */}
+        {showSmsForm && client.phone && (
+          <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
+            <label className="block text-sm font-medium text-gray-700">
+              {t('sms.sendSmsTitle', { name: client.full_name })}
+            </label>
+            <textarea
+              rows={3}
+              value={smsBody}
+              onChange={(e) => setSmsBody(e.target.value)}
+              placeholder={t('sms.messagePlaceholder')}
+              className="w-full max-w-lg px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            {smsMsg && (
+              <div className={`rounded-md p-3 text-sm max-w-lg ${smsMsg.ok ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700'}`}>
+                {smsMsg.text}
+              </div>
+            )}
+            <div className="flex gap-2">
+              <button
+                onClick={handleSendSms}
+                disabled={sendSmsMutation.isPending || !smsBody.trim()}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+              >
+                {sendSmsMutation.isPending ? t('sms.sending') : t('sms.send')}
+              </button>
+              <button
+                onClick={() => { setShowSmsForm(false); setSmsMsg(null) }}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
+              >
+                {t('clientDetail.cancel')}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Tags */}
+      <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-semibold text-gray-700">{t('clientDetail.tags')}</h3>
+          <div className="relative">
+            <button
+              onClick={() => setShowTagDropdown((v) => !v)}
+              disabled={availableTags.length === 0}
+              className="text-xs text-indigo-600 hover:text-indigo-800 font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {t('clientDetail.addTag')}
+            </button>
+            {showTagDropdown && availableTags.length > 0 && (
+              <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-20 w-48 max-h-48 overflow-y-auto">
+                {availableTags.map((tag) => (
+                  <button
+                    key={tag.id}
+                    onClick={() => assignTagMutation.mutate(tag.id)}
+                    disabled={assignTagMutation.isPending}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-gray-50 transition-colors"
+                  >
+                    <span
+                      className="w-3 h-3 rounded-full shrink-0"
+                      style={{ backgroundColor: tag.color }}
+                    />
+                    {tag.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {(clientTags ?? []).length === 0 ? (
+            <p className="text-xs text-gray-400">{t('clientDetail.noTags')}</p>
+          ) : (
+            (clientTags ?? []).map((ct) => (
+              <span
+                key={ct.id}
+                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium text-white"
+                style={{ backgroundColor: ct.tag_color }}
+              >
+                {ct.tag_name}
+                <button
+                  onClick={() => removeTagMutation.mutate(ct.tag_id)}
+                  disabled={removeTagMutation.isPending}
+                  className="ml-0.5 hover:opacity-75 transition-opacity"
+                  aria-label={t('clientDetail.removeTag')}
+                >
+                  &times;
+                </button>
+              </span>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Calendar Sync */}
+      <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+        <h3 className="text-sm font-semibold text-gray-700 mb-1">{t('calendarSync.title')}</h3>
+        <p className="text-xs text-gray-500 mb-3">{t('calendarSync.description')}</p>
+
+        {calendarSyncLoading ? (
+          <div className="flex justify-center py-2"><LoadingSpinner /></div>
+        ) : calendarSyncError ? (
+          <ErrorMessage
+            code={(calendarSyncError as ApiError).code}
+            message={(calendarSyncError as ApiError).message ?? t('calendarSync.failedLoad')}
+          />
+        ) : calendarSync ? (
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                readOnly
+                value={calendarSync.feed_url}
+                onClick={(e) => (e.target as HTMLInputElement).select()}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              <button
+                onClick={handleCopyFeedUrl}
+                className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors whitespace-nowrap"
+              >
+                {feedUrlCopied ? t('calendarSync.copied') : t('calendarSync.copy')}
+              </button>
+            </div>
+
+            {regenerateCalendarSyncMutation.isError && (
+              <div className="rounded-md bg-red-50 p-3 text-sm text-red-700 border border-red-200">
+                {(regenerateCalendarSyncMutation.error as ApiError).message ?? t('calendarSync.failedRegenerate')}
+              </div>
+            )}
+
+            {showRegenerateConfirm ? (
+              <div className="rounded-md bg-indigo-50 border border-indigo-200 p-3 space-y-2">
+                <p className="text-sm text-gray-700">
+                  <span className="font-medium">{t('calendarSync.regenerateConfirmTitle')}</span>{' '}
+                  {t('calendarSync.regenerateConfirmDesc')}
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => regenerateCalendarSyncMutation.mutate()}
+                    disabled={regenerateCalendarSyncMutation.isPending}
+                    className="px-3 py-1.5 bg-indigo-600 text-white rounded-md text-xs font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                  >
+                    {regenerateCalendarSyncMutation.isPending
+                      ? t('calendarSync.regenerating')
+                      : t('calendarSync.regenerate')}
+                  </button>
+                  <button
+                    onClick={() => setShowRegenerateConfirm(false)}
+                    className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md text-xs font-medium hover:bg-gray-200 transition-colors"
+                  >
+                    {t('clientDetail.cancel')}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowRegenerateConfirm(true)}
+                className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+              >
+                {t('calendarSync.regenerate')}
+              </button>
+            )}
+          </div>
+        ) : null}
       </div>
 
       {/* Tabs */}
@@ -332,16 +586,18 @@ export function ClientDetail() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('clientDetail.typeId')}</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('clientDetail.membershipStatus')}</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('clientDetail.credits')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('memberships.rolloverCredits')}</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('clientDetail.starts')}</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('clientDetail.expires')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {(memberships ?? []).map((m: { id: number; membership_type_id: number; status: string; credits_remaining?: number; starts_at: string; expires_at?: string }) => (
+                  {(memberships ?? []).map((m: { id: number; membership_type_id: number; status: string; credits_remaining?: number; rollover_credits?: number; starts_at: string; expires_at?: string }) => (
                     <tr key={m.id}>
                       <td className="px-6 py-4 text-sm text-gray-900">#{m.membership_type_id}</td>
                       <td className="px-6 py-4 text-sm text-gray-500">{m.status}</td>
                       <td className="px-6 py-4 text-sm text-gray-500">{m.credits_remaining ?? '∞'}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500">{m.rollover_credits ?? 0}</td>
                       <td className="px-6 py-4 text-sm text-gray-500">{format(new Date(m.starts_at), 'MMM d, yyyy')}</td>
                       <td className="px-6 py-4 text-sm text-gray-500">
                         {m.expires_at ? format(new Date(m.expires_at), 'MMM d, yyyy') : '—'}
@@ -350,7 +606,7 @@ export function ClientDetail() {
                   ))}
                   {(!memberships || memberships.length === 0) && (
                     <tr>
-                      <td colSpan={5} className="px-6 py-8 text-center text-sm text-gray-500">{t('clientDetail.noMemberships')}</td>
+                      <td colSpan={6} className="px-6 py-8 text-center text-sm text-gray-500">{t('clientDetail.noMemberships')}</td>
                     </tr>
                   )}
                 </tbody>

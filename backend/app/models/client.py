@@ -16,5 +16,6 @@ class Client(Base):
     notes = Column(String)
     is_active = Column(Boolean, nullable=False, default=True)
     expo_push_token = Column(String)
+    calendar_sync_token = Column(String, unique=True, nullable=True, index=True)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
