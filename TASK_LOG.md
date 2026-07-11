@@ -19,9 +19,7 @@ Counts as of the `claude/distracted-ramanujan-043037` branch (PR #9) after mergi
 (PR #12 competitive-gap work) in — see "Bug Fix — Email + SMS settings secret wipe" below.
 
 ### Active branch
-`main` — all changes through PR #12 committed and pushed (`3801ad6`).
-`claude/distracted-ramanujan-043037` (PR #9): merged `origin/main` in, conflict resolved, fix
-extended to cover SMS too — see below. Pushed; ready to merge once confirmed.
+`main` — all changes merged and pushed, through PR #9 (`aefe8fd`).
 
 ### Local dev
 - Backend: `cd backend && .venv/bin/uvicorn main:app --reload` (entry point is top-level `backend/main.py`, not `app/main.py`)
@@ -218,7 +216,7 @@ in the same PR, closing `task_fcd35817` instead of leaving it as a separate foll
 
 **Files touched:** `frontend/src/renderer/src/pages/Settings.tsx`, `frontend/tests/unit/pages/Settings.test.tsx`, `CHANGELOG.md`. No backend changes in either round. Verified independently by the orchestrator both rounds: `npm run build`/`lint`/`test -- --run` clean; lint warning counts diffed against baseline (stash-based pre-merge, isolated-diff post-merge) — no new warnings beyond what merging in the SMS tab's own pre-existing effect pattern already introduced. Backend re-verified post-merge: `alembic heads` single head, `pytest -q` 523/523.
 
-**Status:** merged into this branch, pushed to `origin/claude/distracted-ramanujan-043037` (PR #9) — ready to merge to `main` once confirmed.
+**Status:** merged to `main` via PR #9 (`aefe8fd`, 2026-07-11).
 
 ---
 
