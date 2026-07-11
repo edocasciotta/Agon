@@ -4,13 +4,14 @@ import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 import { studioApi } from '../api/studio'
 import { billingApi } from '../api/billing'
+import { smsApi } from '../api/sms'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { PageHeader } from '../components/PageHeader'
 import { StudioQRCode } from '../components/StudioQRCode'
 import type { StudioSettings, EmailSettings } from '../types'
 import type { ApiError } from '../api/client'
 
-type Tab = 'studio' | 'email' | 'billing' | 'mobile'
+type Tab = 'studio' | 'email' | 'sms' | 'billing' | 'mobile'
 
 export function SettingsPage() {
   const { t } = useTranslation()
@@ -28,6 +29,21 @@ export function SettingsPage() {
   const [emailSaveError, setEmailSaveError] = useState<string | null>(null)
   const [testEmailMsg, setTestEmailMsg] = useState<{ text: string; ok: boolean } | null>(null)
   const [emailSettingsSaved, setEmailSettingsSaved] = useState(false)
+  const [emailPasswordTouched, setEmailPasswordTouched] = useState(false)
+
+  // SMS tab state
+  const [smsForm, setSmsForm] = useState<{
+    account_sid: string
+    auth_token: string
+    from_number: string
+    enabled: boolean
+  }>({ account_sid: '', auth_token: '', from_number: '', enabled: false })
+  const [smsSaveSuccess, setSmsSaveSuccess] = useState(false)
+  const [smsSaveError, setSmsSaveError] = useState<string | null>(null)
+  const [smsSettingsSaved, setSmsSettingsSaved] = useState(false)
+  const [smsTestPhone, setSmsTestPhone] = useState('')
+  const [testSmsMsg, setTestSmsMsg] = useState<{ text: string; ok: boolean } | null>(null)
+  const [smsAuthTokenTouched, setSmsAuthTokenTouched] = useState(false)
 
   // Mobile tab state
   const [mobileUrl, setMobileUrl] = useState('')
@@ -53,6 +69,11 @@ export function SettingsPage() {
     queryFn: () => studioApi.getEmailSettings(),
   })
 
+  const { data: smsSettings, isLoading: smsLoading } = useQuery({
+    queryKey: ['smsSettings'],
+    queryFn: () => smsApi.getSettings(),
+  })
+
   const { data: billingStatus, isLoading: billingLoading } = useQuery({
     queryKey: ['billing-settings'],
     queryFn: () => billingApi.getSettings(),
@@ -71,7 +92,20 @@ export function SettingsPage() {
 
   useEffect(() => {
     if (emailSettings) setEmailForm({ ...emailSettings, email_smtp_password: '' })
+    setEmailPasswordTouched(false)
   }, [emailSettings])
+
+  useEffect(() => {
+    if (smsSettings) {
+      setSmsForm({
+        account_sid: smsSettings.sms_provider_account_sid ?? '',
+        auth_token: '',
+        from_number: smsSettings.sms_from_number ?? '',
+        enabled: smsSettings.sms_enabled,
+      })
+    }
+    setSmsAuthTokenTouched(false)
+  }, [smsSettings])
 
   const updateMutation = useMutation({
     mutationFn: (data: Partial<StudioSettings>) => studioApi.update(data),
@@ -124,6 +158,39 @@ export function SettingsPage() {
     },
   })
 
+  const smsUpdateMutation = useMutation({
+    mutationFn: (data: {
+      account_sid?: string
+      auth_token?: string
+      from_number?: string
+      enabled?: boolean
+    }) => smsApi.saveSettings(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['smsSettings'] })
+      setSmsSaveSuccess(true)
+      setSmsSaveError(null)
+      setSmsSettingsSaved(true)
+      setTimeout(() => setSmsSaveSuccess(false), 3000)
+    },
+    onError: (err: ApiError) => {
+      setSmsSaveError(err.message ?? t('settings.failedSave'))
+      setSmsSaveSuccess(false)
+      setSmsSettingsSaved(false)
+    },
+  })
+
+  const testSmsMutation = useMutation({
+    mutationFn: () => smsApi.testSettings(smsTestPhone),
+    onSuccess: () => {
+      setTestSmsMsg({ text: t('sms.testSent'), ok: true })
+      setTimeout(() => setTestSmsMsg(null), 4000)
+    },
+    onError: () => {
+      setTestSmsMsg({ text: t('sms.testFailed'), ok: false })
+      setTimeout(() => setTestSmsMsg(null), 4000)
+    },
+  })
+
   const handleChange = (field: keyof StudioSettings, value: string | number | boolean) => {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
@@ -131,6 +198,16 @@ export function SettingsPage() {
   const handleEmailChange = (field: keyof EmailSettings, value: string | number | boolean) => {
     setEmailForm((prev) => ({ ...prev, [field]: value }))
     setEmailSettingsSaved(false)
+    if (field === 'email_smtp_password') setEmailPasswordTouched(true)
+  }
+
+  const handleSmsChange = (
+    field: keyof typeof smsForm,
+    value: string | boolean
+  ) => {
+    setSmsForm((prev) => ({ ...prev, [field]: value }))
+    setSmsSettingsSaved(false)
+    if (field === 'auth_token') setSmsAuthTokenTouched(true)
   }
 
   const billingSaveMutation = useMutation({
@@ -150,7 +227,35 @@ export function SettingsPage() {
   })
 
   const handleSave = () => updateMutation.mutate(form)
-  const handleEmailSave = () => emailUpdateMutation.mutate(emailForm)
+  const handleEmailSave = () => {
+    // The password field is never populated with the real stored value (see the
+    // useEffect above), so unless the user actually retyped it in this session,
+    // omit it entirely from the payload. Sending '' would hit the backend's
+    // "explicit empty string clears the credential" branch and silently wipe
+    // the configured SMTP password on every unrelated save.
+    if (emailPasswordTouched) {
+      emailUpdateMutation.mutate(emailForm)
+      return
+    }
+    const { email_smtp_password, ...rest } = emailForm
+    void email_smtp_password
+    emailUpdateMutation.mutate(rest)
+  }
+  const handleSmsSave = () => {
+    // Same shape as the email/SMTP-password bug above: the auth token field is
+    // never populated with the real stored value (see the smsSettings useEffect),
+    // so unless the user actually retyped it in this session, omit it entirely
+    // from the payload. Sending '' would hit the backend's "explicit empty
+    // string clears the credential" branch and silently wipe the configured
+    // Twilio auth token on every unrelated save.
+    if (smsAuthTokenTouched) {
+      smsUpdateMutation.mutate(smsForm)
+      return
+    }
+    const { auth_token, ...rest } = smsForm
+    void auth_token
+    smsUpdateMutation.mutate(rest)
+  }
 
   const handleBillingSave = () => {
     const billingSchema = z.object({
@@ -200,6 +305,9 @@ export function SettingsPage() {
           </button>
           <button className={tabClass('email')} onClick={() => setActiveTab('email')} role="tab" aria-selected={activeTab === 'email'}>
             {t('settings.tabEmail')}
+          </button>
+          <button className={tabClass('sms')} onClick={() => setActiveTab('sms')} role="tab" aria-selected={activeTab === 'sms'}>
+            {t('settings.tabSms')}
           </button>
           <button className={tabClass('billing')} onClick={() => setActiveTab('billing')} role="tab" aria-selected={activeTab === 'billing'}>
             {t('billing.tab')}
@@ -268,6 +376,26 @@ export function SettingsPage() {
                     {t('settings.cancellationDeductsCredit')}
                   </label>
                 </div>
+                <Field label={t('settings.lateCancelFee')}>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={form.late_cancel_fee ?? 0}
+                    onChange={(e) => handleChange('late_cancel_fee', Number(e.target.value))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </Field>
+                <Field label={t('settings.noShowFee')}>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={form.no_show_fee ?? 0}
+                    onChange={(e) => handleChange('no_show_fee', Number(e.target.value))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </Field>
                 <div className="flex items-center gap-2">
                   <input
                     type="checkbox"
@@ -635,6 +763,107 @@ export function SettingsPage() {
                   className="px-6 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {t('settings.sendTestEmail')}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* SMS Tab */}
+      {activeTab === 'sms' && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6 max-w-2xl">
+          {smsLoading ? (
+            <LoadingSpinner />
+          ) : (
+            <div className="space-y-6">
+              <section>
+                <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3">{t('sms.settingsTitle')}</h3>
+                <div className="space-y-3">
+                  <Field label={t('sms.accountSid')}>
+                    <input
+                      type="text"
+                      value={smsForm.account_sid}
+                      onChange={(e) => handleSmsChange('account_sid', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </Field>
+                  <Field label={t('sms.authToken')}>
+                    <input
+                      type="password"
+                      value={smsForm.auth_token}
+                      onChange={(e) => handleSmsChange('auth_token', e.target.value)}
+                      placeholder={t('sms.authTokenPlaceholder')}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </Field>
+                  <Field label={t('sms.fromNumber')}>
+                    <input
+                      type="text"
+                      value={smsForm.from_number}
+                      onChange={(e) => handleSmsChange('from_number', e.target.value)}
+                      placeholder={t('sms.fromNumberPlaceholder')}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </Field>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="sms_enabled"
+                      checked={smsForm.enabled}
+                      onChange={(e) => handleSmsChange('enabled', e.target.checked)}
+                      className="w-4 h-4"
+                    />
+                    <label htmlFor="sms_enabled" className="text-sm text-gray-700">
+                      {t('sms.enabled')}
+                    </label>
+                  </div>
+                </div>
+              </section>
+
+              <section>
+                <Field label={t('sms.testPhone')}>
+                  <input
+                    type="tel"
+                    value={smsTestPhone}
+                    onChange={(e) => setSmsTestPhone(e.target.value)}
+                    placeholder={t('sms.testPhonePlaceholder')}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </Field>
+              </section>
+
+              {smsSaveSuccess && (
+                <div className="rounded-md bg-green-50 border border-green-200 p-3 text-sm text-green-700">
+                  {t('sms.saved')}
+                </div>
+              )}
+              {smsSaveError && (
+                <div className="rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+                  {smsSaveError}
+                </div>
+              )}
+              {testSmsMsg && (
+                <div className={`rounded-md p-3 text-sm ${testSmsMsg.ok ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700'}`}>
+                  {testSmsMsg.text}
+                </div>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={handleSmsSave}
+                  disabled={smsUpdateMutation.isPending}
+                  className="px-6 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                >
+                  {smsUpdateMutation.isPending ? t('settings.saving') : t('settings.saveSettings')}
+                </button>
+                <button
+                  onClick={() => testSmsMutation.mutate()}
+                  disabled={testSmsMutation.isPending || !smsSettingsSaved || !smsTestPhone}
+                  title={!smsSettingsSaved ? t('settings.saveBeforeTest') : undefined}
+                  className="px-6 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {t('sms.sendTest')}
                 </button>
               </div>
             </div>

@@ -8,14 +8,19 @@ import {
   LayoutDashboard,
   CalendarDays,
   Tag,
+  Tags,
   Building2,
   UserRound,
   Users,
   CreditCard,
+  Ticket,
+  Gift,
   TrendingUp,
   Settings2,
   Mail,
   Megaphone,
+  MessageSquare,
+  MessageSquareText,
   ListFilter,
   LogOut,
   Globe,
@@ -59,6 +64,9 @@ export function Layout() {
     { to: '/instructors', label: t('nav.instructors'), icon: UserRound },
     { to: '/clients', label: t('nav.clients'), icon: Users },
     { to: '/memberships', label: t('nav.memberships'), icon: CreditCard },
+    { to: '/promo-codes', label: t('nav.promoCodes'), icon: Ticket },
+    { to: '/gift-cards', label: t('nav.giftCards'), icon: Gift },
+    { to: '/tags', label: t('nav.tags'), icon: Tags },
     { to: '/reports', label: t('nav.reports'), icon: TrendingUp },
     { to: '/settings', label: t('nav.settings'), icon: Settings2 },
   ]
@@ -66,6 +74,8 @@ export function Layout() {
   const marketingItems = [
     { to: '/marketing/templates', label: t('marketing.templates'), icon: Mail },
     { to: '/marketing/events', label: t('marketing.events'), icon: Megaphone },
+    { to: '/marketing/sms-templates', label: t('nav.smsTemplates'), icon: MessageSquareText },
+    { to: '/marketing/sms-events', label: t('nav.smsEvents'), icon: MessageSquare },
     { to: '/marketing/smartlists', label: t('marketing.smartLists'), icon: ListFilter },
   ]
 

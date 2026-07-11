@@ -1,10 +1,16 @@
 import { apiClient } from './client'
-import type { Membership, MembershipType } from '../types'
+import type {
+  GiftCardPurchaseRequest,
+  Membership,
+  MembershipType,
+  PromoCodeValidateResponse,
+  GiftCardValidateResponse,
+} from '../types'
 
 export const clientMembershipsApi = {
   getOwn: async (): Promise<Membership[]> => {
-    const res = await apiClient.get('/api/v1/memberships')
-    return res.data
+    const res = await apiClient.get('/api/v1/memberships', { params: { page_size: 100 } })
+    return res.data.items
   },
 }
 
@@ -22,8 +28,10 @@ export const clientsApi = {
 }
 
 export interface CheckoutSessionResponse {
-  checkout_url: string
-  session_id: string
+  checkout_url: string | null
+  session_id: string | null
+  already_completed: boolean
+  membership_id: number | null
 }
 
 export interface SubscriptionDetail {
@@ -42,10 +50,26 @@ export interface CancelSubscriptionResponse {
   cancel_at_period_end: boolean
 }
 
+export const promoCodesApi = {
+  validate: async (code: string, membershipTypeId: number): Promise<PromoCodeValidateResponse> => {
+    const res = await apiClient.post('/api/v1/promo-codes/validate', {
+      code,
+      membership_type_id: membershipTypeId,
+    })
+    return res.data
+  },
+}
+
+export interface CreateCheckoutSessionOptions {
+  promoCode?: string
+  giftCardCode?: string
+}
+
 export const billingApi = {
   createCheckoutSession: async (
     clientId: number,
-    membershipTypeId: number
+    membershipTypeId: number,
+    options?: CreateCheckoutSessionOptions
   ): Promise<CheckoutSessionResponse> => {
     const successUrl = 'agon://membership?status=success'
     const cancelUrl = 'agon://membership/purchase'
@@ -54,6 +78,8 @@ export const billingApi = {
       membership_type_id: membershipTypeId,
       success_url: successUrl,
       cancel_url: cancelUrl,
+      ...(options?.promoCode ? { promo_code: options.promoCode } : {}),
+      ...(options?.giftCardCode ? { gift_card_code: options.giftCardCode } : {}),
     })
     return res.data
   },
@@ -65,6 +91,20 @@ export const billingApi = {
 
   cancelSubscription: async (clientId: number): Promise<CancelSubscriptionResponse> => {
     const res = await apiClient.post(`/api/billing/members/${clientId}/subscription/cancel`, {})
+    return res.data
+  },
+}
+
+export const giftCardsApi = {
+  validate: async (code: string): Promise<GiftCardValidateResponse> => {
+    const res = await apiClient.post('/api/v1/gift-cards/validate', { code })
+    return res.data
+  },
+
+  purchase: async (
+    request: GiftCardPurchaseRequest
+  ): Promise<{ checkout_url: string; session_id: string }> => {
+    const res = await apiClient.post('/api/v1/gift-cards/checkout-session', request)
     return res.data
   },
 }

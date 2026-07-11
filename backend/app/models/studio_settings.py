@@ -1,7 +1,6 @@
-from sqlalchemy import Boolean, Column, DateTime, Integer, String
-from sqlalchemy.sql import func
-
 from app.database import Base
+from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String
+from sqlalchemy.sql import func
 
 
 class StudioSettings(Base):
@@ -14,6 +13,8 @@ class StudioSettings(Base):
     logo_path = Column(String)
     cancellation_hours = Column(Integer, nullable=False, default=2)
     cancellation_deducts_credit = Column(Boolean, nullable=False, default=False)
+    late_cancel_fee = Column(Float, nullable=False, default=0.0)
+    no_show_fee = Column(Float, nullable=False, default=0.0)
     checkin_open_minutes_before = Column(Integer, nullable=False, default=30)
     checkin_close_minutes_after = Column(Integer, nullable=False, default=15)
     waitlist_confirm_minutes = Column(Integer, nullable=False, default=30)
@@ -37,5 +38,9 @@ class StudioSettings(Base):
     email_from_name = Column(String)
     email_from_address = Column(String)
     email_smtp_tls = Column(Boolean, default=True)
+    sms_provider_account_sid = Column(String)
+    sms_provider_auth_token = Column(String)
+    sms_from_number = Column(String)
+    sms_enabled = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)

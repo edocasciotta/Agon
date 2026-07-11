@@ -58,17 +58,102 @@ def test_list_memberships_as_manager(client, manager_auth_headers, client_member
     response = client.get("/api/v1/memberships", headers=manager_auth_headers)
     assert response.status_code == 200
     data = response.json()
-    assert isinstance(data, list)
-    assert len(data) >= 1
+    assert isinstance(data["items"], list)
+    assert len(data["items"]) >= 1
+    assert data["total"] >= 1
+    assert data["page"] == 1
+    assert data["page_size"] == 50
+
+
+def test_list_memberships_as_manager_includes_names(
+    client, manager_auth_headers, client_membership, membership_type
+):
+    response = client.get("/api/v1/memberships", headers=manager_auth_headers)
+    assert response.status_code == 200
+    data = response.json()
+    match = next(m for m in data["items"] if m["id"] == client_membership.id)
+    assert match["client_name"] == "Test Client"
+    assert match["membership_type_name"] == membership_type.name
 
 
 def test_list_memberships_as_client(client, client_auth_headers, client_membership):
     response = client.get("/api/v1/memberships", headers=client_auth_headers)
     assert response.status_code == 200
     data = response.json()
-    assert isinstance(data, list)
-    for m in data:
+    assert isinstance(data["items"], list)
+    for m in data["items"]:
         assert m["client_id"] == client_membership.client_id
+
+
+def test_list_memberships_pagination(
+    client, manager_auth_headers, db_session, registered_client, membership_type
+):
+    """Requesting page_size=1 should return one item but report the real total."""
+    client_obj = db_session.query(Client).filter_by(email=registered_client["email"]).first()
+    for i in range(3):
+        response = client.post(
+            "/api/v1/memberships",
+            json={
+                "client_id": client_obj.id,
+                "membership_type_id": membership_type.id,
+                "starts_at": str(datetime.date.today()),
+            },
+            headers=manager_auth_headers,
+        )
+        assert response.status_code == 201
+
+    response = client.get(
+        "/api/v1/memberships",
+        params={"page_size": 1, "page": 1},
+        headers=manager_auth_headers,
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data["items"]) == 1
+    assert data["total"] >= 3
+    assert data["page"] == 1
+    assert data["page_size"] == 1
+
+
+def test_list_memberships_filter_by_status(
+    client, manager_auth_headers, db_session, registered_client, membership_type
+):
+    """status query param should filter server-side and total should match the filter."""
+    client_obj = db_session.query(Client).filter_by(email=registered_client["email"]).first()
+
+    active = Membership(
+        client_id=client_obj.id,
+        membership_type_id=membership_type.id,
+        status="active",
+        starts_at=datetime.date.today(),
+        credits_remaining=membership_type.credits_included,
+        credits_used=0,
+    )
+    cancelled = Membership(
+        client_id=client_obj.id,
+        membership_type_id=membership_type.id,
+        status="cancelled",
+        starts_at=datetime.date.today(),
+        credits_remaining=membership_type.credits_included,
+        credits_used=0,
+    )
+    db_session.add_all([active, cancelled])
+    db_session.commit()
+    db_session.refresh(active)
+    db_session.refresh(cancelled)
+
+    response = client.get(
+        "/api/v1/memberships",
+        params={"status": "active"},
+        headers=manager_auth_headers,
+    )
+    assert response.status_code == 200
+    data = response.json()
+    ids = [m["id"] for m in data["items"]]
+    assert active.id in ids
+    assert cancelled.id not in ids
+    assert all(m["status"] == "active" for m in data["items"])
+    assert data["total"] == len(data["items"])
 
 
 def test_update_membership(client, manager_auth_headers, client_membership):

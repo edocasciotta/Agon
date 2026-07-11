@@ -17,6 +17,7 @@ class BookingResponse(BaseModel):
     credit_deducted: bool
     cancelled_at: Optional[datetime] = None
     cancellation_reason: Optional[str] = None
+    fee_charged: Optional[float] = None
     created_at: datetime
     updated_at: datetime
 

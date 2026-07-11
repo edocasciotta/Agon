@@ -17,6 +17,7 @@
     "date-fns": "^3.6.0",
     "expo": "~54.0.0",
     "expo-camera": "~17.0.10",
+    "expo-clipboard": "~8.0.8",
     "expo-font": "^57.0.0",
     "expo-linking": "~8.0.12",
     "expo-notifications": "~0.32.17",

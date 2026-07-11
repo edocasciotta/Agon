@@ -6,6 +6,7 @@ import { LoadingView } from '../../src/components/LoadingView'
 import { ErrorView } from '../../src/components/ErrorView'
 import { OfflineBanner } from '../../src/components/OfflineBanner'
 import { useAuthStore } from '../../src/store/authStore'
+import { useT } from '../../src/i18n'
 import type { ApiError } from '../../src/api/client'
 import type { Membership } from '../../src/types'
 import { format, parseISO } from 'date-fns'
@@ -14,6 +15,7 @@ export default function MembershipScreen() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const user = useAuthStore(s => s.user)
+  const t = useT()
 
   const { data: memberships, isLoading, error } = useQuery({
     queryKey: ['memberships'],
@@ -87,6 +89,12 @@ export default function MembershipScreen() {
         >
           <Text style={styles.purchaseButtonText}>View Membership Options</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.giftCardButton}
+          onPress={() => router.push('/gift-card/purchase')}
+        >
+          <Text style={styles.giftCardButtonText}>{t('giftCard.giveAGiftCard')}</Text>
+        </TouchableOpacity>
       </View>
     )
   }
@@ -114,12 +122,19 @@ export default function MembershipScreen() {
             </View>
 
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Credits Used</Text>
+              <Text style={styles.infoLabel}>{t('membership.creditsUsed')}</Text>
               <Text style={styles.infoValue}>{activeMembership.credits_used}</Text>
             </View>
 
+            {activeMembership.rollover_credits > 0 && (
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>{t('membership.rolloverCredits')}</Text>
+                <Text style={styles.infoValue}>{activeMembership.rollover_credits}</Text>
+              </View>
+            )}
+
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Started</Text>
+              <Text style={styles.infoLabel}>{t('membership.started')}</Text>
               <Text style={styles.infoValue}>
                 {format(parseISO(activeMembership.starts_at), 'MMM d, yyyy')}
               </Text>
@@ -180,6 +195,12 @@ export default function MembershipScreen() {
           onPress={() => router.push('/membership/purchase')}
         >
           <Text style={styles.purchaseButtonText}>View Membership Options</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.giftCardButton}
+          onPress={() => router.push('/gift-card/purchase')}
+        >
+          <Text style={styles.giftCardButtonText}>{t('giftCard.giveAGiftCard')}</Text>
         </TouchableOpacity>
       </ScrollView>
     </>
@@ -321,6 +342,18 @@ const styles = StyleSheet.create({
   purchaseButtonText: {
     color: '#4F46E5',
     fontSize: 16,
+    fontWeight: '600',
+  },
+  giftCardButton: {
+    backgroundColor: 'transparent',
+    borderRadius: 10,
+    padding: 16,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  giftCardButtonText: {
+    color: '#6B7280',
+    fontSize: 15,
     fontWeight: '600',
   },
 })

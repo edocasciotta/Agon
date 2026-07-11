@@ -29,9 +29,28 @@ export const membershipTypesApi = {
   },
 }
 
+export interface MembershipListPage {
+  items: Membership[]
+  total: number
+  page: number
+  page_size: number
+}
+
 export const membershipsApi = {
-  list: async (clientId?: number): Promise<Membership[]> => {
-    const res = await apiClient.get('/api/v1/memberships', { params: clientId ? { client_id: clientId } : {} })
+  list: async (
+    clientId?: number,
+    page = 1,
+    pageSize = 50,
+    status?: string
+  ): Promise<MembershipListPage> => {
+    const res = await apiClient.get('/api/v1/memberships', {
+      params: {
+        ...(clientId ? { client_id: clientId } : {}),
+        ...(status ? { status } : {}),
+        page,
+        page_size: pageSize,
+      },
+    })
     return res.data
   },
   create: async (data: Partial<Membership>) => {
