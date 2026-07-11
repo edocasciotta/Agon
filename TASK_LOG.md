@@ -133,6 +133,40 @@ Full security audit. Normative doc: `docs/SECURITY_GUIDELINES.md`.
 
 ---
 
+## Test Fix (2026-07-10) — uncommitted, branch `claude/youthful-feynman-84d711`
+
+`test_multi_turn_conversation_accumulates_slots_correctly` (`backend/tests/test_agent.py`) was
+flagged as failing reproducibly. Investigation found it was a daily flake, not the double-resolution
+bug it was first suspected to be: the test computed its expected date via raw
+`datetime.utcnow().date()`, while production (`_studio_local_today` in `app/routers/agent.py`)
+correctly anchors "domani"/"tomorrow" resolution to the studio's *local* timezone (default
+Europe/Rome) — intentional, documented behavior already locked in by the sibling regression test
+`test_relative_date_anchored_to_studio_timezone_not_utc`. The two diverge for ~1-2 hours every day
+(whenever Rome's calendar date has advanced past UTC's), causing a reproducible one-day-off failure.
+Fixed by freezing the clock in the test (same `FrozenDateTime` pattern as the sibling test) instead
+of touching app logic. `agent_tools.py` untouched — no bug there.
+
+- Only file touched: `backend/tests/test_agent.py` (single test function).
+- Full backend suite: 288 passed after fix. `black`/`isort`/`ruff` clean.
+- Committed `eb9823f`; PR [#8](https://github.com/edocasciotta/Agon/pull/8).
+
+---
+
+## Infra Fix (2026-07-10) — Vercel landing deploy broken since project creation
+
+The "Vercel" GitHub check had been failing on every branch, including `main` (confirmed on
+`main`@`c9e1486`), since the `landing` Vercel project was created (2026-07-04): `next build`
+errored with "Couldn't find any `pages` or `app` directory" because the project's **Root
+Directory** setting was `.` (monorepo root) instead of `landing`. Not a code issue —
+`landing/app/` was present and correct the whole time.
+
+Fixed via the Vercel REST API (`PATCH /v9/projects/{id}` with `rootDirectory: "landing"`) since
+the `vercel project` CLI has no subcommand for this setting. Verified by redeploying the failed
+deployment (`vercel redeploy`) — build succeeded in 57s. This is a project-level setting, so it
+fixes deploys for all branches going forward, not just PR #8.
+
+---
+
 ## Security Hardening (2026-07-10) — PRs #11, #13
 
 Secret invitation token leaked via uvicorn's own access log. `GET /api/v1/auth/invite/{token}`
