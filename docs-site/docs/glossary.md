@@ -92,6 +92,74 @@ A single unit of access to one class, included in a credit-pack membership. Each
 
 ---
 
+## Rollover Credit
+
+An unused credit that carries over into a client's next billing period instead of being lost, when a recurring membership type has credit rollover enabled. A membership type can optionally cap how many credits can roll over per period.
+
+> **Not:** carryover credit, banked credit.
+
+---
+
+## Intro Offer
+
+A discounted first-purchase price and/or validity window on a membership type, shown automatically to a client the first time they buy that membership type (or any other intro-offer membership type at the same studio). Regular pricing applies to all later purchases.
+
+> **Not:** trial offer, welcome discount, first-time discount.
+
+---
+
+## Late Cancellation Fee / No-Show Fee
+
+A charge recorded against a client when they cancel a booking inside the cancellation window (a late cancellation, only if "cancellation deducts credit" is enabled) or are marked as a no-show at check-in. Resolved per client as: the client's membership type override, then the studio-wide default, then no fee. Recorded as a `Payment` row rather than an automatic card charge — the studio still has to collect it through its own process.
+
+> **Not:** penalty, cancellation charge (as a distinct concept from the fee itself).
+
+---
+
+## Promo Code
+
+A code a client enters at membership checkout to receive a percentage or fixed-amount discount. Configured by the studio manager with an optional usage limit, a one-per-client restriction, and a validity window.
+
+> **Not:** discount code, coupon.
+
+---
+
+## Gift Card
+
+A prepaid balance identified by a code (format `GC-XXXXXXXX`) that a client can redeem against a membership purchase, or that a studio manager issues manually for a phone/in-person sale. A client can also buy a gift card themselves as a present for someone else.
+
+> **Not:** voucher, credit note.
+
+---
+
+## Tag
+
+A short, colored label a studio manager attaches to a client to organize and filter the client list (e.g. "VIP", "Injury risk"). Tags can be assigned manually or automatically via an auto-tag rule. Clients see their own tags read-only in the mobile app.
+
+> **Not:** label (as a distinct concept), category.
+
+---
+
+## Auto-Tag Rule
+
+A rule that automatically assigns a tag to a client whenever a chosen trigger event happens for them (for example, a no-show or a cancelled booking). Configured by the studio manager; runs automatically with no manual action needed once created.
+
+---
+
+## Waiver
+
+A document (for example, a liability release or studio policy) that a studio manager authors and can require clients to digitally sign before booking. Editing a waiver's body creates a new version and requires every client to re-sign, even those who signed an earlier version. Signing is always client-self — there is no way for a studio manager or instructor to sign on a client's behalf.
+
+> **Not:** consent form (use only when referring to the separate GDPR consent log), release, agreement.
+
+---
+
+## Calendar Sync Token
+
+A long-lived secret embedded in a client's personal calendar feed URL, used because calendar apps (Google, Apple, Outlook) poll a static URL and cannot perform an app login. The token in the URL is itself the credential. A client or studio manager can regenerate it, which invalidates the old link and requires re-subscribing.
+
+---
+
 ## Location
 
 A physical place where classes are held. In V1, Agon supports one location. Multi-location support is planned for V2. The `location_id` field is already in the database schema.
@@ -134,7 +202,7 @@ A saved filter that identifies a subset of clients based on membership status, b
 
 ## Event Assignment
 
-A configuration that maps an Agon event (e.g. "new client invited", "booking confirmed") to a specific email template. When the event occurs, the assigned template is sent automatically.
+A configuration that maps an Agon event (e.g. "new client invited", "booking confirmed") to a specific email or SMS template. When the event occurs, the assigned template is sent automatically — provided that event is actually wired to send messages (currently only "new client invited" and "password reset" trigger a send, for both email and SMS).
 
 ---
 
