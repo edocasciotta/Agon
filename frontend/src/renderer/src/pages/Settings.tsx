@@ -29,6 +29,7 @@ export function SettingsPage() {
   const [emailSaveError, setEmailSaveError] = useState<string | null>(null)
   const [testEmailMsg, setTestEmailMsg] = useState<{ text: string; ok: boolean } | null>(null)
   const [emailSettingsSaved, setEmailSettingsSaved] = useState(false)
+  const [emailPasswordTouched, setEmailPasswordTouched] = useState(false)
 
   // SMS tab state
   const [smsForm, setSmsForm] = useState<{
@@ -42,6 +43,7 @@ export function SettingsPage() {
   const [smsSettingsSaved, setSmsSettingsSaved] = useState(false)
   const [smsTestPhone, setSmsTestPhone] = useState('')
   const [testSmsMsg, setTestSmsMsg] = useState<{ text: string; ok: boolean } | null>(null)
+  const [smsAuthTokenTouched, setSmsAuthTokenTouched] = useState(false)
 
   // Mobile tab state
   const [mobileUrl, setMobileUrl] = useState('')
@@ -90,6 +92,7 @@ export function SettingsPage() {
 
   useEffect(() => {
     if (emailSettings) setEmailForm({ ...emailSettings, email_smtp_password: '' })
+    setEmailPasswordTouched(false)
   }, [emailSettings])
 
   useEffect(() => {
@@ -101,6 +104,7 @@ export function SettingsPage() {
         enabled: smsSettings.sms_enabled,
       })
     }
+    setSmsAuthTokenTouched(false)
   }, [smsSettings])
 
   const updateMutation = useMutation({
@@ -194,6 +198,7 @@ export function SettingsPage() {
   const handleEmailChange = (field: keyof EmailSettings, value: string | number | boolean) => {
     setEmailForm((prev) => ({ ...prev, [field]: value }))
     setEmailSettingsSaved(false)
+    if (field === 'email_smtp_password') setEmailPasswordTouched(true)
   }
 
   const handleSmsChange = (
@@ -202,6 +207,7 @@ export function SettingsPage() {
   ) => {
     setSmsForm((prev) => ({ ...prev, [field]: value }))
     setSmsSettingsSaved(false)
+    if (field === 'auth_token') setSmsAuthTokenTouched(true)
   }
 
   const billingSaveMutation = useMutation({
@@ -221,8 +227,35 @@ export function SettingsPage() {
   })
 
   const handleSave = () => updateMutation.mutate(form)
-  const handleEmailSave = () => emailUpdateMutation.mutate(emailForm)
-  const handleSmsSave = () => smsUpdateMutation.mutate(smsForm)
+  const handleEmailSave = () => {
+    // The password field is never populated with the real stored value (see the
+    // useEffect above), so unless the user actually retyped it in this session,
+    // omit it entirely from the payload. Sending '' would hit the backend's
+    // "explicit empty string clears the credential" branch and silently wipe
+    // the configured SMTP password on every unrelated save.
+    if (emailPasswordTouched) {
+      emailUpdateMutation.mutate(emailForm)
+      return
+    }
+    const { email_smtp_password, ...rest } = emailForm
+    void email_smtp_password
+    emailUpdateMutation.mutate(rest)
+  }
+  const handleSmsSave = () => {
+    // Same shape as the email/SMTP-password bug above: the auth token field is
+    // never populated with the real stored value (see the smsSettings useEffect),
+    // so unless the user actually retyped it in this session, omit it entirely
+    // from the payload. Sending '' would hit the backend's "explicit empty
+    // string clears the credential" branch and silently wipe the configured
+    // Twilio auth token on every unrelated save.
+    if (smsAuthTokenTouched) {
+      smsUpdateMutation.mutate(smsForm)
+      return
+    }
+    const { auth_token, ...rest } = smsForm
+    void auth_token
+    smsUpdateMutation.mutate(rest)
+  }
 
   const handleBillingSave = () => {
     const billingSchema = z.object({

@@ -45,6 +45,8 @@ Agon uses [Semantic Versioning](https://semver.org/).
 ### Fixed
 - Alembic migration `086528153a55`: removed erroneous `op.drop_table('locations')` artifact
 - Performance test seed: `clients[i // 4]` ensures unique `(client_id, scheduled_class_id)` pairs
+- Email settings: saving the form no longer clears the configured SMTP password unless it was actually changed
+- SMS settings: saving the form no longer clears the configured Twilio auth token unless it was actually changed (same bug as Email settings, mirrored onto the new SMS tab)
 
 ---
 

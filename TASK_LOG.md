@@ -10,13 +10,18 @@
 ### Test Counts
 | Suite | Count | Status |
 |---|---|---|
-| Backend (pytest) | 288 | ✅ |
-| Frontend (Vitest) | 53 | ✅ |
+| Backend (pytest) | 523 | ✅ |
+| Frontend (Vitest) | 70 | ✅ |
 | Mobile (jest-expo) | 44 | ✅ |
 | Docs build | — | ✅ |
 
+Counts as of the `claude/distracted-ramanujan-043037` branch (PR #9) after merging `origin/main`
+(PR #12 competitive-gap work) in — see "Bug Fix — Email + SMS settings secret wipe" below.
+
 ### Active branch
-`main` — all changes committed and pushed (`a33dd7e`).
+`main` — all changes through PR #12 committed and pushed (`3801ad6`).
+`claude/distracted-ramanujan-043037` (PR #9): merged `origin/main` in, conflict resolved, fix
+extended to cover SMS too — see below. Pushed; ready to merge once confirmed.
 
 ### Local dev
 - Backend: `cd backend && .venv/bin/uvicorn main:app --reload` (entry point is top-level `backend/main.py`, not `app/main.py`)
@@ -180,6 +185,40 @@ Cosmetic, unrelated to this work, left untouched.
 - Source: `landing/` — Next.js 15 static export, deployed via `npx vercel --prod` from `landing/` dir.
 - After deploy: `vercel alias set <url> agon-studio.dev && vercel alias set <url> www.agon-studio.dev`.
 - Do NOT run vercel from monorepo root — it uploads 15 GB.
+
+---
+
+## Bug Fix — Email + SMS settings secret wipe (2026-07-10/11, resolves `task_fcd35817`)
+
+**Symptom:** Saving the Settings → Email (or, once it existed, SMS) tab for any reason (e.g.
+toggling TLS) silently cleared the stored secret (SMTP password / Twilio auth token) server-side,
+breaking outbound email/SMS with no visible error.
+
+**Root cause:** the GET endpoints never return the real secret (masked display value only).
+`Settings.tsx`'s sync effects reset the secret field to `''` on every load. The old save handlers
+sent the whole form unconditionally, so `''` was always in the payload unless the user retyped the
+secret that session. Backend contract (`email_settings.py` / `sms_settings.py`, unchanged, correct):
+`None`/absent = don't touch, `""` = explicit clear — so every such save hit the "clear it" branch.
+
+**Fix (frontend only):** `Settings.tsx` tracks a per-field touched flag (`emailPasswordTouched`,
+`smsAuthTokenTouched`), true only when the user edits that specific field, reset to `false` whenever
+the corresponding settings query (re)loads. Both save handlers omit the secret key from the payload
+entirely (object destructure, not `undefined`/`''`) unless the flag is set. Regression tests in
+`Settings.test.tsx` exercise the full type→save→refetch→unrelated-change→save flow for each tab;
+both verified to fail without their respective fix.
+
+**Timeline note (how this played out across two sessions):** this branch (PR #9) initially fixed
+only Email, since at the time no SMS settings tab/router/Twilio integration existed anywhere in this
+codebase (confirmed via grep + `git log --all` + both spec docs — correct for the state of the repo
+at that point). `origin/main` then merged PR #12, which built a new SMS tab mirroring Email's
+architecture "pixel-for-pixel" — including this identical bug, which that session found and flagged
+separately as `task_fcd35817` (see the now-superseded entry under Competitive Gap — Phase 1 below).
+Merging `origin/main` into this branch surfaced the SMS tab; the fix was then extended to cover it
+in the same PR, closing `task_fcd35817` instead of leaving it as a separate follow-up.
+
+**Files touched:** `frontend/src/renderer/src/pages/Settings.tsx`, `frontend/tests/unit/pages/Settings.test.tsx`, `CHANGELOG.md`. No backend changes in either round. Verified independently by the orchestrator both rounds: `npm run build`/`lint`/`test -- --run` clean; lint warning counts diffed against baseline (stash-based pre-merge, isolated-diff post-merge) — no new warnings beyond what merging in the SMS tab's own pre-existing effect pattern already introduced. Backend re-verified post-merge: `alembic heads` single head, `pytest -q` 523/523.
+
+**Status:** merged into this branch, pushed to `origin/claude/distracted-ramanujan-043037` (PR #9) — ready to merge to `main` once confirmed.
 
 ---
 
@@ -381,7 +420,7 @@ it's harmless and not something any agent touched today).
 ## Next Task Candidates
 
 - **1.9 Forms / Waivers** (backend + frontend + mobile) — last Phase 1 item
-- **Bug fix**: Settings save silently clears SMTP/Twilio secrets on unrelated saves (`task_fcd35817`)
+- ~~**Bug fix**: Settings save silently clears SMTP/Twilio secrets on unrelated saves (`task_fcd35817`)~~ — done, see "Bug Fix — Email + SMS settings secret wipe" above (PR #9)
 - **Bug fix**: uvicorn access log leaks secret tokens embedded in URLs (`task_549372fa`)
 - **Consider**: a checkpoint commit — nothing from 1.4 onward (promo codes through calendar sync) has
   been committed yet; everything today has lived in the working tree only
