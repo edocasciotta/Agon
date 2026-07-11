@@ -31,6 +31,7 @@
     "promoCodes": "Códigos Promo",
     "tags": "Etiquetas",
     "giftCards": "Tarjetas Regalo",
+    "waivers": "Descargos de responsabilidad",
     "smsTemplates": "Plantillas de SMS",
     "smsEvents": "Eventos de SMS"
   },
@@ -802,5 +803,35 @@
     "regenerating": "Regenerando...",
     "failedLoad": "Error al cargar el enlace de sincronización del calendario",
     "failedRegenerate": "Error al regenerar el enlace del calendario"
+  },
+  "waivers": {
+    "title": "Descargos de responsabilidad",
+    "newWaiver": "Nuevo descargo",
+    "editWaiver": "Editar descargo",
+    "formTitle": "Título",
+    "titlePlaceholder": "ej. Descargo de responsabilidad",
+    "body": "Texto",
+    "bodyPlaceholder": "Introduce el texto completo del descargo que los clientes leerán y firmarán.",
+    "requiresBeforeBooking": "Requiere firma antes de reservar",
+    "requiredBadge": "Obligatorio",
+    "version": "Versión",
+    "versionBumpNote": "Editar el texto crea una nueva versión y los clientes deberán volver a firmar.",
+    "versionBumpWarning": "Has modificado el texto: al guardar se creará una nueva versión y los clientes deberán volver a firmar.",
+    "deactivate": "Desactivar",
+    "deactivateConfirmTitle": "¿Desactivar este descargo?",
+    "deactivateConfirmDesc": "Al desactivarlo, este descargo se oculta a los clientes. No se elimina nada: las firmas existentes se conservan para tus registros.",
+    "noWaivers": "Aún no hay descargos",
+    "emptyDesc": "Crea un descargo que los clientes deban firmar antes de reservar, como un descargo de responsabilidad o la política del estudio.",
+    "failedCreate": "Error al crear el descargo",
+    "failedEdit": "Error al actualizar el descargo",
+    "failedLoad": "Error al cargar los descargos",
+    "clientSectionTitle": "Descargos de responsabilidad",
+    "clientSectionDescription": "Los descargos los firma el cliente en su propio dispositivo. Los gestores no pueden firmar en nombre de un cliente.",
+    "noWaiversForClient": "No hay descargos activos para este estudio",
+    "signed": "Firmado",
+    "unsigned": "Sin firmar",
+    "notSigned": "Sin firmar",
+    "signedOn": "Firmado el {{date}}",
+    "blocksBookingBadge": "Bloquea la reserva"
   }
 }

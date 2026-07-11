@@ -31,6 +31,7 @@
     "promoCodes": "Codes Promo",
     "tags": "Tags",
     "giftCards": "Cartes Cadeaux",
+    "waivers": "Décharges",
     "smsTemplates": "Modèles SMS",
     "smsEvents": "Événements SMS"
   },
@@ -802,5 +803,35 @@
     "regenerating": "Régénération en cours...",
     "failedLoad": "Échec du chargement du lien de synchronisation du calendrier",
     "failedRegenerate": "Échec de la régénération du lien du calendrier"
+  },
+  "waivers": {
+    "title": "Décharges",
+    "newWaiver": "Nouvelle décharge",
+    "editWaiver": "Modifier la décharge",
+    "formTitle": "Titre",
+    "titlePlaceholder": "ex. Décharge de responsabilité",
+    "body": "Texte",
+    "bodyPlaceholder": "Saisissez le texte complet de la décharge que les clients liront et signeront.",
+    "requiresBeforeBooking": "Signature requise avant la réservation",
+    "requiredBadge": "Obligatoire",
+    "version": "Version",
+    "versionBumpNote": "Modifier le texte crée une nouvelle version et les clients devront la signer à nouveau.",
+    "versionBumpWarning": "Vous avez modifié le texte : l'enregistrement créera une nouvelle version et les clients devront la signer à nouveau.",
+    "deactivate": "Désactiver",
+    "deactivateConfirmTitle": "Désactiver cette décharge ?",
+    "deactivateConfirmDesc": "La désactivation masque cette décharge aux clients. Rien n'est supprimé : les signatures existantes sont conservées pour vos archives.",
+    "noWaivers": "Aucune décharge",
+    "emptyDesc": "Créez une décharge que les clients doivent signer avant de réserver, comme une décharge de responsabilité ou le règlement du studio.",
+    "failedCreate": "Échec de la création de la décharge",
+    "failedEdit": "Échec de la mise à jour de la décharge",
+    "failedLoad": "Échec du chargement des décharges",
+    "clientSectionTitle": "Décharges",
+    "clientSectionDescription": "Les décharges sont signées par le client sur son propre appareil. Les gestionnaires ne peuvent pas signer au nom d'un client.",
+    "noWaiversForClient": "Aucune décharge active pour ce studio",
+    "signed": "Signée",
+    "unsigned": "Non signée",
+    "notSigned": "Non signée",
+    "signedOn": "Signée le {{date}}",
+    "blocksBookingBadge": "Bloque la réservation"
   }
 }

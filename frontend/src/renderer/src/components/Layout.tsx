@@ -15,6 +15,7 @@ import {
   CreditCard,
   Ticket,
   Gift,
+  FileCheck,
   TrendingUp,
   Settings2,
   Mail,
@@ -67,6 +68,7 @@ export function Layout() {
     { to: '/promo-codes', label: t('nav.promoCodes'), icon: Ticket },
     { to: '/gift-cards', label: t('nav.giftCards'), icon: Gift },
     { to: '/tags', label: t('nav.tags'), icon: Tags },
+    { to: '/waivers', label: t('nav.waivers'), icon: FileCheck },
     { to: '/reports', label: t('nav.reports'), icon: TrendingUp },
     { to: '/settings', label: t('nav.settings'), icon: Settings2 },
   ]

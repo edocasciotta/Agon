@@ -31,6 +31,7 @@
     "promoCodes": "Codici Promo",
     "tags": "Tag",
     "giftCards": "Carte Regalo",
+    "waivers": "Liberatorie",
     "smsTemplates": "Modelli SMS",
     "smsEvents": "Eventi SMS"
   },
@@ -802,5 +803,35 @@
     "regenerating": "Rigenerazione in corso...",
     "failedLoad": "Impossibile caricare il link di sincronizzazione del calendario",
     "failedRegenerate": "Impossibile rigenerare il link del calendario"
+  },
+  "waivers": {
+    "title": "Liberatorie",
+    "newWaiver": "Nuova liberatoria",
+    "editWaiver": "Modifica liberatoria",
+    "formTitle": "Titolo",
+    "titlePlaceholder": "es. Liberatoria di responsabilità",
+    "body": "Testo",
+    "bodyPlaceholder": "Inserisci il testo completo della liberatoria che i clienti leggeranno e firmeranno.",
+    "requiresBeforeBooking": "Richiede la firma prima della prenotazione",
+    "requiredBadge": "Obbligatoria",
+    "version": "Versione",
+    "versionBumpNote": "Modificare il testo crea una nuova versione e i clienti dovranno firmare di nuovo.",
+    "versionBumpWarning": "Hai modificato il testo: salvando verrà creata una nuova versione e i clienti dovranno firmare di nuovo.",
+    "deactivate": "Disattiva",
+    "deactivateConfirmTitle": "Disattivare questa liberatoria?",
+    "deactivateConfirmDesc": "La disattivazione nasconde questa liberatoria ai clienti. Nulla viene eliminato: le firme esistenti vengono conservate per i tuoi archivi.",
+    "noWaivers": "Nessuna liberatoria",
+    "emptyDesc": "Crea una liberatoria che i clienti devono firmare prima di prenotare, come una liberatoria di responsabilità o il regolamento dello studio.",
+    "failedCreate": "Creazione della liberatoria non riuscita",
+    "failedEdit": "Aggiornamento della liberatoria non riuscito",
+    "failedLoad": "Impossibile caricare le liberatorie",
+    "clientSectionTitle": "Liberatorie",
+    "clientSectionDescription": "Le liberatorie vengono firmate dal cliente sul proprio dispositivo. I gestori non possono firmare per conto del cliente.",
+    "noWaiversForClient": "Nessuna liberatoria attiva per questo studio",
+    "signed": "Firmata",
+    "unsigned": "Non firmata",
+    "notSigned": "Non firmata",
+    "signedOn": "Firmata il {{date}}",
+    "blocksBookingBadge": "Blocca la prenotazione"
   }
 }

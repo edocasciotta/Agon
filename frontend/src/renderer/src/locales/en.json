@@ -31,6 +31,7 @@
     "promoCodes": "Promo Codes",
     "tags": "Tags",
     "giftCards": "Gift Cards",
+    "waivers": "Waivers",
     "smsTemplates": "SMS Templates",
     "smsEvents": "SMS Events"
   },
@@ -804,5 +805,35 @@
     "regenerating": "Regenerating...",
     "failedLoad": "Failed to load calendar sync link",
     "failedRegenerate": "Failed to regenerate calendar link"
+  },
+  "waivers": {
+    "title": "Waivers",
+    "newWaiver": "New Waiver",
+    "editWaiver": "Edit Waiver",
+    "formTitle": "Title",
+    "titlePlaceholder": "e.g. Liability Waiver",
+    "body": "Body",
+    "bodyPlaceholder": "Enter the full text of the waiver that clients will read and sign.",
+    "requiresBeforeBooking": "Requires signature before booking",
+    "requiredBadge": "Required",
+    "version": "Version",
+    "versionBumpNote": "Editing the text creates a new version and clients must re-sign.",
+    "versionBumpWarning": "You changed the body — saving will create a new version and clients must re-sign.",
+    "deactivate": "Deactivate",
+    "deactivateConfirmTitle": "Deactivate this waiver?",
+    "deactivateConfirmDesc": "Deactivating hides this waiver from clients. Nothing is deleted — existing signatures are kept for your records.",
+    "noWaivers": "No waivers yet",
+    "emptyDesc": "Create a waiver for clients to sign before booking, such as a liability release or studio policy.",
+    "failedCreate": "Failed to create waiver",
+    "failedEdit": "Failed to update waiver",
+    "failedLoad": "Failed to load waivers",
+    "clientSectionTitle": "Waivers",
+    "clientSectionDescription": "Waivers are signed by the client on their own device. Managers cannot sign on a client's behalf.",
+    "noWaiversForClient": "No active waivers for this studio",
+    "signed": "Signed",
+    "unsigned": "Unsigned",
+    "notSigned": "Not signed",
+    "signedOn": "Signed on {{date}}",
+    "blocksBookingBadge": "Blocks booking"
   }
 }

@@ -31,6 +31,7 @@
     "promoCodes": "Códigos Promo",
     "tags": "Tags",
     "giftCards": "Cartões Presente",
+    "waivers": "Termos de Responsabilidade",
     "smsTemplates": "Modelos de SMS",
     "smsEvents": "Eventos de SMS"
   },
@@ -802,5 +803,35 @@
     "regenerating": "A regenerar...",
     "failedLoad": "Falha ao carregar o link de sincronização do calendário",
     "failedRegenerate": "Falha ao regenerar o link do calendário"
+  },
+  "waivers": {
+    "title": "Termos de Responsabilidade",
+    "newWaiver": "Novo termo",
+    "editWaiver": "Editar termo",
+    "formTitle": "Título",
+    "titlePlaceholder": "ex. Termo de responsabilidade",
+    "body": "Texto",
+    "bodyPlaceholder": "Introduza o texto completo do termo que os clientes irão ler e assinar.",
+    "requiresBeforeBooking": "Requer assinatura antes da marcação",
+    "requiredBadge": "Obrigatório",
+    "version": "Versão",
+    "versionBumpNote": "Editar o texto cria uma nova versão e os clientes terão de assinar novamente.",
+    "versionBumpWarning": "Alterou o texto: ao guardar será criada uma nova versão e os clientes terão de assinar novamente.",
+    "deactivate": "Desativar",
+    "deactivateConfirmTitle": "Desativar este termo?",
+    "deactivateConfirmDesc": "A desativação oculta este termo dos clientes. Nada é eliminado: as assinaturas existentes são mantidas para os seus registos.",
+    "noWaivers": "Ainda não há termos",
+    "emptyDesc": "Crie um termo que os clientes devem assinar antes de marcar, como um termo de responsabilidade ou o regulamento do estúdio.",
+    "failedCreate": "Falha ao criar o termo",
+    "failedEdit": "Falha ao atualizar o termo",
+    "failedLoad": "Falha ao carregar os termos",
+    "clientSectionTitle": "Termos de Responsabilidade",
+    "clientSectionDescription": "Os termos são assinados pelo cliente no seu próprio dispositivo. Os gestores não podem assinar em nome de um cliente.",
+    "noWaiversForClient": "Sem termos ativos para este estúdio",
+    "signed": "Assinado",
+    "unsigned": "Não assinado",
+    "notSigned": "Não assinado",
+    "signedOn": "Assinado em {{date}}",
+    "blocksBookingBadge": "Bloqueia a marcação"
   }
 }

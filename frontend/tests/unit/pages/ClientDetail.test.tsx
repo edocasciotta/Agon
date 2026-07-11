@@ -56,6 +56,12 @@ vi.mock('../../../src/renderer/src/api/calendarSync', () => ({
   },
 }))
 
+vi.mock('../../../src/renderer/src/api/waivers', () => ({
+  waiversApi: {
+    listForClient: vi.fn().mockResolvedValue([]),
+  },
+}))
+
 function renderPage() {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -89,6 +95,9 @@ beforeEach(async () => {
   vi.mocked(calendarSyncApi.regenerate).mockResolvedValue({
     feed_url: 'http://localhost:8000/api/v1/calendar/newtoken456.ics',
   })
+
+  const { waiversApi } = await import('../../../src/renderer/src/api/waivers')
+  vi.mocked(waiversApi.listForClient).mockResolvedValue([])
 
   Object.assign(navigator, {
     clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
@@ -152,5 +161,68 @@ describe('ClientDetail — Calendar Sync', () => {
 
     const input = await screen.findByDisplayValue('http://localhost:8000/api/v1/calendar/newtoken456.ics')
     expect(input).toBeTruthy()
+  })
+})
+
+describe('ClientDetail — Waivers', () => {
+  it('fetches and shows a message when the client has no active waivers', async () => {
+    const { waiversApi } = await import('../../../src/renderer/src/api/waivers')
+    renderPage()
+
+    await waitFor(() => {
+      expect(waiversApi.listForClient).toHaveBeenCalledWith(1)
+    })
+
+    expect(await screen.findByText('No active waivers for this studio')).toBeTruthy()
+  })
+
+  it('shows a signed waiver with its signed date, and no action buttons', async () => {
+    const { waiversApi } = await import('../../../src/renderer/src/api/waivers')
+    vi.mocked(waiversApi.listForClient).mockResolvedValue([
+      {
+        id: 1,
+        location_id: 1,
+        title: 'Liability Waiver',
+        body: 'Terms...',
+        version: 1,
+        requires_before_booking: true,
+        is_active: true,
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z',
+        is_signed: true,
+        signed_at: '2024-02-15T00:00:00Z',
+      },
+    ])
+    renderPage()
+
+    expect(await screen.findByText('Liability Waiver')).toBeTruthy()
+    expect(await screen.findByText('Signed on Feb 15, 2024')).toBeTruthy()
+    expect(screen.getByText('Signed')).toBeTruthy()
+    // No "sign for client" action should ever be rendered.
+    expect(screen.queryByRole('button', { name: /sign/i })).toBeNull()
+  })
+
+  it('flags an unsigned required waiver with the blocks-booking badge', async () => {
+    const { waiversApi } = await import('../../../src/renderer/src/api/waivers')
+    vi.mocked(waiversApi.listForClient).mockResolvedValue([
+      {
+        id: 2,
+        location_id: 1,
+        title: 'Injury Release',
+        body: 'Terms...',
+        version: 2,
+        requires_before_booking: true,
+        is_active: true,
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z',
+        is_signed: false,
+        signed_at: null,
+      },
+    ])
+    renderPage()
+
+    expect(await screen.findByText('Injury Release')).toBeTruthy()
+    expect(screen.getByText('Blocks booking')).toBeTruthy()
+    expect(screen.getByText('Not signed')).toBeTruthy()
   })
 })

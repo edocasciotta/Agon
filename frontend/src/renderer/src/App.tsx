@@ -24,6 +24,7 @@ import { InstructorsPage } from './pages/Instructors'
 import { PromoCodesPage } from './pages/PromoCodes'
 import { TagsPage } from './pages/Tags'
 import { GiftCardsPage } from './pages/GiftCards'
+import { WaiversPage } from './pages/Waivers/index'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -189,6 +190,7 @@ function App(): JSX.Element {
             <Route path="promo-codes" element={<PromoCodesPage />} />
             <Route path="tags" element={<TagsPage />} />
             <Route path="gift-cards" element={<GiftCardsPage />} />
+            <Route path="waivers" element={<WaiversPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

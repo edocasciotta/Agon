@@ -31,6 +31,7 @@
     "promoCodes": "Promotiecodes",
     "tags": "Tags",
     "giftCards": "Cadeaubonnen",
+    "waivers": "Vrijwaringen",
     "smsTemplates": "SMS-sjablonen",
     "smsEvents": "SMS-gebeurtenissen"
   },
@@ -802,5 +803,35 @@
     "regenerating": "Bezig met vernieuwen...",
     "failedLoad": "Kan de agendasynchronisatielink niet laden",
     "failedRegenerate": "Kan de agendalink niet vernieuwen"
+  },
+  "waivers": {
+    "title": "Vrijwaringen",
+    "newWaiver": "Nieuwe vrijwaring",
+    "editWaiver": "Vrijwaring bewerken",
+    "formTitle": "Titel",
+    "titlePlaceholder": "bijv. Aansprakelijkheidsvrijwaring",
+    "body": "Tekst",
+    "bodyPlaceholder": "Voer de volledige tekst van de vrijwaring in die klanten zullen lezen en ondertekenen.",
+    "requiresBeforeBooking": "Vereist ondertekening vóór boeking",
+    "requiredBadge": "Verplicht",
+    "version": "Versie",
+    "versionBumpNote": "Het bewerken van de tekst maakt een nieuwe versie aan en klanten moeten opnieuw ondertekenen.",
+    "versionBumpWarning": "U heeft de tekst gewijzigd — bij het opslaan wordt een nieuwe versie aangemaakt en moeten klanten opnieuw ondertekenen.",
+    "deactivate": "Deactiveren",
+    "deactivateConfirmTitle": "Deze vrijwaring deactiveren?",
+    "deactivateConfirmDesc": "Deactiveren verbergt deze vrijwaring voor klanten. Er wordt niets verwijderd — bestaande handtekeningen blijven bewaard voor uw administratie.",
+    "noWaivers": "Nog geen vrijwaringen",
+    "emptyDesc": "Maak een vrijwaring aan die klanten moeten ondertekenen vóór het boeken, zoals een aansprakelijkheidsvrijwaring of studiobeleid.",
+    "failedCreate": "Aanmaken van vrijwaring mislukt",
+    "failedEdit": "Bijwerken van vrijwaring mislukt",
+    "failedLoad": "Kan vrijwaringen niet laden",
+    "clientSectionTitle": "Vrijwaringen",
+    "clientSectionDescription": "Vrijwaringen worden door de klant op zijn eigen apparaat ondertekend. Managers kunnen niet namens een klant ondertekenen.",
+    "noWaiversForClient": "Geen actieve vrijwaringen voor deze studio",
+    "signed": "Ondertekend",
+    "unsigned": "Ongetekend",
+    "notSigned": "Niet ondertekend",
+    "signedOn": "Ondertekend op {{date}}",
+    "blocksBookingBadge": "Blokkeert boeking"
   }
 }

@@ -114,6 +114,12 @@ export const giftCardSchema = z.object({
   expires_at: z.string().optional(),
 })
 
+export const waiverSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(200),
+  body: z.string().min(1, 'Body is required'),
+  requires_before_booking: z.boolean(),
+})
+
 export type ClientFormData = z.infer<typeof clientSchema>
 export type InstructorFormData = z.infer<typeof instructorSchema>
 export type MembershipTypeFormData = z.infer<typeof membershipTypeSchema>
@@ -123,3 +129,4 @@ export type EstablishmentFormData = z.infer<typeof establishmentSchema>
 export type TagFormData = z.infer<typeof tagSchema>
 export type AutoTagRuleFormData = z.infer<typeof autoTagRuleSchema>
 export type GiftCardFormData = z.infer<typeof giftCardSchema>
+export type WaiverFormData = z.infer<typeof waiverSchema>
