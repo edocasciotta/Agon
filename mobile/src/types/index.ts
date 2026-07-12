@@ -18,6 +18,58 @@ export interface Booking {
   created_at: string
 }
 
+export interface Instructor {
+  id: number
+  user_id: number
+  full_name: string
+  email: string
+  bio?: string
+  is_active: boolean
+}
+
+export interface AppointmentService {
+  id: number
+  location_id: number
+  name: string
+  description?: string
+  duration_minutes: number
+  buffer_minutes: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type AppointmentStatus = 'confirmed' | 'cancelled' | 'completed' | 'no_show'
+
+export interface Appointment {
+  id: number
+  location_id: number
+  service_id: number
+  instructor_id: number
+  client_id: number
+  starts_at: string
+  ends_at: string
+  status: AppointmentStatus
+  cancelled_at?: string | null
+  cancellation_reason?: string | null
+  credit_deducted: boolean
+  notes?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface AppointmentCreate {
+  service_id: number
+  instructor_id: number
+  starts_at: string
+  notes?: string
+}
+
+export interface AvailableSlot {
+  starts_at: string
+  ends_at: string
+}
+
 export interface Membership {
   id: number
   client_id: number

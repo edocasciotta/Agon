@@ -17,6 +17,12 @@ export const errorMessages: Record<string, string> = {
   GIFT_CARD_INACTIVE: 'This gift card is no longer active.',
   GIFT_CARD_EXPIRED: 'This gift card has expired.',
   GIFT_CARD_ZERO_BALANCE: 'This gift card has no remaining balance.',
+  APPOINTMENT_SERVICE_INACTIVE: 'This service is not currently offered.',
+  APPOINTMENT_INSTRUCTOR_INACTIVE: 'This instructor is not currently active.',
+  APPOINTMENT_IN_PAST: 'That time has already passed. Please pick another slot.',
+  APPOINTMENT_OUTSIDE_AVAILABILITY: "That time is outside the instructor's availability.",
+  APPOINTMENT_SLOT_CONFLICT: 'This time slot was just taken. Please pick another one.',
+  APPOINTMENT_ALREADY_CANCELLED: 'This appointment is no longer confirmed.',
   NOT_FOUND: 'Not found.',
   SERVER_ERROR: 'Something went wrong. Please try again.',
 }
