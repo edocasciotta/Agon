@@ -25,6 +25,7 @@ import { PromoCodesPage } from './pages/PromoCodes'
 import { TagsPage } from './pages/Tags'
 import { GiftCardsPage } from './pages/GiftCards'
 import { WaiversPage } from './pages/Waivers/index'
+import { AppointmentsPage } from './pages/Appointments/index'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -174,6 +175,7 @@ function App(): JSX.Element {
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="calendar" element={<CalendarPage />} />
+            <Route path="appointments" element={<AppointmentsPage />} />
             <Route path="clients" element={<ClientsPage />} />
             <Route path="clients/:id" element={<ClientDetail />} />
             <Route path="class-types" element={<ClassTypesPage />} />
