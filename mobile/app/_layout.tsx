@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Linking, View } from 'react-native'
 import { Stack, useRouter } from 'expo-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { StatusBar } from 'expo-status-bar'
 import * as Notifications from 'expo-notifications'
 import * as SplashScreen from 'expo-splash-screen'
@@ -140,21 +141,23 @@ export default function RootLayout() {
   if (!fontsLoaded) return null
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <StatusBar style="auto" />
-      <SessionGuard />
-      <NetworkWatcher />
-      <DeepLinkHandler />
-      <View style={{ flex: 1 }}>
-        <OfflineBanner />
-        <Stack>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="onboarding/scan" options={{ headerShown: false }} />
-          <Stack.Screen name="onboarding/register" options={{ title: 'Create Account' }} />
-          <Stack.Screen name="onboarding/login" options={{ title: 'Sign In' }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        </Stack>
-      </View>
-    </QueryClientProvider>
+    <SafeAreaProvider>
+      <QueryClientProvider client={queryClient}>
+        <StatusBar style="auto" />
+        <SessionGuard />
+        <NetworkWatcher />
+        <DeepLinkHandler />
+        <View style={{ flex: 1 }}>
+          <OfflineBanner />
+          <Stack>
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="onboarding/scan" options={{ headerShown: false }} />
+            <Stack.Screen name="onboarding/register" options={{ title: 'Create Account' }} />
+            <Stack.Screen name="onboarding/login" options={{ title: 'Sign In' }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          </Stack>
+        </View>
+      </QueryClientProvider>
+    </SafeAreaProvider>
   )
 }
