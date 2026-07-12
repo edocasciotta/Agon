@@ -565,12 +565,32 @@ not accepted on self-report alone, per the "Nested Sub-Agent Delegation" hazard 
   clean after — no stray changes landed), then reverted and left the committed spec using the
   standard (currently-broken) `getByLabel` convention to match the rest of the suite. Flagged as a
   background task by the agent (`task_55959579`) with the precise fix — worth prioritizing since it
-  silently breaks **all** e2e coverage, not just this feature's.
+  silently breaks **all** e2e coverage, not just this feature's. **Fixed**: see "E2E Login/A11y Fix
+  + Test Speed-up" below (PR #20).
 - **Explicitly out of scope, not built**: appointments on the main calendar grid, recurring/duo/group
   appointment UI, room booking, intake forms, mobile app, docs-site page.
 - **Merged to `main`** via PR [#19](https://github.com/edocasciotta/Agon/pull/19) (`5661d50`,
   2026-07-12). All CI checks passed before merge (branch needed one `update-branch` sync — `main` had
   advanced with the PR #18 TASK_LOG commit in the meantime).
+
+---
+
+## E2E Login/A11y Fix + Test Speed-up (2026-07-12) — PRs #20, #21
+
+Discovered already merged to `main` at the start of this session (done in a separate concurrent
+session, `task_55959579`, flagged during Appointments desktop frontend verification above).
+
+- **PR [#20](https://github.com/edocasciotta/Agon/pull/20)**: fixed the `Login.tsx` label/`htmlFor`
+  bug that broke `page.getByLabel(...)` for every e2e spec, plus three more bugs found once the
+  suite could actually run past login: wrong button-text regex in four specs, missing post-login
+  route mocks causing the global 401 interceptor to bounce tests back to `/login`, and missing
+  `role="dialog"`/label wiring on `ScheduleClassModal`/`Instructors`/`Clients` (same bug class as
+  Login). Net: e2e suite 0/16 → 17/17 passing.
+- **PR [#21](https://github.com/edocasciotta/Agon/pull/21)**: `test_no_overbooking_under_load`
+  34s → ~1s by replacing per-client HTTP login round-trips with direct JWT creation and hashing the
+  shared test password once instead of per-client. 579/579 backend tests still pass.
+
+Both verified present on `main` (`87f8a57`, `7bfb9cd`) via `git log`/`gh pr view` at session start.
 
 ---
 
@@ -595,7 +615,11 @@ via concurrent sessions during this branch's lifetime without being crossed off 
   and merged to `main` via PR #12
 - ~~**Docs-site batch pass for 1.1–1.9**~~ — done and merged, see "Docs-site batch pass for
   1.1–1.9 (2026-07-12)" below. PR [#17](https://github.com/edocasciotta/Agon/pull/17).
-- Phase 2: Appointments, Marketing Automations, Web Widgets, Online Classes, Custom Roles, Payroll, Invoicing
+- **In progress (2026-07-12)**: 2.1 Appointments — mobile client booking flow, and docs-site page(s).
+  Backend (PR #18) and desktop frontend (PR #19) are merged; this closes out the feature's remaining
+  surfaces before moving to the next Phase 2 gap.
+- Phase 2 (after Appointments closes out): Marketing Automations, Web Widgets, Online Classes, Custom
+  Roles, Payroll, Invoicing
 
 ---
 
