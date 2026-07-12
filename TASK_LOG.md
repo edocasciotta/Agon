@@ -18,7 +18,7 @@ Gap Phase 1 (1.1–1.9) and Phase 2's Appointments (2.1) both fully shipped acro
 | Docs build | — | ✅ | PR #22 |
 
 ### Active branch
-`main` — through PR #25 (`7be098f`), merged 2026-07-12. No open feature branches.
+`main` — through PR #25 (`7be098f`), merged 2026-07-12. Open: PR #28 (mobile brand-color theming, awaiting merge).
 
 ### Local dev
 - Backend: `cd backend && .venv/bin/uvicorn main:app --reload` (entry point is top-level `backend/main.py`, not `app/main.py`)
@@ -176,6 +176,7 @@ Scaffolding → DB models → Core API → Booking engine → Check-in → Membe
 - **Cleanup — orphaned `pl.json`/`tr.json` locale files** (2026-07-12, PR [#25](https://github.com/edocasciotta/Agon/pull/25)): confirmed unwired, deleted.
 - **Docs cleanup — `TASK_LOG.md` split into lean log + archive** (2026-07-12, PR [#26](https://github.com/edocasciotta/Agon/pull/26)): 736→186 lines, full detail preserved in `TASK_LOG_ARCHIVE.md`.
 - **Bug Fix — mobile appointment booking screen** (2026-07-12): duplicate native header (missing `headerShown: false`) + blank instructor list on zero availability, fixed via `<Stack.Screen>` + empty-state message. Reported live by the user via screenshot after fixing the Expo Go infinite-loading issue (stale VPN interface confusing Metro's LAN IP advertisement — resolved by disabling the VPN and restarting Metro with `REACT_NATIVE_PACKAGER_HOSTNAME` forced).
+- **Mobile brand-color theming** (2026-07-12, PR [#28](https://github.com/edocasciotta/Agon/pull/28)): mobile now consumes the existing public `GET /api/v1/studio/branding` endpoint and applies the manager-chosen `primary_color`/`secondary_color` app-wide (~46 call sites: tab bar, buttons, links, spinners, selected states) instead of hardcoded indigo. New `mobile/src/theme/ThemeContext.tsx` + `mobile/src/lib/color.ts` (mirrors desktop's shade math) + `mobile/src/api/studio.ts`. Falls back to default indigo when uncustomized/fetch fails; last-known color cached in SecureStore to avoid flashing default on offline restart. Semantic green (success/error/discount/status) deliberately left hardcoded, not tied to secondary_color. No backend or docs-site changes needed (endpoint pre-existing, already documented). Delegation note: first pass stalled mid-task (600s no-progress) in an isolated worktree with real, uncommitted, correct partial work — resumed via `SendMessage` to the same agent rather than restarting; second pass completed, committed, and was independently re-verified (typecheck, 75/75 tests, override-pattern spot-check across screens) before PR creation.
 
 ---
 
