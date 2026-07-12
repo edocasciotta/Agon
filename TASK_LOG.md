@@ -664,3 +664,61 @@ Code, Gift Card, Tag, Auto-Tag Rule, Waiver, Calendar Sync Token). `npm run buil
 
 **Status:** merged to `main` via PR [#17](https://github.com/edocasciotta/Agon/pull/17)
 (`9567627`, 2026-07-12). All CI checks (Backend/Frontend/Mobile Tests, Vercel) passed before merge.
+
+---
+
+## 2.1 Appointments — mobile client frontend + docs (2026-07-12)
+
+Closes out the Appointments feature across all four surfaces (backend PR #18, desktop frontend
+PR #19, mobile PR #23, docs PR #22 — all merged to `main`). Both built in isolated worktrees in
+parallel, verified independently before merge (re-ran tests/build/typecheck myself, did not accept
+either agent's self-report alone).
+
+- **Mobile** ([#23](https://github.com/edocasciotta/Agon/pull/23)): new top-level "Appointments" tab
+  (`CalendarClock` icon) — deliberate call over nesting into Bookings/Classes, since the
+  service→instructor→date→slot booking flow is a different shape from the weekly class grid.
+  `app/appointment/book.tsx` (step flow) + `app/(tabs)/appointments.tsx` (upcoming/past list, cancel
+  with confirm). New typed API clients (`appointments.ts`, `appointmentServices.ts`,
+  `instructors.ts`), 39 real i18n keys × 7 locales, `agon://appointments/{id}` deep link (routes to
+  the tab, not a per-id detail screen — none exists yet, matching the pre-existing state of the
+  `bookings`/`waitlist` deep links). 65/65 tests passing (58 pre-existing + 7 new), `tsc --noEmit`
+  clean, `expo export` clean. Flagged gap: `mobile/package.json` has no `lint` script at all
+  (pre-existing, unrelated).
+- **Docs** ([#22](https://github.com/edocasciotta/Agon/pull/22)): `studio-manager/appointments.md` +
+  `clients/appointments.md` (client guide written generically since mobile screens weren't merged
+  yet at write time — no invented screen names), 3 new glossary entries, first-ever generation of
+  `docs/api/endpoints/` (36 files) via `fetch-openapi.js`, wired into `sidebars.ts`. Caught and fixed
+  a real pre-existing doc bug: `api/overview.md` documented a nonexistent `BOOKING_NO_VALID_MEMBERSHIP`
+  error code — the actual code (`bookings.py`, `appointments.py`, `errorMessages.ts`) uses
+  `BOOKING_NO_MEMBERSHIP`. `npm run build` clean, zero broken links.
+- **Process note**: my own `TASK_LOG.md` commit logging PR #20/#21's discovery had been made locally
+  but never pushed to `origin/main` before spawning these two worktree agents — surfaced as a stale
+  `TASK_LOG.md` diff in the mobile PR that looked like a revert. Fixed by pushing `main` and
+  re-merging both branches before opening PRs; worth remembering that local commits in the shared
+  checkout need to actually reach `origin` before spawning worktree agents off of it.
+
+---
+
+## Bug Fix — `Location` model missing from `Base.metadata` (2026-07-12) — PR #24
+
+`Location` (`backend/app/models/location.py`, table `locations`) is used at runtime by
+`routers/locations.py` and has its own migration (`ea32f91fea27`), but was never imported in
+`backend/app/models/__init__.py` — absent from `Base.metadata`. Consequence, confirmed directly:
+`alembic check` proposed a spurious `remove_table('locations')`; a future `alembic revision
+--autogenerate` would have generated a real `op.drop_table('locations')`.
+
+Originally flagged as a background task during the Gift Cards round (2026-07-09). Found already
+fixed — but sitting uncommitted for 6 days — in a stale worktree from an earlier, unrelated session
+while cleaning up leftover `.claude/worktrees/*` directories. Not accepted on sight: verified
+independently before merging — `alembic check` before the fix reproduces the `remove_table`
+proposal, after the fix it's gone (remaining `alembic check` noise is pre-existing, unrelated SQLite
+nullable/index/constraint drift on `auto_tag_rules`/`client_tags`/`gift_cards`/`tags`/`waivers`,
+confirmed present independent of this change), `black`/`isort`/`ruff` clean, full backend suite
+579/579 passed. Merged via PR [#24](https://github.com/edocasciotta/Agon/pull/24).
+
+**Worktree cleanup, same session:** of the 5 stray `.claude/worktrees/*` directories found (beyond
+the 2 this session's own agents used, already cleaned up post-merge), 3 belonged to other
+sessions — 1 was clean and already fully landed in `main` via PR #20 (removed, nothing lost), 1 was
+the `Location` fix above (recovered and merged), 1 (`agent-a35b2441df1a3e297`, LLM fine-tuning
+scaffold) had uncommitted changes that were confirmed byte-identical to what's already merged into
+`main` via commit `3e333ec` — a stale duplicate with zero unique content, discarded.
