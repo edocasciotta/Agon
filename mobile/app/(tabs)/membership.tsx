@@ -10,12 +10,14 @@ import { useT } from '../../src/i18n'
 import type { ApiError } from '../../src/api/client'
 import type { Membership } from '../../src/types'
 import { format, parseISO } from 'date-fns'
+import { useTheme } from '../../src/theme/ThemeContext'
 
 export default function MembershipScreen() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const user = useAuthStore(s => s.user)
   const t = useT()
+  const { primary } = useTheme()
 
   const { data: memberships, isLoading, error } = useQuery({
     queryKey: ['memberships'],
@@ -84,10 +86,10 @@ export default function MembershipScreen() {
           You don't have an active membership. Contact your studio or purchase one below.
         </Text>
         <TouchableOpacity
-          style={styles.purchaseButton}
+          style={[styles.purchaseButton, { borderColor: primary }]}
           onPress={() => router.push('/membership/purchase')}
         >
-          <Text style={styles.purchaseButtonText}>View Membership Options</Text>
+          <Text style={[styles.purchaseButtonText, { color: primary }]}>View Membership Options</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.giftCardButton}
@@ -108,7 +110,7 @@ export default function MembershipScreen() {
       <OfflineBanner />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         {activeMembership && (
-          <View style={styles.membershipCard}>
+          <View style={[styles.membershipCard, { backgroundColor: primary }]}>
             <Text style={styles.cardLabel}>Active Membership</Text>
             <Text style={styles.membershipId}>Membership #{activeMembership.id}</Text>
 
@@ -191,10 +193,10 @@ export default function MembershipScreen() {
         })()}
 
         <TouchableOpacity
-          style={styles.purchaseButton}
+          style={[styles.purchaseButton, { borderColor: primary }]}
           onPress={() => router.push('/membership/purchase')}
         >
-          <Text style={styles.purchaseButtonText}>View Membership Options</Text>
+          <Text style={[styles.purchaseButtonText, { color: primary }]}>View Membership Options</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.giftCardButton}

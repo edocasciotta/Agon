@@ -6,9 +6,11 @@ import { TOKEN_KEY, STUDIO_URL_KEY, STUDIO_NAME_KEY } from '../src/api/client'
 import { authApi } from '../src/api/auth'
 import { useAuthStore } from '../src/store/authStore'
 import { useStudioStore } from '../src/store/studioStore'
+import { useTheme } from '../src/theme/ThemeContext'
 
 export default function IndexScreen() {
   const router = useRouter()
+  const { primary } = useTheme()
 
   useEffect(() => {
     async function checkAuth() {
@@ -44,7 +46,7 @@ export default function IndexScreen() {
 
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <ActivityIndicator size="large" color="#4F46E5" />
+      <ActivityIndicator size="large" color={primary} />
     </View>
   )
 }

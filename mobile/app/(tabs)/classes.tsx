@@ -6,6 +6,7 @@ import { LoadingView } from '../../src/components/LoadingView'
 import { ErrorView } from '../../src/components/ErrorView'
 import type { ScheduledClass } from '../../src/types'
 import type { ApiError } from '../../src/api/client'
+import { useTheme } from '../../src/theme/ThemeContext'
 import {
   startOfWeek,
   endOfWeek,
@@ -32,6 +33,7 @@ function groupByDay(classes: ScheduledClass[]): { title: string; data: Scheduled
 
 export default function ClassesScreen() {
   const router = useRouter()
+  const { primary } = useTheme()
   const now = new Date()
   const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd')
   const weekEnd = format(endOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd')
@@ -70,7 +72,7 @@ export default function ClassesScreen() {
           onPress={() => router.push(`/class/${item.id}`)}
         >
           <View style={styles.classTime}>
-            <Text style={styles.timeText}>{format(parseISO(item.starts_at), 'HH:mm')}</Text>
+            <Text style={[styles.timeText, { color: primary }]}>{format(parseISO(item.starts_at), 'HH:mm')}</Text>
             <Text style={styles.durationText}>{formatDuration(item.starts_at, item.ends_at)}</Text>
           </View>
           <View style={styles.classInfo}>
@@ -80,7 +82,7 @@ export default function ClassesScreen() {
             ) : null}
           </View>
           <View style={styles.capacityBadge}>
-            <Text style={styles.capacityText}>{item.capacity} spots</Text>
+            <Text style={[styles.capacityText, { color: primary }]}>{item.capacity} spots</Text>
           </View>
         </TouchableOpacity>
       )}

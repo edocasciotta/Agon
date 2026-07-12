@@ -15,6 +15,7 @@ import { useStudioStore } from '../../src/store/studioStore'
 import { LanguagePicker } from '../../src/components/LanguagePicker'
 import { validateStudioUrl } from '../../src/lib/validateStudioUrl'
 import { useT } from '../../src/i18n'
+import { useTheme } from '../../src/theme/ThemeContext'
 
 type Mode = null | 'qr' | 'manual'
 
@@ -28,6 +29,10 @@ export default function ScanScreen() {
   const [manualUrl, setManualUrl] = useState('')
   const router = useRouter()
   const t = useT()
+  // No studio is connected yet at this screen, so this only ever reflects a
+  // previously-cached color from a prior session (ThemeContext's SecureStore cache)
+  // — otherwise it's the same default indigo as before.
+  const { primary } = useTheme()
 
   const handleBarCodeScanned = ({ data }: { data: string }) => {
     if (scanned) return
@@ -77,17 +82,17 @@ export default function ScanScreen() {
           <LanguagePicker />
         </View>
         <View style={styles.selectionContent}>
-          <Text style={styles.logo}>Agon</Text>
+          <Text style={[styles.logo, { color: primary }]}>Agon</Text>
           <Text style={styles.title}>{t('onboarding.title')}</Text>
           <Text style={styles.subtitle}>{t('onboarding.subtitle')}</Text>
           <View style={styles.cardsContainer}>
             <TouchableOpacity style={styles.card} onPress={() => setMode('qr')}>
-              <QrCode size={36} color="#4F46E5" />
+              <QrCode size={36} color={primary} />
               <Text style={styles.cardTitle}>{t('onboarding.scanQr')}</Text>
               <Text style={styles.cardDesc}>{t('onboarding.scanQrDesc')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.card} onPress={() => setMode('manual')}>
-              <Link size={36} color="#4F46E5" />
+              <Link size={36} color={primary} />
               <Text style={styles.cardTitle}>{t('onboarding.manualUrl')}</Text>
               <Text style={styles.cardDesc}>{t('onboarding.manualUrlDesc')}</Text>
             </TouchableOpacity>
@@ -103,7 +108,7 @@ export default function ScanScreen() {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.topBar}>
           <TouchableOpacity onPress={goBack} style={styles.backButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <ChevronLeft size={28} color="#4F46E5" />
+            <ChevronLeft size={28} color={primary} />
           </TouchableOpacity>
         </View>
         <View style={styles.centeredContent}>
@@ -119,13 +124,13 @@ export default function ScanScreen() {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.topBar}>
           <TouchableOpacity onPress={goBack} style={styles.backButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <ChevronLeft size={28} color="#4F46E5" />
+            <ChevronLeft size={28} color={primary} />
           </TouchableOpacity>
         </View>
         <View style={styles.centeredContent}>
           <Text style={styles.title}>{t('onboarding.cameraPermTitle')}</Text>
           <Text style={styles.subtitle}>{t('onboarding.cameraPermDesc')}</Text>
-          <TouchableOpacity style={styles.primaryButton} onPress={requestPermission}>
+          <TouchableOpacity style={[styles.primaryButton, { backgroundColor: primary }]} onPress={requestPermission}>
             <Text style={styles.primaryButtonText}>{t('onboarding.grantPerm')}</Text>
           </TouchableOpacity>
         </View>
@@ -139,7 +144,7 @@ export default function ScanScreen() {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.topBar}>
           <TouchableOpacity onPress={goBack} style={styles.backButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <ChevronLeft size={28} color="#4F46E5" />
+            <ChevronLeft size={28} color={primary} />
           </TouchableOpacity>
         </View>
         <View style={styles.centeredContent}>
@@ -152,15 +157,15 @@ export default function ScanScreen() {
             />
             <View style={styles.overlay}>
               <View style={styles.viewfinder}>
-                <View style={[styles.corner, styles.cornerTopLeft]} />
-                <View style={[styles.corner, styles.cornerTopRight]} />
-                <View style={[styles.corner, styles.cornerBottomLeft]} />
-                <View style={[styles.corner, styles.cornerBottomRight]} />
+                <View style={[styles.corner, styles.cornerTopLeft, { borderColor: primary }]} />
+                <View style={[styles.corner, styles.cornerTopRight, { borderColor: primary }]} />
+                <View style={[styles.corner, styles.cornerBottomLeft, { borderColor: primary }]} />
+                <View style={[styles.corner, styles.cornerBottomRight, { borderColor: primary }]} />
               </View>
             </View>
           </View>
           {scanned && (
-            <TouchableOpacity style={styles.primaryButton} onPress={() => setScanned(false)}>
+            <TouchableOpacity style={[styles.primaryButton, { backgroundColor: primary }]} onPress={() => setScanned(false)}>
               <Text style={styles.primaryButtonText}>{t('onboarding.scanAgain')}</Text>
             </TouchableOpacity>
           )}
@@ -174,7 +179,7 @@ export default function ScanScreen() {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.topBar}>
         <TouchableOpacity onPress={goBack} style={styles.backButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-          <ChevronLeft size={28} color="#4F46E5" />
+          <ChevronLeft size={28} color={primary} />
         </TouchableOpacity>
       </View>
       <View style={styles.centeredContent}>
@@ -190,7 +195,7 @@ export default function ScanScreen() {
           keyboardType="url"
           autoFocus
         />
-        <TouchableOpacity style={styles.primaryButton} onPress={handleManualConnect}>
+        <TouchableOpacity style={[styles.primaryButton, { backgroundColor: primary }]} onPress={handleManualConnect}>
           <Text style={styles.primaryButtonText}>{t('onboarding.connect')}</Text>
         </TouchableOpacity>
       </View>

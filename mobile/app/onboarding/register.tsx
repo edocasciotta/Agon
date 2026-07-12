@@ -15,6 +15,7 @@ import { useAuthStore } from '../../src/store/authStore'
 import { registerForPushNotifications } from '../../src/notifications'
 import { getErrorMessage } from '../../src/lib/errorMessages'
 import type { ApiError } from '../../src/api/client'
+import { useTheme } from '../../src/theme/ThemeContext'
 
 export default function RegisterScreen() {
   const [fullName, setFullName] = useState('')
@@ -23,6 +24,7 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const { primary } = useTheme()
 
   const handleRegister = async () => {
     if (!fullName || !email || !password) {
@@ -92,7 +94,7 @@ export default function RegisterScreen() {
         autoComplete="new-password"
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={loading}>
+      <TouchableOpacity style={[styles.button, { backgroundColor: primary }]} onPress={handleRegister} disabled={loading}>
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
@@ -101,7 +103,7 @@ export default function RegisterScreen() {
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.linkButton} onPress={() => router.push('/onboarding/login')}>
-        <Text style={styles.linkText}>Already have an account? Sign in</Text>
+        <Text style={[styles.linkText, { color: primary }]}>Already have an account? Sign in</Text>
       </TouchableOpacity>
     </ScrollView>
   )

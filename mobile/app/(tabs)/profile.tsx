@@ -12,12 +12,14 @@ import * as Clipboard from 'expo-clipboard'
 import { useState, useEffect } from 'react'
 import type { ClientTag } from '../../src/types'
 import type { ApiError } from '../../src/api/client'
+import { useTheme } from '../../src/theme/ThemeContext'
 
 export default function ProfileScreen() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const user = useAuthStore((s) => s.user)
   const t = useT()
+  const { primary } = useTheme()
   const [notifStatus, setNotifStatus] = useState<string>('unknown')
   const [linkCopied, setLinkCopied] = useState(false)
 
@@ -120,7 +122,7 @@ export default function ProfileScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <OfflineBanner />
       <View style={styles.avatarSection}>
-        <View style={styles.avatar}>
+        <View style={[styles.avatar, { backgroundColor: primary }]}>
           <Text style={styles.avatarText}>
             {user?.full_name?.charAt(0)?.toUpperCase() ?? '?'}
           </Text>
@@ -133,7 +135,7 @@ export default function ProfileScreen() {
       {tagsLoading ? (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('profile.tags')}</Text>
-          <ActivityIndicator size="small" color="#4F46E5" />
+          <ActivityIndicator size="small" color={primary} />
         </View>
       ) : tags && tags.length > 0 ? (
         <View style={styles.section}>
@@ -157,17 +159,17 @@ export default function ProfileScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{t('calendarSync.title')}</Text>
         {calendarSyncLoading ? (
-          <ActivityIndicator size="small" color="#4F46E5" />
+          <ActivityIndicator size="small" color={primary} />
         ) : calendarSyncError ? (
           <Text style={styles.errorText}>{t('calendarSync.failedLoad')}</Text>
         ) : calendarSync ? (
           <>
             <Text style={styles.sectionDescription}>{t('calendarSync.description')}</Text>
-            <TouchableOpacity style={styles.primaryButton} onPress={handleAddToCalendar}>
+            <TouchableOpacity style={[styles.primaryButton, { backgroundColor: primary }]} onPress={handleAddToCalendar}>
               <Text style={styles.primaryButtonText}>{t('calendarSync.addToCalendar')}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.secondaryButton} onPress={handleCopyLink}>
-              <Text style={styles.secondaryButtonText}>
+            <TouchableOpacity style={[styles.secondaryButton, { borderColor: primary }]} onPress={handleCopyLink}>
+              <Text style={[styles.secondaryButtonText, { color: primary }]}>
                 {linkCopied ? t('calendarSync.linkCopied') : t('calendarSync.copyLink')}
               </Text>
             </TouchableOpacity>
@@ -198,7 +200,7 @@ export default function ProfileScreen() {
               {notifStatus === 'granted' ? t('profile.enabled') : t('profile.disabled')}
             </Text>
             {notifStatus !== 'granted' && (
-              <TouchableOpacity onPress={handleToggleNotifications} style={styles.enableButton}>
+              <TouchableOpacity onPress={handleToggleNotifications} style={[styles.enableButton, { backgroundColor: primary }]}>
                 <Text style={styles.enableButtonText}>{t('profile.enable')}</Text>
               </TouchableOpacity>
             )}

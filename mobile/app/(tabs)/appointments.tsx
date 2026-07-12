@@ -21,19 +21,22 @@ import { getErrorMessage } from '../../src/lib/errorMessages'
 import { useT } from '../../src/i18n'
 import type { Appointment, AppointmentStatus } from '../../src/types'
 import type { ApiError } from '../../src/api/client'
-
-const STATUS_COLORS: Record<AppointmentStatus, string> = {
-  confirmed: '#4F46E5',
-  cancelled: '#6B7280',
-  completed: '#059669',
-  no_show: '#DC2626',
-}
+import { useTheme } from '../../src/theme/ThemeContext'
 
 export default function AppointmentsScreen() {
   const t = useT()
   const router = useRouter()
   const queryClient = useQueryClient()
   const [cancellingId, setCancellingId] = useState<number | null>(null)
+  const { primary } = useTheme()
+  // completed/no_show/cancelled stay hardcoded — they're semantic status colors, not
+  // brand accents (a studio owner's chosen color shouldn't make "no-show" ambiguous).
+  const STATUS_COLORS: Record<AppointmentStatus, string> = {
+    confirmed: primary,
+    cancelled: '#6B7280',
+    completed: '#059669',
+    no_show: '#DC2626',
+  }
 
   const {
     data: appointments,
@@ -111,7 +114,7 @@ export default function AppointmentsScreen() {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>{t('appointments.title')}</Text>
         <TouchableOpacity
-          style={styles.bookButton}
+          style={[styles.bookButton, { backgroundColor: primary }]}
           onPress={() => router.push('/appointment/book')}
         >
           <Text style={styles.bookButtonText}>{t('appointments.bookNew')}</Text>

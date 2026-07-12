@@ -15,16 +15,17 @@ import { ErrorView } from '../../src/components/ErrorView'
 import type { Booking } from '../../src/types'
 import type { ApiError } from '../../src/api/client'
 import { format, parseISO, isAfter } from 'date-fns'
-
-const STATUS_COLORS: Record<string, string> = {
-  confirmed: '#4F46E5',
-  cancelled: '#6B7280',
-  no_show: '#DC2626',
-}
+import { useTheme } from '../../src/theme/ThemeContext'
 
 export default function BookingsScreen() {
   const queryClient = useQueryClient()
   const [cancellingId, setCancellingId] = useState<number | null>(null)
+  const { primary } = useTheme()
+  const STATUS_COLORS: Record<string, string> = {
+    confirmed: primary,
+    cancelled: '#6B7280',
+    no_show: '#DC2626',
+  }
 
   const { data: bookings, isLoading, error } = useQuery({
     queryKey: ['bookings'],

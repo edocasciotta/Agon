@@ -1,11 +1,13 @@
 import { Tabs } from 'expo-router'
 import { Home, CalendarDays, BookOpen, CalendarClock, CreditCard, User } from 'lucide-react-native'
+import { useTheme } from '../../src/theme/ThemeContext'
 
 export default function TabsLayout() {
+  const { primary } = useTheme()
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#4F46E5',
+        tabBarActiveTintColor: primary,
         tabBarInactiveTintColor: '#9CA3AF',
       }}
     >

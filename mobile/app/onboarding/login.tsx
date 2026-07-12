@@ -17,6 +17,7 @@ import { useStudioStore } from '../../src/store/studioStore'
 import { registerForPushNotifications } from '../../src/notifications'
 import { getErrorMessage } from '../../src/lib/errorMessages'
 import type { ApiError } from '../../src/api/client'
+import { useTheme } from '../../src/theme/ThemeContext'
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('')
@@ -24,6 +25,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const { primary } = useTheme()
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -93,7 +95,7 @@ export default function LoginScreen() {
         autoComplete="password"
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+      <TouchableOpacity style={[styles.button, { backgroundColor: primary }]} onPress={handleLogin} disabled={loading}>
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
@@ -102,7 +104,7 @@ export default function LoginScreen() {
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.linkButton} onPress={() => router.push('/onboarding/register')}>
-        <Text style={styles.linkText}>Don't have an account? Register</Text>
+        <Text style={[styles.linkText, { color: primary }]}>Don't have an account? Register</Text>
       </TouchableOpacity>
     </ScrollView>
   )
