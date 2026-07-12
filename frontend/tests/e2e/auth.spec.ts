@@ -64,13 +64,13 @@ test.describe('Login flow', () => {
     await expect(page.getByRole('heading', { name: /agon/i })).toBeVisible()
     await expect(page.getByLabel(/email/i)).toBeVisible()
     await expect(page.getByLabel(/password/i)).toBeVisible()
-    await expect(page.getByRole('button', { name: /login|accedi/i })).toBeVisible()
+    await expect(page.getByRole('button', { name: /login|accedi|sign in/i })).toBeVisible()
   })
 
   test('logs in with valid credentials and redirects to dashboard', async ({ page }) => {
     await page.getByLabel(/email/i).fill('admin@example.com')
     await page.getByLabel(/password/i).fill('admin123')
-    await page.getByRole('button', { name: /login|accedi/i }).click()
+    await page.getByRole('button', { name: /login|accedi|sign in/i }).click()
 
     await expect(page).toHaveURL(/dashboard/)
   })
@@ -78,13 +78,13 @@ test.describe('Login flow', () => {
   test('shows error message with invalid credentials', async ({ page }) => {
     await page.getByLabel(/email/i).fill('wrong@example.com')
     await page.getByLabel(/password/i).fill('wrongpassword')
-    await page.getByRole('button', { name: /login|accedi/i }).click()
+    await page.getByRole('button', { name: /login|accedi|sign in/i }).click()
 
     await expect(page.getByText(/invalid|credential|errore/i)).toBeVisible()
   })
 
   test('empty fields prevent form submission', async ({ page }) => {
-    await page.getByRole('button', { name: /login|accedi/i }).click()
+    await page.getByRole('button', { name: /login|accedi|sign in/i }).click()
     // Should stay on login page (HTML5 validation or custom)
     await expect(page.getByLabel(/email/i)).toBeVisible()
   })
@@ -115,7 +115,7 @@ test.describe('Session management', () => {
     await page.goto('/')
     await page.getByLabel(/email/i).fill('admin@example.com')
     await page.getByLabel(/password/i).fill('admin123')
-    await page.getByRole('button', { name: /login|accedi/i }).click()
+    await page.getByRole('button', { name: /login|accedi|sign in/i }).click()
 
     // After navigating to a protected page that returns 401, should redirect to /login
     await page.goto('/clients')

@@ -42,7 +42,7 @@ async function loginAndMock(page: import('@playwright/test').Page) {
   await page.goto('/')
   await page.getByLabel(/email/i).fill('admin@example.com')
   await page.getByLabel(/password/i).fill('admin123')
-  await page.getByRole('button', { name: /login|accedi/i }).click()
+  await page.getByRole('button', { name: /login|accedi|sign in/i }).click()
   await page.waitForURL(/dashboard/)
 }
 
@@ -111,7 +111,7 @@ test.describe('Clients page', () => {
     await page.goto('/')
     await page.getByLabel(/email/i).fill('admin@example.com')
     await page.getByLabel(/password/i).fill('admin123')
-    await page.getByRole('button', { name: /login|accedi/i }).click()
+    await page.getByRole('button', { name: /login|accedi|sign in/i }).click()
     await page.goto('/clients')
 
     // Empty state text

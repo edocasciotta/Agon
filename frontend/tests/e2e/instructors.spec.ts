@@ -38,7 +38,7 @@ async function setupAndLogin(page: import('@playwright/test').Page) {
   await page.goto('/')
   await page.getByLabel(/email/i).fill('admin@example.com')
   await page.getByLabel(/password/i).fill('admin123')
-  await page.getByRole('button', { name: /login|accedi/i }).click()
+  await page.getByRole('button', { name: /login|accedi|sign in/i }).click()
   await page.waitForURL(/dashboard/)
 }
 
@@ -122,7 +122,7 @@ test.describe('Instructors page', () => {
     await page.goto('/')
     await page.getByLabel(/email/i).fill('admin@example.com')
     await page.getByLabel(/password/i).fill('admin123')
-    await page.getByRole('button', { name: /login|accedi/i }).click()
+    await page.getByRole('button', { name: /login|accedi|sign in/i }).click()
     await page.goto('/instructors')
 
     await expect(page.getByText(/no instructor|nessun instructor|empty/i)).toBeVisible()
