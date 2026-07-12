@@ -1,3 +1,5 @@
+from app.models.appointment import Appointment
+from app.models.appointment_service import AppointmentService
 from app.models.auto_tag_rule import AutoTagRule
 from app.models.booking import Booking
 from app.models.checkin import Checkin
@@ -10,6 +12,7 @@ from app.models.email_template import EmailTemplate
 from app.models.gift_card import GiftCard
 from app.models.gift_card_redemption import GiftCardRedemption
 from app.models.instructor import Instructor
+from app.models.instructor_availability import InstructorAvailability
 from app.models.invitation_token import InvitationToken
 from app.models.membership import Membership
 from app.models.membership_type import MembershipType
@@ -40,10 +43,13 @@ __all__ = [
     "Client",
     "ConsentLog",
     "Instructor",
+    "InstructorAvailability",
     "ClassTemplate",
     "ScheduledClass",
     "Booking",
     "Waitlist",
+    "AppointmentService",
+    "Appointment",
     "Tag",
     "ClientTag",
     "AutoTagRule",
