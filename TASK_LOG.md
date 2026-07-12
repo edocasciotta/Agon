@@ -485,6 +485,51 @@ it's harmless and not something any agent touched today).
 
 ---
 
+## Competitive Gap — Phase 2 (2026-07-12)
+
+Started per user decision: highest-priority remaining gap first (Appointments, RICE score 19/20,
+"Critical" in `docs/COMPETITIVE_ANALYSIS_2026_07.md`), backend-only round (same incremental cadence
+as Phase 1's 1.1–1.9), frontend/mobile/docs to follow as separate rounds.
+
+### 2.1 Appointments (1-on-1 booking) — backend (2026-07-12)
+
+579 tests passing (+56 from 523). No PRODUCT_SPEC/TECHNICAL_SPEC section existed (post-V1 addition,
+same situation as Gift Cards) — designed by mirroring the class/booking engine's conventions.
+Built in an isolated worktree (`.claude/worktrees/agent-ac4c27c662b698c26`), 4 incremental commits.
+Verified independently, not accepted on self-report alone (per the "Nested Sub-Agent Delegation"
+hazard note above): re-ran the full suite myself, ran `alembic heads`/`black`/`isort`/`ruff` myself
+rather than trusting the agent's "all clean" claim, and read the router/test diffs directly.
+
+- **Models**: `AppointmentService` (manager-defined 1-on-1 service type — name, duration, buffer
+  time), `InstructorAvailability` (weekly-recurring windows only, no date exceptions/holidays yet),
+  `Appointment` (1:1, not roster-based — client + instructor + service + time range). Migration
+  `a44e65e56442`, single head.
+- **Endpoints**: `/appointment-services` CRUD (manager-only, soft-delete), `/instructor-availability`
+  (manager any instructor, instructor only their own), `GET /appointments/available-slots` (computes
+  open slots from availability minus existing bookings minus buffer), `POST /appointments` (mixed
+  client/manager-booking-for-client audience, same IDOR pattern as bookings, rate-limited 10/min),
+  `GET /appointments[/{id}]`, `PATCH /appointments/{id}/cancel`, `PATCH /appointments/{id}/complete`.
+- **Payment model**: reuses the existing membership-credit deduction/refund/late-cancel-fee helpers
+  from `booking_service.py` directly (confirmed no parallel logic was written) — no separate
+  Stripe pricing path for appointments in this round.
+- **Real bug caught during my verification, not the agent's report**: agent claimed
+  `black`/`isort`/`ruff` were clean on every touched file; running `isort --check` directly showed
+  `app/models/appointment.py` and `app/services/appointment_service.py` had `app.*` imports placed
+  after third-party `sqlalchemy` imports — inconsistent with every other model in the codebase
+  (`scheduled_class.py`/`booking.py` both put `app.database` first) and a real isort violation, not
+  just the known pre-existing ruff/isort config-mismatch noise. Fixed directly (2-line import
+  reorder), re-ran the affected test files (110/110), committed separately in the worktree.
+- **Explicitly out of scope, not built**: recurring appointments, duo/group appointments,
+  room/resource booking, intake forms, SOAP notes, add-on services, availability
+  exceptions/holidays, standalone Stripe pricing (credits only, matching classes).
+- **Not yet merged to `main`** — branch `worktree-agent-ac4c27c662b698c26` in
+  `.claude/worktrees/agent-ac4c27c662b698c26`, backend-only. Frontend (manager service/availability
+  CRUD UI, calendar-style booking view) and mobile (client booking flow) are separate follow-up
+  rounds; docs-site page still owed (same batching call as Phase 1, or per-feature this time —
+  undecided, ask before Phase 2 wraps).
+
+---
+
 ## Next Task Candidates
 
 *(Audited 2026-07-11 against the actual state of `main` — several items below had already landed
