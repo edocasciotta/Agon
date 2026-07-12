@@ -671,3 +671,150 @@ def test_instructor_cannot_sign_waiver_on_clients_behalf(
         headers=instructor_headers,
     )
     assert resp.status_code == 403
+
+
+# ── IDOR: appointments ──────────────────────────────────────────────────────
+
+
+@pytest.fixture
+def appointment_for_client_a(db_session, registered_client):
+    """A confirmed appointment owned by Client A, with its own service/instructor."""
+    import datetime
+
+    from app.models.appointment import Appointment
+    from app.models.appointment_service import AppointmentService
+    from app.models.client import Client
+    from app.models.instructor import Instructor
+
+    instructor_user = User(
+        email="idor-appt-instructor@test.com",
+        password_hash=hash_password("instpass123"),
+        full_name="IDOR Test Instructor",
+        role="instructor",
+        is_active=True,
+    )
+    db_session.add(instructor_user)
+    db_session.commit()
+    instructor = Instructor(user_id=instructor_user.id)
+    db_session.add(instructor)
+
+    service = AppointmentService(name="PT Session", duration_minutes=60, is_active=True)
+    db_session.add(service)
+    db_session.commit()
+    db_session.refresh(instructor)
+    db_session.refresh(service)
+
+    client_a = db_session.query(Client).filter_by(email=registered_client["email"]).first()
+    future = datetime.datetime.utcnow() + datetime.timedelta(days=3)
+    appt = Appointment(
+        service_id=service.id,
+        instructor_id=instructor.id,
+        client_id=client_a.id,
+        starts_at=future,
+        ends_at=future + datetime.timedelta(hours=1),
+        status="confirmed",
+        credit_deducted=True,
+    )
+    db_session.add(appt)
+    db_session.commit()
+    db_session.refresh(appt)
+    return appt
+
+
+def test_client_b_cannot_read_client_a_appointment(
+    client, appointment_for_client_a, client_b_headers
+):
+    """Client B must receive 403 when reading Client A's appointment."""
+    resp = client.get(
+        f"/api/v1/appointments/{appointment_for_client_a.id}", headers=client_b_headers
+    )
+    assert resp.status_code == 403
+    assert resp.json()["detail"]["error"]["code"] == "AUTH_INSUFFICIENT_PERMISSIONS"
+
+
+def test_client_b_cannot_cancel_client_a_appointment(
+    client, appointment_for_client_a, client_b_headers
+):
+    """Client B must receive 403 when cancelling Client A's appointment."""
+    resp = client.patch(
+        f"/api/v1/appointments/{appointment_for_client_a.id}/cancel", headers=client_b_headers
+    )
+    assert resp.status_code == 403
+
+
+def test_client_a_can_read_own_appointment(client, appointment_for_client_a, client_auth_headers):
+    """A client CAN read their own appointment (not 403)."""
+    resp = client.get(
+        f"/api/v1/appointments/{appointment_for_client_a.id}", headers=client_auth_headers
+    )
+    assert resp.status_code == 200
+
+
+def test_client_cannot_book_appointment_for_another_client(client, client_auth_headers):
+    """A client passing a client_id that is not their own must be rejected (mixed-audience IDOR)."""
+    resp = client.post(
+        "/api/v1/appointments",
+        json={
+            "service_id": 1,
+            "instructor_id": 1,
+            "starts_at": "2030-01-01T10:00:00",
+            "client_id": 999999,
+        },
+        headers=client_auth_headers,
+    )
+    assert resp.status_code == 403
+    assert resp.json()["detail"]["error"]["code"] == "AUTH_INSUFFICIENT_PERMISSIONS"
+
+
+def test_client_cannot_complete_appointment(client, appointment_for_client_a, client_auth_headers):
+    """Client role must not be able to mark an appointment completed/no-show (staff-only)."""
+    resp = client.patch(
+        f"/api/v1/appointments/{appointment_for_client_a.id}/complete",
+        json={"status": "completed"},
+        headers=client_auth_headers,
+    )
+    assert resp.status_code == 403
+    assert resp.json()["detail"]["error"]["code"] == "AUTH_INSUFFICIENT_PERMISSIONS"
+
+
+def test_client_cannot_create_appointment_service(client, client_auth_headers):
+    """Client must not be able to create appointment services (manager-only)."""
+    resp = client.post(
+        "/api/v1/appointment-services",
+        json={"name": "Unauthorized Massage", "duration_minutes": 60},
+        headers=client_auth_headers,
+    )
+    assert resp.status_code == 403
+
+
+def test_instructor_cannot_manage_another_instructors_availability(
+    client, db_session, instructor_headers
+):
+    """An instructor must not be able to create availability for a different instructor."""
+    from app.models.instructor import Instructor
+
+    other_user = User(
+        email="idor-other-instructor@test.com",
+        password_hash=hash_password("otherpass123"),
+        full_name="Other Instructor",
+        role="instructor",
+        is_active=True,
+    )
+    db_session.add(other_user)
+    db_session.commit()
+    other_instructor = Instructor(user_id=other_user.id)
+    db_session.add(other_instructor)
+    db_session.commit()
+    db_session.refresh(other_instructor)
+
+    resp = client.post(
+        "/api/v1/instructor-availability",
+        json={
+            "instructor_id": other_instructor.id,
+            "day_of_week": 0,
+            "start_time": "09:00:00",
+            "end_time": "12:00:00",
+        },
+        headers=instructor_headers,
+    )
+    assert resp.status_code == 403
