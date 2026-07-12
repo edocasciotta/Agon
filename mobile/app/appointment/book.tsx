@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native'
 import { useQuery, useMutation } from '@tanstack/react-query'
-import { useRouter } from 'expo-router'
+import { useRouter, Stack } from 'expo-router'
 import { format, addDays } from 'date-fns'
 import { appointmentServicesApi } from '../../src/api/appointmentServices'
 import { instructorsApi } from '../../src/api/instructors'
@@ -114,6 +114,7 @@ export default function BookAppointmentScreen() {
 
   return (
     <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
       <OfflineBanner />
       <View style={styles.header}>
         <TouchableOpacity onPress={goBack}>
@@ -156,6 +157,8 @@ export default function BookAppointmentScreen() {
             <Text style={styles.stepLabel}>{t('appointments.instructor')}</Text>
             {instructorsLoading ? (
               <LoadingView />
+            ) : (instructors ?? []).length === 0 ? (
+              <Text style={styles.emptyText}>{t('appointments.noInstructors')}</Text>
             ) : (
               (instructors ?? []).map((inst) => (
                 <TouchableOpacity

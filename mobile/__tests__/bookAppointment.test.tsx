@@ -11,6 +11,7 @@ const mockBack = jest.fn()
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: mockReplace, back: mockBack, push: jest.fn() }),
+  Stack: { Screen: () => null },
 }))
 
 jest.mock('../src/api/appointmentServices', () => ({
@@ -108,6 +109,19 @@ describe('BookAppointmentScreen', () => {
         instructor_id: 5,
         starts_at: '2026-08-01T10:00:00',
       })
+    })
+  })
+
+  it('shows an empty-state message when no instructors are available', async () => {
+    ;(instructorsApi.list as jest.Mock).mockResolvedValue([])
+
+    const { getByTestId, getByText } = renderScreen(makeClient())
+
+    await waitFor(() => expect(getByTestId('service-1')).toBeTruthy())
+    fireEvent.press(getByTestId('service-1'))
+
+    await waitFor(() => {
+      expect(getByText('No instructors are available for this service yet.')).toBeTruthy()
     })
   })
 
