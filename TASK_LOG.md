@@ -504,9 +504,50 @@ via concurrent sessions during this branch's lifetime without being crossed off 
   redaction, both with tests)
 - ~~**Consider**: a checkpoint commit — nothing from 1.4 onward...~~ — moot, all of it is committed
   and merged to `main` via PR #12
-- **Docs-site batch pass for 1.1–1.9**: still fully open — zero docs-site pages exist for any of
-  promo codes, gift cards, tags, SMS, calendar sync, fees/rollover, intro offers, or waivers
-  (verified: no matching files under `docs-site/docs`). No longer blocked on "1.9 landing" in the
-  literal sense (1.9 backend is on `main`) — could start now for 1.1–1.8 + 1.9-backend, with a
-  follow-up once 1.9 frontend/mobile lands.
+- ~~**Docs-site batch pass for 1.1–1.9**~~ — done and merged, see "Docs-site batch pass for
+  1.1–1.9 (2026-07-12)" below. PR [#17](https://github.com/edocasciotta/Agon/pull/17).
 - Phase 2: Appointments, Marketing Automations, Web Widgets, Online Classes, Custom Roles, Payroll, Invoicing
+
+---
+
+## Docs-site batch pass for 1.1–1.9 (2026-07-12)
+
+Delegated to the Docs Agent in an isolated worktree (avoids the shared-checkout `git reset` hazard
+noted above), with incremental commits per feature group so a mid-task truncation wouldn't lose
+work. Verified independently before accepting — did not trust the agent's self-report alone (per
+the "Nested Sub-Agent Delegation" hazard note above): re-ran `npm run build` myself, re-checked the
+locale-key claim against `frontend/src/renderer/src/locales/en.json`, and grepped `mobile/` myself
+for waiver-signing UI.
+
+**Scoping call:** 1.1 (fees), 1.2 (rollover credits), 1.3 (intro offers) are form fields inside the
+existing Settings page and Membership Type form, not separate screens — so no standalone top-level
+pages were created for these three; instead `studio-manager/settings.md` and
+`studio-manager/memberships.md` got new subsections.
+
+**New pages:** `studio-manager/{promo-codes,tags,gift-cards,sms-messaging,calendar-sync,waivers}.md`,
+`clients/calendar-sync.md` — all wired into `sidebars.ts`.
+
+**Corrected a real, pre-existing doc bug found during this pass:** `clients/memberships.md` claimed
+"unused credits from the previous period do not carry over" — false since 1.2 (rollover credits)
+shipped. Fixed, plus added promo-code/gift-card/intro-offer notes to the purchase-flow section.
+
+**Honest gap surfaced, not papered over:** no mobile waiver-signing screen exists anywhere in
+`mobile/` (confirmed via grep, zero hits) despite 1.9 backend enforcing client-self-signing. The new
+`WAIVER_SIGNATURE_REQUIRED` troubleshooting entry in `clients/booking-a-class.md` tells the client to
+contact their studio directly instead of describing a signing flow that doesn't exist yet — worth
+tracking as a real mobile gap, separate from this docs pass.
+
+**Brief errors the agent caught and fixed rather than silently working around:**
+- I told it fee-override/rollover/intro-offer locale keys live under a `membershipTypes` namespace —
+  wrong, no such top-level key exists; they're under `memberships`. It verified against the actual
+  JSON and corrected every reference.
+- I told it CHANGELOG's `[Unreleased]` already had entries for all nine features — wrong, six
+  (fees, rollover, intro offers, promo codes, tags, calendar sync) had zero mentions anywhere in the
+  file. It backfilled them from the actual code rather than skip the quality gate.
+
+9 new glossary entries added (Rollover Credit, Intro Offer, Late Cancellation/No-Show Fee, Promo
+Code, Gift Card, Tag, Auto-Tag Rule, Waiver, Calendar Sync Token). `npm run build` inside
+`docs-site/`: zero errors, zero broken-link warnings (independently re-run, not just trusted).
+
+**Status:** merged to `main` via PR [#17](https://github.com/edocasciotta/Agon/pull/17)
+(`9567627`, 2026-07-12). All CI checks (Backend/Frontend/Mobile Tests, Vercel) passed before merge.
