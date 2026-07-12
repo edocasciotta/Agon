@@ -341,17 +341,18 @@ export function InstructorsPage() {
       {/* Create / Edit modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={closeModal}>
-          <div className="bg-white rounded-xl p-6 max-w-lg w-full mx-4 shadow-lg" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-xl p-6 max-w-lg w-full mx-4 shadow-lg" onClick={(e) => e.stopPropagation()} role="dialog">
             <h3 className="text-sm font-semibold text-gray-900 mb-4">
               {editing ? t('instructors.editTitle') : t('instructors.addTitle')}
             </h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                  <label htmlFor="instructor-full-name" className="block text-xs font-medium text-gray-700 mb-1">
                     {t('instructors.name')} *
                   </label>
                   <input
+                    id="instructor-full-name"
                     type="text"
                     value={formData.full_name}
                     onChange={(e) => setFormData((f) => ({ ...f, full_name: e.target.value }))}
@@ -365,10 +366,11 @@ export function InstructorsPage() {
 
                 {!editing && (
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                    <label htmlFor="instructor-email" className="block text-xs font-medium text-gray-700 mb-1">
                       {t('instructors.email')} *
                     </label>
                     <input
+                      id="instructor-email"
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData((f) => ({ ...f, email: e.target.value }))}
@@ -383,10 +385,11 @@ export function InstructorsPage() {
 
                 {!editing && (
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                    <label htmlFor="instructor-password" className="block text-xs font-medium text-gray-700 mb-1">
                       {t('instructors.password')} *
                     </label>
                     <input
+                      id="instructor-password"
                       type="password"
                       value={formData.password}
                       onChange={(e) => setFormData((f) => ({ ...f, password: e.target.value }))}
@@ -402,10 +405,11 @@ export function InstructorsPage() {
                 )}
 
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                  <label htmlFor="instructor-bio" className="block text-xs font-medium text-gray-700 mb-1">
                     {t('instructors.bio')}
                   </label>
                   <textarea
+                    id="instructor-bio"
                     value={formData.bio}
                     onChange={(e) => setFormData((f) => ({ ...f, bio: e.target.value }))}
                     rows={2}

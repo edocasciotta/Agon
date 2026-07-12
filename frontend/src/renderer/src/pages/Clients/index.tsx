@@ -187,7 +187,7 @@ export function ClientsPage() {
       {/* Add Client Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50" onClick={() => setShowAddModal(false)}>
-          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()} role="dialog">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('clients.modalTitle')}</h2>
 
             {successMsg && (
@@ -208,8 +208,9 @@ export function ClientsPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('clients.fullName')}</label>
+                <label htmlFor="client-full-name" className="block text-sm font-medium text-gray-700 mb-1">{t('clients.fullName')}</label>
                 <input
+                  id="client-full-name"
                   type="text"
                   required
                   value={form.full_name}
@@ -218,8 +219,9 @@ export function ClientsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('clients.emailAddress')}</label>
+                <label htmlFor="client-email" className="block text-sm font-medium text-gray-700 mb-1">{t('clients.emailAddress')}</label>
                 <input
+                  id="client-email"
                   type="email"
                   required
                   value={form.email}
@@ -228,8 +230,9 @@ export function ClientsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('clients.phoneOptional')}</label>
+                <label htmlFor="client-phone" className="block text-sm font-medium text-gray-700 mb-1">{t('clients.phoneOptional')}</label>
                 <input
+                  id="client-phone"
                   type="text"
                   value={form.phone ?? ''}
                   onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}

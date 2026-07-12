@@ -29,6 +29,18 @@ const MOCK_TEMPLATES = [
 const MOCK_INSTRUCTORS: unknown[] = []
 
 async function setupAndLogin(page: import('@playwright/test').Page) {
+  // Catch-all fallback for any endpoint this test doesn't care about (the
+  // Dashboard page the login redirect lands on fires several queries of its
+  // own — class-templates, locations, reports). Playwright tries
+  // most-recently-registered matching routes first, so registering this one
+  // FIRST means every route added below it takes priority; this just
+  // prevents unmocked requests from reaching the real backend and 401ing,
+  // which would trip the global 401 interceptor and log the session back
+  // out mid-test.
+  await page.route('**/api/v1/**', async (route) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) })
+  })
+
   await page.route('**/api/v1/auth/login', async (route) => {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ access_token: ACCESS_TOKEN, refresh_token: 'rfr', token_type: 'bearer' }) })
   })
@@ -59,14 +71,18 @@ async function setupAndLogin(page: import('@playwright/test').Page) {
   await page.goto('/')
   await page.getByLabel(/email/i).fill('admin@example.com')
   await page.getByLabel(/password/i).fill('admin123')
-  await page.getByRole('button', { name: /login|accedi/i }).click()
+  await page.getByRole('button', { name: /login|accedi|sign in/i }).click()
   await page.waitForURL(/dashboard/)
 }
 
 test.describe('Calendar page', () => {
   test('loads the calendar and shows scheduled classes', async ({ page }) => {
     await setupAndLogin(page)
-    await page.goto('/calendar')
+    // Navigate via the sidebar link (client-side routing) rather than
+    // page.goto() — accessToken lives only in memory (never persisted, by
+    // design per SECURITY_GUIDELINES), so a hard navigation would drop the
+    // session and bounce back to /login.
+    await page.getByRole('link', { name: 'Calendar' }).click()
 
     // The page should show the calendar heading
     await expect(page.getByRole('heading', { name: /calendar|calendario/i })).toBeVisible()
@@ -74,7 +90,11 @@ test.describe('Calendar page', () => {
 
   test('opens the schedule-class modal', async ({ page }) => {
     await setupAndLogin(page)
-    await page.goto('/calendar')
+    // Navigate via the sidebar link (client-side routing) rather than
+    // page.goto() — accessToken lives only in memory (never persisted, by
+    // design per SECURITY_GUIDELINES), so a hard navigation would drop the
+    // session and bounce back to /login.
+    await page.getByRole('link', { name: 'Calendar' }).click()
 
     const addBtn = page.getByRole('button', { name: /add|schedule|aggiungi|pianifica/i })
     if (await addBtn.isVisible()) {
@@ -102,7 +122,11 @@ test.describe('Calendar page', () => {
       }
     })
 
-    await page.goto('/calendar')
+    // Navigate via the sidebar link (client-side routing) rather than
+    // page.goto() — accessToken lives only in memory (never persisted, by
+    // design per SECURITY_GUIDELINES), so a hard navigation would drop the
+    // session and bounce back to /login.
+    await page.getByRole('link', { name: 'Calendar' }).click()
     // Look for a context menu or cancel button on the class
     const classEl = page.getByText('Yoga').first()
     if (await classEl.isVisible()) {

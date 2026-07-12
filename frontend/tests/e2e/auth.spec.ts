@@ -20,6 +20,18 @@ const MANAGER_USER = {
 
 test.describe('Login flow', () => {
   test.beforeEach(async ({ page }) => {
+    // Catch-all fallback for any endpoint a test doesn't care about (the
+    // Dashboard page the login redirect lands on fires several queries of
+    // its own — classes, templates, instructors, locations, reports).
+    // Playwright tries most-recently-registered matching routes first, so
+    // registering this one FIRST means every route added below it takes
+    // priority; this just prevents unmocked requests from reaching the real
+    // backend and 401ing, which would trip the global 401 interceptor and
+    // log the session back out mid-test.
+    await page.route('**/api/v1/**', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) })
+    })
+
     // Mock the login endpoint
     await page.route('**/api/v1/auth/login', async (route) => {
       const body = await route.request().postDataJSON()
@@ -64,13 +76,13 @@ test.describe('Login flow', () => {
     await expect(page.getByRole('heading', { name: /agon/i })).toBeVisible()
     await expect(page.getByLabel(/email/i)).toBeVisible()
     await expect(page.getByLabel(/password/i)).toBeVisible()
-    await expect(page.getByRole('button', { name: /login|accedi/i })).toBeVisible()
+    await expect(page.getByRole('button', { name: /login|accedi|sign in/i })).toBeVisible()
   })
 
   test('logs in with valid credentials and redirects to dashboard', async ({ page }) => {
     await page.getByLabel(/email/i).fill('admin@example.com')
     await page.getByLabel(/password/i).fill('admin123')
-    await page.getByRole('button', { name: /login|accedi/i }).click()
+    await page.getByRole('button', { name: /login|accedi|sign in/i }).click()
 
     await expect(page).toHaveURL(/dashboard/)
   })
@@ -78,13 +90,13 @@ test.describe('Login flow', () => {
   test('shows error message with invalid credentials', async ({ page }) => {
     await page.getByLabel(/email/i).fill('wrong@example.com')
     await page.getByLabel(/password/i).fill('wrongpassword')
-    await page.getByRole('button', { name: /login|accedi/i }).click()
+    await page.getByRole('button', { name: /login|accedi|sign in/i }).click()
 
     await expect(page.getByText(/invalid|credential|errore/i)).toBeVisible()
   })
 
   test('empty fields prevent form submission', async ({ page }) => {
-    await page.getByRole('button', { name: /login|accedi/i }).click()
+    await page.getByRole('button', { name: /login|accedi|sign in/i }).click()
     // Should stay on login page (HTML5 validation or custom)
     await expect(page.getByLabel(/email/i)).toBeVisible()
   })
@@ -103,9 +115,15 @@ test.describe('Session management', () => {
     await page.route('**/api/v1/auth/me', async (route) => {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(MANAGER_USER) })
     })
-    // After login, all data endpoints return 401 (simulating expired session)
+    // After login, all data endpoints return 401 (simulating expired session).
+    // Scope this to requests that actually carry the bearer token so the
+    // unauthenticated pre-login branding fetch (ThemeInjector, fired while
+    // the login page itself is still mounting) doesn't 401 and trip the
+    // global interceptor's hard redirect before the user has even logged in.
     await page.route('**/api/v1/**', async (route) => {
-      if (!route.request().url().includes('/auth/')) {
+      const url = route.request().url()
+      const auth = route.request().headers()['authorization'] ?? ''
+      if (!url.includes('/auth/') && auth.includes(ACCESS_TOKEN)) {
         await route.fulfill({ status: 401, body: '{"detail":"Not authenticated"}' })
       } else {
         await route.continue()
@@ -115,7 +133,7 @@ test.describe('Session management', () => {
     await page.goto('/')
     await page.getByLabel(/email/i).fill('admin@example.com')
     await page.getByLabel(/password/i).fill('admin123')
-    await page.getByRole('button', { name: /login|accedi/i }).click()
+    await page.getByRole('button', { name: /login|accedi|sign in/i }).click()
 
     // After navigating to a protected page that returns 401, should redirect to /login
     await page.goto('/clients')
