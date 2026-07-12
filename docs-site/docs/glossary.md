@@ -45,9 +45,9 @@ A reusable definition of a class type — its name, default duration, default ca
 
 ## Scheduled Class
 
-A specific occurrence of a class template on a specific date and time, at a specific location, with a confirmed instructor and capacity. Clients book scheduled classes, not templates.
+A specific occurrence of a class template on a specific date and time, at a specific location, with a confirmed instructor and capacity. Clients book scheduled classes, not templates. A scheduled class is a group activity with shared capacity — see **Appointment** for the 1-on-1 equivalent.
 
-> **Not:** class session, event, appointment, slot.
+> **Not:** class session, event, slot.
 
 ---
 
@@ -55,7 +55,31 @@ A specific occurrence of a class template on a specific date and time, at a spec
 
 A client's confirmed reservation for a specific scheduled class. A booking deducts one credit from the client's active membership (if applicable) and grants the client access to check in.
 
-> **Not:** reservation, appointment, registration, sign-up.
+> **Not:** reservation, registration, sign-up.
+
+---
+
+## Appointment
+
+A client's confirmed 1-on-1 booking with a specific instructor for a specific appointment service (for example, personal training, massage, or private coaching) at a specific date and time. Unlike a scheduled class, an appointment has exactly one client and no shared capacity. Booking an appointment deducts one credit from the client's active membership, the same mechanism as booking a class — there is no separate payment path for appointments. A studio manager or instructor can mark a confirmed appointment as completed or a no-show afterwards, and the same late-cancellation-fee / no-show-fee policy as class bookings applies.
+
+> **Not:** session, private lesson, 1-on-1 session, reservation, class.
+
+---
+
+## Appointment Service
+
+A studio manager-defined type of appointment that clients can book (for example, "Personal Training" or "60-Minute Massage"), with a fixed **duration** and an optional **buffer time** — a gap enforced after each appointment before the next one for the same instructor can start. Deactivating a service is a soft delete: it stops appearing for new bookings, but appointment history that references it is preserved. There is no hard-delete option.
+
+> **Not:** service type, session type, treatment.
+
+---
+
+## Instructor Availability
+
+The recurring weekly time windows during which an instructor can be booked for appointments (for example, "Tuesdays 09:00–13:00"). Availability is **weekly-recurring only** — Agon does not yet support date-specific exceptions or holiday overrides. Available appointment time slots are computed from these windows, minus the instructor's existing confirmed appointments and the buffer time of the service being booked.
+
+> **Not:** working hours, schedule, shift.
 
 ---
 
