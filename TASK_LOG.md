@@ -522,11 +522,54 @@ rather than trusting the agent's "all clean" claim, and read the router/test dif
 - **Explicitly out of scope, not built**: recurring appointments, duo/group appointments,
   room/resource booking, intake forms, SOAP notes, add-on services, availability
   exceptions/holidays, standalone Stripe pricing (credits only, matching classes).
-- **Not yet merged to `main`** — branch `worktree-agent-ac4c27c662b698c26` in
-  `.claude/worktrees/agent-ac4c27c662b698c26`, backend-only. Frontend (manager service/availability
-  CRUD UI, calendar-style booking view) and mobile (client booking flow) are separate follow-up
-  rounds; docs-site page still owed (same batching call as Phase 1, or per-feature this time —
-  undecided, ask before Phase 2 wraps).
+- **Merged to `main`** via PR [#18](https://github.com/edocasciotta/Agon/pull/18) (`cded8b4`,
+  2026-07-12). All CI checks passed before merge.
+
+### 2.1 Appointments (1-on-1 booking) — desktop frontend (2026-07-12)
+
+98 tests passing (+24 from 74). Built in an isolated worktree
+(`.claude/worktrees/agent-ab0432d6f9490cf62`), 4 incremental commits. Deliberately does **not**
+touch `Calendar.tsx` or its supporting modals — appointments get their own page rather than being
+integrated into the existing class-scheduling grid, to avoid regression risk on a large, working,
+heavily-tested file. Verified independently (build/lint/test re-run myself, i18n parity checked
+programmatically, spot-checked the flagged bug fixes and role-gating logic directly in the diff) —
+not accepted on self-report alone, per the "Nested Sub-Agent Delegation" hazard note above.
+
+- **New page** `pages/Appointments/index.tsx`, tabbed (mirrors `Settings.tsx`'s tab pattern):
+  **Upcoming** (agenda/list view — NOT a calendar grid, that's explicitly deferred — filters by
+  instructor/date/status, cancel + complete/no-show row actions), **Services** (CRUD for
+  `AppointmentService`, mirrors `ClassTypes.tsx`, soft-delete only), **Availability** (per-instructor
+  weekly recurring schedule editor — simple form grid, not drag-to-select).
+- **`BookAppointmentModal.tsx`**: service → instructor → date → fetches `available-slots` →
+  pick slot → client search (reuses `ManageBookingsModal.tsx`'s typeahead pattern) → notes → confirm.
+- Nav entry `/appointments` (CalendarClock icon) right after `/calendar`. 84 new i18n keys × 7
+  locales = 588 strings, parity verified programmatically (zero missing in any locale).
+- **Availability tab role-gating — no existing precedent, agent's call, reviewed and confirmed
+  correct**: managers get a full instructor picker; instructors (role=`instructor`) see only their
+  own record, no dropdown; mirrors the backend's own `require_staff` + `_assert_can_manage` gate in
+  `instructor_availability.py`.
+- **Real bugs the agent found and fixed in its own new code** (verified, not just trusted):
+  installed Zod is 4.4.3, whose API is `.issues` not `.errors` — using `.errors` throws an uncaught
+  TypeError on any invalid submit; fixed in `ServicesTab.tsx` and `BookAppointmentModal.tsx`. Also
+  fixed `AvailabilityTab` gating its instructors-list query on manager-only (would've rendered blank
+  for an instructor caller) and wired in proper Zod validation instead of ad-hoc checks.
+- **Known latent bug, correctly left alone**: 15 pre-existing call sites elsewhere in the codebase
+  still use the same wrong `.errors` API — real, but out of scope for this task (not touched by this
+  round), flagged separately rather than silently expanded into.
+- **Real, unrelated, pre-existing bug found and confirmed independently**: `Login.tsx`'s email/password
+  `<label>` elements have no `htmlFor`/`id` association, so Playwright's `page.getByLabel(...)` — the
+  standard helper used in every existing e2e spec in this repo, including `auth.spec.ts` — never
+  resolves. Confirmed via direct grep + running `auth.spec.ts` (5/5 fail at that line) on `main`, not
+  just the worktree — pre-existing, not introduced by this round. The agent verified its own new
+  `appointments.spec.ts` passes via a local, uncommitted patch to `Login.tsx` (confirmed `git diff`
+  clean after — no stray changes landed), then reverted and left the committed spec using the
+  standard (currently-broken) `getByLabel` convention to match the rest of the suite. Flagged as a
+  background task by the agent (`task_55959579`) with the precise fix — worth prioritizing since it
+  silently breaks **all** e2e coverage, not just this feature's.
+- **Explicitly out of scope, not built**: appointments on the main calendar grid, recurring/duo/group
+  appointment UI, room booking, intake forms, mobile app, docs-site page.
+- **Not yet merged to `main`** — branch `worktree-agent-ab0432d6f9490cf62` in
+  `.claude/worktrees/agent-ab0432d6f9490cf62`.
 
 ---
 
