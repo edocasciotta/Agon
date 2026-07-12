@@ -15,9 +15,11 @@ import { giftCardsApi } from '../../src/api/memberships'
 import { OfflineBanner } from '../../src/components/OfflineBanner'
 import { useT } from '../../src/i18n'
 import type { ApiError } from '../../src/api/client'
+import { useTheme } from '../../src/theme/ThemeContext'
 
 export default function GiftCardPurchaseScreen() {
   const t = useT()
+  const { primary } = useTheme()
   const [amount, setAmount] = useState('')
   const [recipientName, setRecipientName] = useState('')
   const [recipientEmail, setRecipientEmail] = useState('')
@@ -106,7 +108,11 @@ export default function GiftCardPurchaseScreen() {
         </View>
 
         <TouchableOpacity
-          style={[styles.purchaseButton, (!isAmountValid || purchasing) && styles.purchaseButtonDisabled]}
+          style={[
+            styles.purchaseButton,
+            { backgroundColor: primary },
+            (!isAmountValid || purchasing) && styles.purchaseButtonDisabled,
+          ]}
           onPress={handlePurchase}
           disabled={!isAmountValid || purchasing}
         >

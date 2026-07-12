@@ -8,6 +8,7 @@ import { useStudioStore } from '../../src/store/studioStore'
 import { LoadingView } from '../../src/components/LoadingView'
 import { LanguagePicker } from '../../src/components/LanguagePicker'
 import { useT } from '../../src/i18n'
+import { useTheme } from '../../src/theme/ThemeContext'
 
 function useGreeting(t: (key: string) => string): string {
   const hour = new Date().getHours()
@@ -22,6 +23,7 @@ export default function HomeScreen() {
   const studioName = useStudioStore((s) => s.studioName)
   const router = useRouter()
   const greeting = useGreeting(t)
+  const { primary } = useTheme()
 
   const { data: bookings, isLoading } = useQuery({
     queryKey: ['bookings'],
@@ -44,7 +46,7 @@ export default function HomeScreen() {
         <LanguagePicker />
       </View>
 
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: primary }]}>
         <Text style={styles.cardTitle}>{t('home.yourBookings')}</Text>
         <Text style={styles.cardValue}>{confirmedCount}</Text>
         <Text style={styles.cardSubtitle}>
@@ -55,16 +57,16 @@ export default function HomeScreen() {
       <View style={styles.quickActions}>
         <Text style={styles.sectionTitle}>{t('home.quickActions')}</Text>
         <TouchableOpacity
-          style={styles.actionButton}
+          style={[styles.actionButton, { backgroundColor: primary }]}
           onPress={() => router.push('/(tabs)/classes')}
         >
           <Text style={styles.actionButtonText}>{t('home.browseClasses')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.actionButton, styles.actionButtonSecondary]}
+          style={[styles.actionButton, styles.actionButtonSecondary, { borderColor: primary }]}
           onPress={() => router.push('/(tabs)/bookings')}
         >
-          <Text style={[styles.actionButtonText, styles.actionButtonTextSecondary]}>
+          <Text style={[styles.actionButtonText, styles.actionButtonTextSecondary, { color: primary }]}>
             {t('home.viewBookings')}
           </Text>
         </TouchableOpacity>

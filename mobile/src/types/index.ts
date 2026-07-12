@@ -143,3 +143,9 @@ export interface NotificationLog {
 export interface CalendarSyncResponse {
   feed_url: string
 }
+
+export interface StudioBranding {
+  studio_name: string
+  primary_color: string | null
+  secondary_color: string | null
+}

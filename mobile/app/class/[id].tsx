@@ -8,11 +8,13 @@ import { LoadingView } from '../../src/components/LoadingView'
 import { ErrorView } from '../../src/components/ErrorView'
 import type { ApiError } from '../../src/api/client'
 import { format, parseISO, differenceInMinutes } from 'date-fns'
+import { useTheme } from '../../src/theme/ThemeContext'
 
 export default function ClassDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
   const [bookingState, setBookingState] = useState<'idle' | 'booked' | 'full' | 'duplicate'>('idle')
+  const { primary } = useTheme()
 
   const classId = Number(id)
 
@@ -94,7 +96,7 @@ export default function ClassDetailScreen() {
 
       {bookingState === 'duplicate' && (
         <View style={styles.infoBanner}>
-          <Text style={styles.infoBannerText}>Already booked</Text>
+          <Text style={[styles.infoBannerText, { color: primary }]}>Already booked</Text>
         </View>
       )}
 
@@ -119,7 +121,7 @@ export default function ClassDetailScreen() {
 
       {bookingState === 'idle' && (
         <TouchableOpacity
-          style={styles.bookButton}
+          style={[styles.bookButton, { backgroundColor: primary }]}
           onPress={() => bookMutation.mutate()}
           disabled={bookMutation.isPending}
         >

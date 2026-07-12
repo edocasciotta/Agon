@@ -14,6 +14,7 @@ import { bookingsApi } from '../src/api/bookings'
 import { useLanguageStore } from '../src/store/languageStore'
 import { useSessionStore } from '../src/store/sessionStore'
 import { useAuthStore } from '../src/store/authStore'
+import { ThemeProvider } from '../src/theme/ThemeContext'
 
 SplashScreen.preventAutoHideAsync()
 
@@ -143,20 +144,22 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
-        <StatusBar style="auto" />
-        <SessionGuard />
-        <NetworkWatcher />
-        <DeepLinkHandler />
-        <View style={{ flex: 1 }}>
-          <OfflineBanner />
-          <Stack>
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="onboarding/scan" options={{ headerShown: false }} />
-            <Stack.Screen name="onboarding/register" options={{ title: 'Create Account' }} />
-            <Stack.Screen name="onboarding/login" options={{ title: 'Sign In' }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          </Stack>
-        </View>
+        <ThemeProvider>
+          <StatusBar style="auto" />
+          <SessionGuard />
+          <NetworkWatcher />
+          <DeepLinkHandler />
+          <View style={{ flex: 1 }}>
+            <OfflineBanner />
+            <Stack>
+              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen name="onboarding/scan" options={{ headerShown: false }} />
+              <Stack.Screen name="onboarding/register" options={{ title: 'Create Account' }} />
+              <Stack.Screen name="onboarding/login" options={{ title: 'Sign In' }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            </Stack>
+          </View>
+        </ThemeProvider>
       </QueryClientProvider>
     </SafeAreaProvider>
   )

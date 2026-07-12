@@ -31,11 +31,13 @@ import type {
   GiftCardValidateResponse,
 } from '../../src/types'
 import type { ApiError } from '../../src/api/client'
+import { useTheme } from '../../src/theme/ThemeContext'
 
 export default function PurchaseScreen() {
   const user = useAuthStore((s) => s.user)
   const router = useRouter()
   const t = useT()
+  const { primary } = useTheme()
   const [loadingId, setLoadingId] = useState<number | null>(null)
   const [promoCode, setPromoCode] = useState('')
   const [promoValidating, setPromoValidating] = useState(false)
@@ -191,7 +193,7 @@ export default function PurchaseScreen() {
                     {item.currency.toUpperCase()} {item.price.toFixed(2)}
                   </Text>
                 )}
-                <Text style={styles.typePrice}>
+                <Text style={[styles.typePrice, { color: primary }]}>
                   {item.currency.toUpperCase()} {displayPrice.toFixed(2)}
                 </Text>
               </View>
@@ -234,6 +236,7 @@ export default function PurchaseScreen() {
                   <TouchableOpacity
                     style={[
                       styles.promoApplyButton,
+                      { backgroundColor: primary },
                       (!promoCode.trim() || promoValidating) && styles.promoApplyDisabled,
                     ]}
                     onPress={() => handleValidatePromo(item.id)}
@@ -308,6 +311,7 @@ export default function PurchaseScreen() {
                   <TouchableOpacity
                     style={[
                       styles.promoApplyButton,
+                      { backgroundColor: primary },
                       (!giftCardCode.trim() || giftCardValidating) && styles.promoApplyDisabled,
                     ]}
                     onPress={() => handleValidateGiftCard(item.id)}
@@ -341,7 +345,11 @@ export default function PurchaseScreen() {
             </View>
 
             <TouchableOpacity
-              style={[styles.purchaseButton, loadingId !== null && styles.purchaseButtonDisabled]}
+              style={[
+                styles.purchaseButton,
+                { backgroundColor: primary },
+                loadingId !== null && styles.purchaseButtonDisabled,
+              ]}
               onPress={() => handlePurchase(item)}
               disabled={loadingId !== null}
             >

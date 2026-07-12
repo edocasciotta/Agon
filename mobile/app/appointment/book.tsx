@@ -20,6 +20,7 @@ import { OfflineBanner } from '../../src/components/OfflineBanner'
 import { getErrorMessage } from '../../src/lib/errorMessages'
 import { useT } from '../../src/i18n'
 import type { ApiError } from '../../src/api/client'
+import { useTheme } from '../../src/theme/ThemeContext'
 
 type Step = 'service' | 'instructor' | 'date' | 'slot' | 'notes'
 
@@ -33,6 +34,7 @@ function nextDays(count: number): string[] {
 export default function BookAppointmentScreen() {
   const t = useT()
   const router = useRouter()
+  const { primary } = useTheme()
 
   const [step, setStep] = useState<Step>('service')
   const [serviceId, setServiceId] = useState<number | null>(null)
@@ -119,7 +121,7 @@ export default function BookAppointmentScreen() {
       <OfflineBanner />
       <View style={styles.header}>
         <TouchableOpacity onPress={goBack}>
-          <Text style={styles.backLink}>{t('appointments.back')}</Text>
+          <Text style={[styles.backLink, { color: primary }]}>{t('appointments.back')}</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('appointments.browseTitle')}</Text>
         <View style={{ width: 40 }} />
@@ -135,7 +137,10 @@ export default function BookAppointmentScreen() {
               (services ?? []).map((svc) => (
                 <TouchableOpacity
                   key={svc.id}
-                  style={[styles.optionCard, serviceId === svc.id && styles.optionCardSelected]}
+                  style={[
+                    styles.optionCard,
+                    serviceId === svc.id && [styles.optionCardSelected, { borderColor: primary }],
+                  ]}
                   onPress={() => {
                     setServiceId(svc.id)
                     setSelectedSlot(null)
@@ -166,7 +171,7 @@ export default function BookAppointmentScreen() {
                   key={inst.id}
                   style={[
                     styles.optionCard,
-                    instructorId === inst.id && styles.optionCardSelected,
+                    instructorId === inst.id && [styles.optionCardSelected, { borderColor: primary }],
                   ]}
                   onPress={() => {
                     setInstructorId(inst.id)
@@ -188,7 +193,10 @@ export default function BookAppointmentScreen() {
             {nextDays(14).map((d) => (
               <TouchableOpacity
                 key={d}
-                style={[styles.optionCard, date === d && styles.optionCardSelected]}
+                style={[
+                  styles.optionCard,
+                  date === d && [styles.optionCardSelected, { borderColor: primary }],
+                ]}
                 onPress={() => {
                   setDate(d)
                   setSelectedSlot(null)
@@ -216,7 +224,10 @@ export default function BookAppointmentScreen() {
                     key={slot.starts_at}
                     style={[
                       styles.slotButton,
-                      selectedSlot === slot.starts_at && styles.slotButtonSelected,
+                      selectedSlot === slot.starts_at && [
+                        styles.slotButtonSelected,
+                        { backgroundColor: primary, borderColor: primary },
+                      ],
                     ]}
                     onPress={() => {
                       setSelectedSlot(slot.starts_at)
@@ -274,7 +285,7 @@ export default function BookAppointmentScreen() {
             )}
 
             <TouchableOpacity
-              style={styles.confirmButton}
+              style={[styles.confirmButton, { backgroundColor: primary }]}
               onPress={handleConfirm}
               disabled={bookMutation.isPending}
               testID="confirm-booking"
