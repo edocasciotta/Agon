@@ -11,7 +11,7 @@ same code paths as concurrent requests without SQLite deadlock issues.
 import datetime
 
 import pytest
-from app.auth import hash_password
+from app.auth import ACCESS_TOKEN_EXPIRE_CLIENT, create_access_token, hash_password
 from app.database import Base, get_db
 from app.models.booking import Booking
 from app.models.class_template import ClassTemplate
@@ -66,11 +66,15 @@ def load_client():
     db.flush()
 
     # 100 clients + 100 memberships
+    # Password hash is never verified in this test file (login is bypassed via
+    # create_access_token in _auth_headers), so compute it once and reuse the
+    # same value for every client instead of hashing 100 times (bcrypt cost=12).
+    shared_password_hash = hash_password("loadpass123")
     clients = []
     for i in range(TOTAL_CLIENTS):
         c = Client(
             email=f"load_client_{i}@test.com",
-            password_hash=hash_password("loadpass123"),
+            password_hash=shared_password_hash,
             full_name=f"Load Client {i}",
             is_active=True,
         )
@@ -100,10 +104,17 @@ def load_client():
     db.close()
 
 
-def _login(tc: TestClient, email: str) -> dict:
-    resp = tc.post("/api/v1/auth/login", json={"email": email, "password": "loadpass123"})
-    assert resp.status_code == 200, f"Login failed for {email}: {resp.text}"
-    return {"Authorization": f"Bearer {resp.json()['access_token']}"}
+def _auth_headers(client: Client) -> dict:
+    """Build auth headers via direct JWT creation, bypassing the real /auth/login
+    HTTP round-trip (and its bcrypt verify_password cost) for test speed.
+
+    Mirrors exactly what POST /api/v1/auth/login produces for a client login:
+    same claims shape (sub, role) and the same expiry, see
+    app/routers/auth.py::login.
+    """
+    token_data = {"sub": str(client.id), "role": "client"}
+    access_token = create_access_token(token_data, expires_delta=ACCESS_TOKEN_EXPIRE_CLIENT)
+    return {"Authorization": f"Bearer {access_token}"}
 
 
 def test_no_overbooking_under_load(load_client):
@@ -115,7 +126,7 @@ def test_no_overbooking_under_load(load_client):
     other_errors = []
 
     for c in clients:
-        headers = _login(tc, c.email)
+        headers = _auth_headers(c)
         resp = tc.post(
             "/api/v1/bookings",
             json={"scheduled_class_id": sc.id},
