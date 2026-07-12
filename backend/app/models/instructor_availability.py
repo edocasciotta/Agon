@@ -1,6 +1,7 @@
-from app.database import Base
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, Integer, Time
 from sqlalchemy.sql import func
+
+from app.database import Base
 
 
 class InstructorAvailability(Base):

@@ -1,6 +1,7 @@
-from app.database import Base
 from sqlalchemy import Boolean, Column, DateTime, Integer, String
 from sqlalchemy.sql import func
+
+from app.database import Base
 
 
 class AppointmentService(Base):

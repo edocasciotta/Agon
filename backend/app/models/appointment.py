@@ -1,6 +1,7 @@
-from app.database import Base
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, Integer, String
 from sqlalchemy.sql import func
+
+from app.database import Base
 
 
 class Appointment(Base):
@@ -12,7 +13,9 @@ class Appointment(Base):
     client_id = Column(Integer, ForeignKey("clients.id"), nullable=False)
     starts_at = Column(DateTime, nullable=False)
     ends_at = Column(DateTime, nullable=False)
-    status = Column(String, nullable=False, default="confirmed")  # confirmed|cancelled|completed|no_show
+    status = Column(
+        String, nullable=False, default="confirmed"
+    )  # confirmed|cancelled|completed|no_show
     cancelled_at = Column(DateTime)
     cancellation_reason = Column(String)
     credit_deducted = Column(Boolean, nullable=False, default=False)

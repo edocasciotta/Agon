@@ -45,9 +45,7 @@ def upgrade() -> None:
         "instructor_availability",
         sa.Column("id", sa.Integer(), primary_key=True, autoincrement=True),
         sa.Column("location_id", sa.Integer(), nullable=False, server_default="1"),
-        sa.Column(
-            "instructor_id", sa.Integer(), sa.ForeignKey("instructors.id"), nullable=False
-        ),
+        sa.Column("instructor_id", sa.Integer(), sa.ForeignKey("instructors.id"), nullable=False),
         sa.Column("day_of_week", sa.Integer(), nullable=False),
         sa.Column("start_time", sa.Time(), nullable=False),
         sa.Column("end_time", sa.Time(), nullable=False),
@@ -71,9 +69,7 @@ def upgrade() -> None:
             sa.ForeignKey("appointment_services.id"),
             nullable=False,
         ),
-        sa.Column(
-            "instructor_id", sa.Integer(), sa.ForeignKey("instructors.id"), nullable=False
-        ),
+        sa.Column("instructor_id", sa.Integer(), sa.ForeignKey("instructors.id"), nullable=False),
         sa.Column("client_id", sa.Integer(), sa.ForeignKey("clients.id"), nullable=False),
         sa.Column("starts_at", sa.DateTime(), nullable=False),
         sa.Column("ends_at", sa.DateTime(), nullable=False),
