@@ -568,8 +568,9 @@ not accepted on self-report alone, per the "Nested Sub-Agent Delegation" hazard 
   silently breaks **all** e2e coverage, not just this feature's.
 - **Explicitly out of scope, not built**: appointments on the main calendar grid, recurring/duo/group
   appointment UI, room booking, intake forms, mobile app, docs-site page.
-- **Not yet merged to `main`** — branch `worktree-agent-ab0432d6f9490cf62` in
-  `.claude/worktrees/agent-ab0432d6f9490cf62`.
+- **Merged to `main`** via PR [#19](https://github.com/edocasciotta/Agon/pull/19) (`5661d50`,
+  2026-07-12). All CI checks passed before merge (branch needed one `update-branch` sync — `main` had
+  advanced with the PR #18 TASK_LOG commit in the meantime).
 
 ---
 
