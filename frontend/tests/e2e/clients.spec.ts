@@ -121,12 +121,17 @@ test.describe('Clients page', () => {
     await page.getByLabel(/name|nome/i).first().fill('New Client')
     await page.getByLabel(/email/i).fill('new@example.com')
 
-    // Submit
-    const saveBtn = page.getByRole('button', { name: /save|salva|create|crea/i })
+    // Submit — the modal's submit button reuses the same label as the
+    // "open modal" button (t('clients.addClient') -> "Add Client" in en),
+    // so the locator must also match "add". Scope to the dialog so it
+    // doesn't also match the page header's "+ Add Client" button behind it.
+    const saveBtn = page.getByRole('dialog').getByRole('button', { name: /save|salva|create|crea|add|aggiungi/i })
     await saveBtn.click()
 
-    // Modal should close on success
-    await expect(page.getByLabel(/email/i)).not.toBeVisible({ timeout: 3000 })
+    // Modal should close on success. The app keeps the modal open to show a
+    // success/warning message for 3s (setTimeout in ClientsPage) before
+    // closing, so the assertion timeout must exceed that 3000ms delay.
+    await expect(page.getByLabel(/email/i)).not.toBeVisible({ timeout: 4000 })
   })
 
   test('shows empty state when no clients', async ({ page }) => {
