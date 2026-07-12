@@ -722,3 +722,15 @@ sessions — 1 was clean and already fully landed in `main` via PR #20 (removed,
 the `Location` fix above (recovered and merged), 1 (`agent-a35b2441df1a3e297`, LLM fine-tuning
 scaffold) had uncommitted changes that were confirmed byte-identical to what's already merged into
 `main` via commit `3e333ec` — a stale duplicate with zero unique content, discarded.
+
+---
+
+## Cleanup — orphaned `pl.json`/`tr.json` locale files (2026-07-12)
+
+`frontend/src/renderer/src/locales/pl.json` and `tr.json` existed alongside the 7 canonical locale
+files, contradicting `frontend/CLAUDE.md`'s explicit "EN, IT, FR, DE, ES, PT, NL — 7 only. Do not
+add PL or TR" rule. Investigated before deleting: `frontend/src/renderer/src/i18n.ts` only imports
+and registers the 7 canonical locales (`_SUPPORTED_LANGS` array matches exactly), and a repo-wide
+grep for `pl.json`/`tr.json`/language-switcher references found zero hits outside the two JSON files
+themselves — confirmed orphaned, not wired into the i18n config or any UI. Deleted both files
+directly (no sub-agent delegation needed — pure dead-file removal, not an application-code change).
