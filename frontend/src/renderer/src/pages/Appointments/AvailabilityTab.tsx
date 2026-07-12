@@ -6,6 +6,7 @@ import { instructorAvailabilityApi } from '../../api/instructorAvailability'
 import { useAuthStore } from '../../store/authStore'
 import { LoadingSpinner } from '../../components/LoadingSpinner'
 import { resolveApiError } from '../../lib/errorMessages'
+import { instructorAvailabilitySchema } from '../../lib/formSchemas'
 
 const DAYS = [0, 1, 2, 3, 4, 5, 6] as const
 
@@ -14,6 +15,7 @@ export function AvailabilityTab() {
   const queryClient = useQueryClient()
   const user = useAuthStore((s) => s.user)
   const isManager = user?.role === 'manager'
+  const isInstructor = user?.role === 'instructor'
 
   const [selectedInstructorId, setSelectedInstructorId] = useState<number | null>(null)
   const [apiError, setApiError] = useState<string | null>(null)
@@ -22,7 +24,7 @@ export function AvailabilityTab() {
   const { data: instructors = [], isLoading: instructorsLoading } = useQuery({
     queryKey: ['instructors'],
     queryFn: () => instructorsApi.list(),
-    enabled: isManager,
+    enabled: isManager || isInstructor,
   })
 
   // Instructor role: self-service, scoped to their own instructor record only
@@ -35,10 +37,10 @@ export function AvailabilityTab() {
     if (isManager && instructors.length > 0 && selectedInstructorId === null) {
       setSelectedInstructorId(instructors[0].id)
     }
-    if (!isManager && user?.role === 'instructor' && selfInstructor) {
+    if (isInstructor && selfInstructor && selectedInstructorId === null) {
       setSelectedInstructorId(selfInstructor.id)
     }
-  }, [isManager, instructors, selectedInstructorId, user, selfInstructor])
+  }, [isManager, isInstructor, instructors, selectedInstructorId, selfInstructor])
 
   const { data: availability = [], isLoading: availabilityLoading } = useQuery({
     queryKey: ['instructor-availability', selectedInstructorId],
@@ -68,13 +70,13 @@ export function AvailabilityTab() {
     },
   })
 
-  if (!isManager && user?.role !== 'instructor') {
+  if (!isManager && !isInstructor) {
     return (
       <p className="text-sm text-gray-500">{t('instructorAvailability.noAccess')}</p>
     )
   }
 
-  if (instructorsLoading && isManager) {
+  if (instructorsLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <LoadingSpinner size="lg" />
@@ -89,16 +91,25 @@ export function AvailabilityTab() {
     if (selectedInstructorId === null) return
     const win = newWindow[day]
     if (!win?.start || !win?.end) return
-    if (win.end <= win.start) {
-      setApiError(t('instructorAvailability.invalidWindow'))
-      return
-    }
-    createMutation.mutate({
+
+    const result = instructorAvailabilitySchema.safeParse({
       instructor_id: selectedInstructorId,
       day_of_week: day,
       start_time: `${win.start}:00`,
       end_time: `${win.end}:00`,
     })
+    if (!result.success) {
+      const issue = result.error.issues[0]
+      setApiError(
+        issue.path[0] === 'end_time'
+          ? t('instructorAvailability.invalidWindow')
+          : issue.message
+      )
+      return
+    }
+
+    setApiError(null)
+    createMutation.mutate(result.data)
     setNewWindow((prev) => ({ ...prev, [day]: { start: '', end: '' } }))
   }
 

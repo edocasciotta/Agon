@@ -37,7 +37,7 @@ function ServiceModal({ initial, title, onSave, onClose, saving, error }: Servic
     e.preventDefault()
     const result = appointmentServiceSchema.safeParse(form)
     if (!result.success) {
-      setValidationError(result.error.errors[0].message)
+      setValidationError(result.error.issues[0].message)
       return
     }
     setValidationError(null)

@@ -95,7 +95,7 @@ export function BookAppointmentModal({ isOpen, onClose }: BookAppointmentModalPr
       notes: notes || undefined,
     })
     if (!result.success) {
-      setValidationError(result.error.errors[0].message)
+      setValidationError(result.error.issues[0].message)
       return
     }
     setValidationError(null)
