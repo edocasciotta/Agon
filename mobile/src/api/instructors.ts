@@ -1,0 +1,9 @@
+import { apiClient } from './client'
+import type { Instructor } from '../types'
+
+export const instructorsApi = {
+  list: async (): Promise<Instructor[]> => {
+    const res = await apiClient.get('/api/v1/instructors')
+    return res.data
+  },
+}

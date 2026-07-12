@@ -91,6 +91,13 @@ function DeepLinkHandler() {
     const waitlistMatch = url.match(/agon:\/\/waitlist\/(\d+)/)
     if (waitlistMatch) {
       router.push(`/bookings/waitlist/${waitlistMatch[1]}` as never)
+      return
+    }
+    // agon://appointments/123  →  navigate to the Appointments tab (own list — no
+    // detail-by-id screen exists yet, and the id is only validated as numeric here)
+    const appointmentMatch = url.match(/agon:\/\/appointments\/(\d+)/)
+    if (appointmentMatch) {
+      router.push('/(tabs)/appointments' as never)
     }
   }
 
