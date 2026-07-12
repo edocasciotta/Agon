@@ -10,6 +10,7 @@ import {
 } from 'react-native'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useRouter, Stack } from 'expo-router'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { format, addDays } from 'date-fns'
 import { appointmentServicesApi } from '../../src/api/appointmentServices'
 import { instructorsApi } from '../../src/api/instructors'
@@ -113,7 +114,7 @@ export default function BookAppointmentScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       <OfflineBanner />
       <View style={styles.header}>
@@ -287,7 +288,7 @@ export default function BookAppointmentScreen() {
           </View>
         )}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   )
 }
 
