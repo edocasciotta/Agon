@@ -120,6 +120,39 @@ export const waiverSchema = z.object({
   requires_before_booking: z.boolean(),
 })
 
+export const appointmentServiceSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100),
+  description: z.string().max(500).optional(),
+  duration_minutes: z
+    .number({ invalid_type_error: 'Duration is required' })
+    .int()
+    .min(1, 'Duration must be at least 1 minute'),
+  buffer_minutes: z
+    .number({ invalid_type_error: 'Buffer must be a number' })
+    .int()
+    .min(0, 'Buffer must be 0 or greater'),
+})
+
+export const instructorAvailabilitySchema = z
+  .object({
+    instructor_id: z.number().min(1, 'Instructor is required'),
+    day_of_week: z.number().int().min(0).max(6),
+    start_time: z.string().min(1, 'Start time is required'),
+    end_time: z.string().min(1, 'End time is required'),
+  })
+  .refine((data) => data.end_time > data.start_time, {
+    message: 'End time must be after start time',
+    path: ['end_time'],
+  })
+
+export const bookAppointmentSchema = z.object({
+  service_id: z.number().min(1, 'Service is required'),
+  instructor_id: z.number().min(1, 'Instructor is required'),
+  starts_at: z.string().min(1, 'A time slot is required'),
+  client_id: z.number().min(1, 'Client is required'),
+  notes: z.string().max(1000).optional(),
+})
+
 export type ClientFormData = z.infer<typeof clientSchema>
 export type InstructorFormData = z.infer<typeof instructorSchema>
 export type MembershipTypeFormData = z.infer<typeof membershipTypeSchema>
@@ -130,3 +163,6 @@ export type TagFormData = z.infer<typeof tagSchema>
 export type AutoTagRuleFormData = z.infer<typeof autoTagRuleSchema>
 export type GiftCardFormData = z.infer<typeof giftCardSchema>
 export type WaiverFormData = z.infer<typeof waiverSchema>
+export type AppointmentServiceFormData = z.infer<typeof appointmentServiceSchema>
+export type InstructorAvailabilityFormData = z.infer<typeof instructorAvailabilitySchema>
+export type BookAppointmentFormData = z.infer<typeof bookAppointmentSchema>
