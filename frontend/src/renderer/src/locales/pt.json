@@ -34,7 +34,14 @@
     "waivers": "Termos de Responsabilidade",
     "smsTemplates": "Modelos de SMS",
     "smsEvents": "Eventos de SMS",
-    "appointments": "Marcações"
+    "appointments": "Marcações",
+    "sections": {
+      "overview": "Visão Geral",
+      "scheduling": "Agendamento",
+      "people": "Pessoas",
+      "sales": "Vendas",
+      "admin": "Administração"
+    }
   },
   "common": {
     "save": "Salvar",

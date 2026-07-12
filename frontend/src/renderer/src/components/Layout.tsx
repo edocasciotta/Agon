@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import type { LucideIcon } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n'
@@ -30,6 +31,33 @@ import {
   ChevronDown,
 } from 'lucide-react'
 
+interface NavItem {
+  to: string
+  label: string
+  icon: LucideIcon
+}
+
+interface NavSection {
+  title: string | null
+  items: NavItem[]
+}
+
+function NavItemLink({ item }: { item: NavItem }) {
+  return (
+    <NavLink
+      to={item.to}
+      className={({ isActive }) =>
+        `flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+          isActive ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'
+        }`
+      }
+    >
+      <item.icon size={16} strokeWidth={1.75} />
+      {item.label}
+    </NavLink>
+  )
+}
+
 const LANGUAGES = [
   { code: 'en', label: 'English', flag: '🇬🇧' },
   { code: 'it', label: 'Italiano', flag: '🇮🇹' },
@@ -58,29 +86,54 @@ export function Layout() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const navItems = [
-    { to: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
-    { to: '/calendar', label: t('nav.calendar'), icon: CalendarDays },
-    { to: '/appointments', label: t('nav.appointments'), icon: CalendarClock },
-    { to: '/class-types', label: t('nav.classTypes'), icon: Tag },
-    { to: '/establishments', label: t('nav.establishments'), icon: Building2 },
-    { to: '/instructors', label: t('nav.instructors'), icon: UserRound },
-    { to: '/clients', label: t('nav.clients'), icon: Users },
-    { to: '/memberships', label: t('nav.memberships'), icon: CreditCard },
-    { to: '/promo-codes', label: t('nav.promoCodes'), icon: Ticket },
-    { to: '/gift-cards', label: t('nav.giftCards'), icon: Gift },
-    { to: '/tags', label: t('nav.tags'), icon: Tags },
-    { to: '/waivers', label: t('nav.waivers'), icon: FileCheck },
-    { to: '/reports', label: t('nav.reports'), icon: TrendingUp },
-    { to: '/settings', label: t('nav.settings'), icon: Settings2 },
-  ]
-
-  const marketingItems = [
-    { to: '/marketing/templates', label: t('marketing.templates'), icon: Mail },
-    { to: '/marketing/events', label: t('marketing.events'), icon: Megaphone },
-    { to: '/marketing/sms-templates', label: t('nav.smsTemplates'), icon: MessageSquareText },
-    { to: '/marketing/sms-events', label: t('nav.smsEvents'), icon: MessageSquare },
-    { to: '/marketing/smartlists', label: t('marketing.smartLists'), icon: ListFilter },
+  const navSections: NavSection[] = [
+    {
+      title: null,
+      items: [{ to: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard }],
+    },
+    {
+      title: t('nav.sections.scheduling'),
+      items: [
+        { to: '/calendar', label: t('nav.calendar'), icon: CalendarDays },
+        { to: '/appointments', label: t('nav.appointments'), icon: CalendarClock },
+        { to: '/class-types', label: t('nav.classTypes'), icon: Tag },
+        { to: '/establishments', label: t('nav.establishments'), icon: Building2 },
+      ],
+    },
+    {
+      title: t('nav.sections.people'),
+      items: [
+        { to: '/clients', label: t('nav.clients'), icon: Users },
+        { to: '/instructors', label: t('nav.instructors'), icon: UserRound },
+      ],
+    },
+    {
+      title: t('nav.sections.sales'),
+      items: [
+        { to: '/memberships', label: t('nav.memberships'), icon: CreditCard },
+        { to: '/promo-codes', label: t('nav.promoCodes'), icon: Ticket },
+        { to: '/gift-cards', label: t('nav.giftCards'), icon: Gift },
+      ],
+    },
+    {
+      title: t('marketing.sectionTitle'),
+      items: [
+        { to: '/marketing/templates', label: t('marketing.templates'), icon: Mail },
+        { to: '/marketing/events', label: t('marketing.events'), icon: Megaphone },
+        { to: '/marketing/sms-templates', label: t('nav.smsTemplates'), icon: MessageSquareText },
+        { to: '/marketing/sms-events', label: t('nav.smsEvents'), icon: MessageSquare },
+        { to: '/marketing/smartlists', label: t('marketing.smartLists'), icon: ListFilter },
+      ],
+    },
+    {
+      title: t('nav.sections.admin'),
+      items: [
+        { to: '/tags', label: t('nav.tags'), icon: Tags },
+        { to: '/waivers', label: t('nav.waivers'), icon: FileCheck },
+        { to: '/reports', label: t('nav.reports'), icon: TrendingUp },
+        { to: '/settings', label: t('nav.settings'), icon: Settings2 },
+      ],
+    },
   ]
 
   return (
@@ -90,43 +143,19 @@ export function Layout() {
           <span className="font-bold text-lg text-indigo-600">Agon</span>
         </div>
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                `flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-indigo-50 text-indigo-700'
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`
-              }
-            >
-              <item.icon size={16} strokeWidth={1.75} />
-              {item.label}
-            </NavLink>
-          ))}
-
-          <div className="pt-3 pb-1">
-            <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              {t('marketing.sectionTitle')}
-            </p>
-          </div>
-          {marketingItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                `flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-indigo-50 text-indigo-700'
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`
-              }
-            >
-              <item.icon size={16} strokeWidth={1.75} />
-              {item.label}
-            </NavLink>
+          {navSections.map((section, index) => (
+            <div key={section.title ?? `section-${index}`}>
+              {section.title && (
+                <div className="pt-3 pb-1">
+                  <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    {section.title}
+                  </p>
+                </div>
+              )}
+              {section.items.map((item) => (
+                <NavItemLink key={item.to} item={item} />
+              ))}
+            </div>
           ))}
         </nav>
         <div className="p-3 border-t border-gray-200 space-y-1">

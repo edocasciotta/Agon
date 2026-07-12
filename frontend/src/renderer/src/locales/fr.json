@@ -34,7 +34,14 @@
     "waivers": "Décharges",
     "smsTemplates": "Modèles SMS",
     "smsEvents": "Événements SMS",
-    "appointments": "Rendez-vous"
+    "appointments": "Rendez-vous",
+    "sections": {
+      "overview": "Aperçu",
+      "scheduling": "Planification",
+      "people": "Personnes",
+      "sales": "Ventes",
+      "admin": "Administration"
+    }
   },
   "common": {
     "save": "Enregistrer",
