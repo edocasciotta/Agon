@@ -14,6 +14,7 @@ from app.models.gift_card_redemption import GiftCardRedemption
 from app.models.instructor import Instructor
 from app.models.instructor_availability import InstructorAvailability
 from app.models.invitation_token import InvitationToken
+from app.models.location import Location
 from app.models.membership import Membership
 from app.models.membership_type import MembershipType
 from app.models.migration_job import MigrationJob
@@ -64,6 +65,7 @@ __all__ = [
     "NotificationLog",
     "MigrationJob",
     "InvitationToken",
+    "Location",
     "EmailTemplate",
     "EmailEventAssignment",
     "SmartList",
