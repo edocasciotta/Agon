@@ -6,9 +6,8 @@ from app.limiter import limiter
 from app.logging_config import configure_logging
 from app.routers import (
     agent,
-)
-from app.routers import auth as auth_router
-from app.routers import (
+    appointment_services,
+    appointments,
     bookings,
     calendar_sync,
     checkins,
@@ -20,6 +19,7 @@ from app.routers import (
     email_templates,
     gdpr,
     gift_cards,
+    instructor_availability,
     instructors,
     locations,
     membership_types,
@@ -40,6 +40,7 @@ from app.routers import (
     tags,
     waivers,
 )
+from app.routers import auth as auth_router
 from app.tasks.class_reminders import run_class_reminder_loop
 from app.tasks.membership_expiry import run_membership_expiry_loop
 from app.tasks.nightly_backup import run_nightly_backup_loop
@@ -129,6 +130,9 @@ app.include_router(instructors.router)
 app.include_router(class_templates.router)
 app.include_router(classes.router)
 app.include_router(bookings.router)
+app.include_router(appointment_services.router)
+app.include_router(instructor_availability.router)
+app.include_router(appointments.router)
 app.include_router(calendar_sync.router)
 app.include_router(checkins.router)
 app.include_router(membership_types.router)
