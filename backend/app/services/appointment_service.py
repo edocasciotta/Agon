@@ -12,12 +12,11 @@ no class-booking equivalent.
 from datetime import date, datetime, time, timedelta
 from typing import List, Optional
 
-from sqlalchemy.orm import Session
-
 from app.models.appointment import Appointment
 from app.models.appointment_service import AppointmentService
 from app.models.instructor import Instructor
 from app.models.instructor_availability import InstructorAvailability
+from sqlalchemy.orm import Session
 
 
 def get_availability_windows(
