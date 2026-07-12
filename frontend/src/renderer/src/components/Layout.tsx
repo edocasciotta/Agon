@@ -7,6 +7,7 @@ import { SupportChat } from './SupportChat'
 import {
   LayoutDashboard,
   CalendarDays,
+  CalendarClock,
   Tag,
   Tags,
   Building2,
@@ -60,6 +61,7 @@ export function Layout() {
   const navItems = [
     { to: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
     { to: '/calendar', label: t('nav.calendar'), icon: CalendarDays },
+    { to: '/appointments', label: t('nav.appointments'), icon: CalendarClock },
     { to: '/class-types', label: t('nav.classTypes'), icon: Tag },
     { to: '/establishments', label: t('nav.establishments'), icon: Building2 },
     { to: '/instructors', label: t('nav.instructors'), icon: UserRound },

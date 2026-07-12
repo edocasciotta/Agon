@@ -29,6 +29,14 @@ export const errorMessages: Record<string, string> = {
   STUDIO_NOT_FOUND: 'Studio configuration not found.',
   // Tags
   TAG_DUPLICATE: 'A tag with this name already exists.',
+  // Appointments
+  APPOINTMENT_ALREADY_CANCELLED: 'This appointment is not confirmed and cannot be cancelled again.',
+  APPOINTMENT_IN_PAST: 'The requested start time is in the past.',
+  APPOINTMENT_NOT_CONFIRMED: 'This appointment is not confirmed.',
+  APPOINTMENT_SERVICE_INACTIVE: 'This service is not currently offered.',
+  APPOINTMENT_INSTRUCTOR_INACTIVE: 'This instructor is not currently active.',
+  APPOINTMENT_OUTSIDE_AVAILABILITY: "Requested time is outside the instructor's availability.",
+  APPOINTMENT_SLOT_CONFLICT: 'This time slot conflicts with another appointment.',
   // Generic
   NOT_FOUND: 'The requested resource was not found.',
   VALIDATION_ERROR: 'Some fields are invalid. Please check and try again.',

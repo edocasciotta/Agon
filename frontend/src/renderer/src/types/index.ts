@@ -371,3 +371,82 @@ export interface WaiverWithStatus extends WaiverResponse {
   is_signed: boolean
   signed_at: string | null
 }
+
+// Appointments (1-on-1 booking)
+export interface AppointmentService {
+  id: number
+  location_id: number
+  name: string
+  description?: string | null
+  duration_minutes: number
+  buffer_minutes: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface AppointmentServiceCreate {
+  name: string
+  description?: string
+  duration_minutes: number
+  buffer_minutes: number
+}
+
+export interface AppointmentServiceUpdate {
+  name?: string
+  description?: string
+  duration_minutes?: number
+  buffer_minutes?: number
+  is_active?: boolean
+}
+
+export interface InstructorAvailability {
+  id: number
+  location_id: number
+  instructor_id: number
+  day_of_week: number // 0 = Monday .. 6 = Sunday
+  start_time: string // "HH:MM:SS"
+  end_time: string
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface InstructorAvailabilityCreate {
+  instructor_id: number
+  day_of_week: number
+  start_time: string
+  end_time: string
+}
+
+export type AppointmentStatus = 'confirmed' | 'cancelled' | 'completed' | 'no_show'
+
+export interface Appointment {
+  id: number
+  location_id: number
+  service_id: number
+  instructor_id: number
+  client_id: number
+  starts_at: string
+  ends_at: string
+  status: AppointmentStatus
+  cancelled_at?: string | null
+  cancellation_reason?: string | null
+  credit_deducted: boolean
+  notes?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface AppointmentCreate {
+  service_id: number
+  instructor_id: number
+  starts_at: string
+  client_id?: number
+  notes?: string
+}
+
+export interface AvailableSlot {
+  starts_at: string
+  ends_at: string
+}
