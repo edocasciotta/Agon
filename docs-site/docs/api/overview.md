@@ -94,11 +94,19 @@ Common error codes:
 | `AUTH_INSUFFICIENT_PERMISSIONS` | Your role doesn't allow this action |
 | `BOOKING_CLASS_FULL` | No spots available in the class |
 | `BOOKING_ALREADY_EXISTS` | Client is already booked for this class |
-| `BOOKING_NO_VALID_MEMBERSHIP` | Client has no active membership or credits |
+| `BOOKING_NO_MEMBERSHIP` | Client has no active membership or credits (also used for appointment booking) |
 | `BOOKING_CANCELLATION_WINDOW_PASSED` | Too close to class start to cancel |
 | `CHECKIN_NO_BOOKING` | No confirmed booking found for this client and class |
 | `CHECKIN_OUTSIDE_WINDOW` | Outside the check-in time window |
 | `CHECKIN_ALREADY_CHECKED_IN` | Client is already checked in |
+| `WAIVER_SIGNATURE_REQUIRED` | Client has an unsigned required waiver and cannot book |
+| `APPOINTMENT_SERVICE_INACTIVE` | The requested appointment service has been deactivated |
+| `APPOINTMENT_INSTRUCTOR_INACTIVE` | The requested instructor's account is not active |
+| `APPOINTMENT_IN_PAST` | Requested appointment start time is in the past |
+| `APPOINTMENT_OUTSIDE_AVAILABILITY` | Requested time falls outside the instructor's availability |
+| `APPOINTMENT_SLOT_CONFLICT` | Requested time overlaps another confirmed appointment (including buffer time) |
+| `APPOINTMENT_ALREADY_CANCELLED` | Appointment is not in a confirmed state and cannot be cancelled again |
+| `APPOINTMENT_NOT_CONFIRMED` | Appointment must be confirmed to be marked completed or no-show |
 | `NOT_FOUND` | The requested resource does not exist |
 | `VALIDATION_ERROR` | The request body is missing required fields or has invalid values |
 
