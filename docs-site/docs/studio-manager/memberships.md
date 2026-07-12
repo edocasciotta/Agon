@@ -46,14 +46,14 @@ A **credit** (IT: *credito*) is used when a client books a class. If a client ca
 
 ## Fee overrides
 
-Every membership type creation/editing form has a **Fees** (locale key `membershipTypes.sectionFees`) section:
+Every membership type creation/editing form has a **Fees** (locale key `memberships.sectionFees`) section:
 
 | Setting | EN | IT | FR | DE | ES | PT | NL |
 |---|---|---|---|---|---|---|---|
 | Late cancel fee | Late cancel fee | Penale cancellazione tardiva | Frais d'annulation tardive | Gebühr für späte Stornierung | Tarifa de cancelación tardía | Taxa de cancelamento tardio | Vergoeding late annulering |
 | No-show fee | No-show fee | Penale mancata presentazione | Frais d'absence | No-Show-Gebühr | Tarifa por inasistencia | Taxa de não comparecimento | No-show vergoeding |
 
-(Locale keys: `membershipTypes.lateCancelFeeOverride` / `membershipTypes.noShowFeeOverride`. Hint text: `membershipTypes.feeOverrideHint` — "Leave empty to use studio defaults.")
+(Locale keys: `memberships.lateCancelFeeOverride` / `memberships.noShowFeeOverride`. Hint text: `memberships.feeOverrideHint` — "Leave empty to use studio defaults.")
 
 Leave either field empty to fall back to the studio-wide default configured in
 [Settings](settings#late-cancellation-and-no-show-fees). The resolution order, applied per client at
@@ -81,7 +81,7 @@ Also in the membership type form:
 | Enable credit rollover | Enable credit rollover | Abilita riporto crediti | Activer le report de crédits | Guthabenübertrag aktivieren | Activar acumulación de créditos | Ativar transferência de créditos | Creditoverdracht inschakelen |
 | Max rollover credits | Max rollover credits | Crediti massimi riportabili | Crédits de report max | Max. übertragbare Guthaben | Créditos máximos acumulables | Créditos máximos transferíveis | Max. overdraagbare credits |
 
-(Locale keys: `membershipTypes.rolloverEnabled` / `membershipTypes.maxRolloverCredits`. Hint text: `membershipTypes.rolloverHint` — "Leave empty for unlimited rollover".)
+(Locale keys: `memberships.rolloverEnabled` / `memberships.maxRolloverCredits`. Hint text: `memberships.rolloverHint` — "Leave empty for unlimited rollover".)
 
 When **Enable credit rollover** is on for a recurring membership type, any credits a client hasn't
 used by the end of a billing period carry over into the next period instead of being lost. Leave
@@ -104,7 +104,7 @@ Also in the membership type form:
 | Intro price | Intro price | Prezzo di benvenuto | Prix de bienvenue | Einführungspreis | Precio de bienvenida | Preço de boas-vindas | Introductieprijs |
 | Intro validity (days) | Intro validity (days) | Validità offerta (giorni) | Validité de l'offre (jours) | Gültigkeit (Tage) | Validez de la oferta (días) | Validade da oferta (dias) | Geldigheid (dagen) |
 
-(Locale keys: `membershipTypes.introOffer` / `membershipTypes.introPrice` / `membershipTypes.introValidityDays`. Hint text: `membershipTypes.introPriceHint` — "Leave empty to use regular price".)
+(Locale keys: `memberships.introOffer` / `memberships.introPrice` / `memberships.introValidityDays`. Hint text: `memberships.introPriceHint` — "Leave empty to use regular price".)
 
 Toggling **Intro offer** on lets you set a discounted **first-purchase-only** price and/or a shorter
 validity window for new clients. Leave **Intro price** empty to keep the regular price (an intro
