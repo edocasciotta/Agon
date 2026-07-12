@@ -34,7 +34,14 @@
     "waivers": "Liberatorie",
     "smsTemplates": "Modelli SMS",
     "smsEvents": "Eventi SMS",
-    "appointments": "Appuntamenti"
+    "appointments": "Appuntamenti",
+    "sections": {
+      "overview": "Panoramica",
+      "scheduling": "Pianificazione",
+      "people": "Persone",
+      "sales": "Vendite",
+      "admin": "Amministrazione"
+    }
   },
   "common": {
     "save": "Salva",

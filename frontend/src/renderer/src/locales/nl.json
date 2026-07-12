@@ -34,7 +34,14 @@
     "waivers": "Vrijwaringen",
     "smsTemplates": "SMS-sjablonen",
     "smsEvents": "SMS-gebeurtenissen",
-    "appointments": "Afspraken"
+    "appointments": "Afspraken",
+    "sections": {
+      "overview": "Overzicht",
+      "scheduling": "Planning",
+      "people": "Mensen",
+      "sales": "Verkoop",
+      "admin": "Beheer"
+    }
   },
   "common": {
     "save": "Opslaan",

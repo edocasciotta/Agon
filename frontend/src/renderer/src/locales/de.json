@@ -34,7 +34,14 @@
     "waivers": "Haftungsausschlüsse",
     "smsTemplates": "SMS-Vorlagen",
     "smsEvents": "SMS-Ereignisse",
-    "appointments": "Termine"
+    "appointments": "Termine",
+    "sections": {
+      "overview": "Übersicht",
+      "scheduling": "Terminplanung",
+      "people": "Personen",
+      "sales": "Verkauf",
+      "admin": "Verwaltung"
+    }
   },
   "common": {
     "save": "Speichern",

@@ -34,7 +34,14 @@
     "waivers": "Waivers",
     "smsTemplates": "SMS Templates",
     "smsEvents": "SMS Events",
-    "appointments": "Appointments"
+    "appointments": "Appointments",
+    "sections": {
+      "overview": "Overview",
+      "scheduling": "Scheduling",
+      "people": "People",
+      "sales": "Sales",
+      "admin": "Admin"
+    }
   },
   "common": {
     "save": "Save",

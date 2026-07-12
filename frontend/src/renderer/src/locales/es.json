@@ -34,7 +34,14 @@
     "waivers": "Descargos de responsabilidad",
     "smsTemplates": "Plantillas de SMS",
     "smsEvents": "Eventos de SMS",
-    "appointments": "Citas"
+    "appointments": "Citas",
+    "sections": {
+      "overview": "Resumen",
+      "scheduling": "Programación",
+      "people": "Personas",
+      "sales": "Ventas",
+      "admin": "Administración"
+    }
   },
   "common": {
     "save": "Guardar",
