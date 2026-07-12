@@ -154,7 +154,8 @@ Scaffolding → DB models → Core API → Booking engine → Check-in → Membe
 - `get_class_roster` Italian phrasings not 100% reliable — 3B model still picks wrong tool occasionally.
 - Playwright e2e tests are scaffold only (no real backend needed; use `page.route()`).
 - Mobile: booked count per class not shown on Today's classes (requires new backend field on ScheduledClass).
-- `mobile/package.json` has no `lint` script at all (flagged during Appointments mobile round, PR #23, still unfixed).
+- `mobile/package.json` has no `lint` script at all, and eslint isn't even installed in `mobile/node_modules` despite `.eslintrc.cjs` existing (flagged during Appointments mobile round PR #23, confirmed again 2026-07-12 during the appointment-booking header fix — still unfixed).
+- `mobile`: `npx expo export` (default/web platform) fails — `react-native-web` isn't installed. `--platform ios`/`--platform android` export clean. Flagged 2026-07-12, pre-existing, unfixed.
 - 15 pre-existing frontend call sites use the wrong Zod `.errors` API instead of `.issues` (installed Zod is 4.4.3) — flagged during Appointments desktop frontend round, still unfixed outside the 2 files that round touched.
 
 ---
@@ -173,6 +174,8 @@ Scaffolding → DB models → Core API → Booking engine → Check-in → Membe
 - **E2E Login/A11y Fix + Test Speed-up** (2026-07-12, PRs [#20](https://github.com/edocasciotta/Agon/pull/20)/[#21](https://github.com/edocasciotta/Agon/pull/21)): fixed `Login.tsx` label bug that broke all Playwright specs (e2e 0/16 → 17/17); sped up an overbooking-load test 34s → ~1s.
 - **Bug Fix — `Location` model missing from `Base.metadata`** (2026-07-12, PR [#24](https://github.com/edocasciotta/Agon/pull/24)): would have caused a future autogenerate migration to drop the `locations` table.
 - **Cleanup — orphaned `pl.json`/`tr.json` locale files** (2026-07-12, PR [#25](https://github.com/edocasciotta/Agon/pull/25)): confirmed unwired, deleted.
+- **Docs cleanup — `TASK_LOG.md` split into lean log + archive** (2026-07-12, PR [#26](https://github.com/edocasciotta/Agon/pull/26)): 736→186 lines, full detail preserved in `TASK_LOG_ARCHIVE.md`.
+- **Bug Fix — mobile appointment booking screen** (2026-07-12): duplicate native header (missing `headerShown: false`) + blank instructor list on zero availability, fixed via `<Stack.Screen>` + empty-state message. Reported live by the user via screenshot after fixing the Expo Go infinite-loading issue (stale VPN interface confusing Metro's LAN IP advertisement — resolved by disabling the VPN and restarting Metro with `REACT_NATIVE_PACKAGER_HOSTNAME` forced).
 
 ---
 
@@ -182,5 +185,6 @@ Scaffolding → DB models → Core API → Booking engine → Check-in → Membe
   ship; mobile is the last open surface, see Known Open Items).
 - Phase 2 (next gap after Appointments): Marketing Automations, Web Widgets, Online Classes, Custom
   Roles, Payroll, Invoicing — per `docs/COMPETITIVE_ANALYSIS_2026_07.md` RICE ranking.
-- Mobile: add a `lint` script to `mobile/package.json` (currently missing entirely).
+- Mobile: add a `lint` script to `mobile/package.json` and install eslint (currently missing entirely).
+- Mobile: install `react-native-web` so `npx expo export` works for the default/web target, not just `--platform ios/android`.
 - Frontend: fix the remaining 15 call sites still using the wrong Zod `.errors` API instead of `.issues`.
