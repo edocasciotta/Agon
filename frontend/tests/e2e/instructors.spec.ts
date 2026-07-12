@@ -13,6 +13,18 @@ const MOCK_INSTRUCTORS = [
 ]
 
 async function setupAndLogin(page: import('@playwright/test').Page) {
+  // Catch-all fallback for any endpoint this test doesn't care about (the
+  // Dashboard page the login redirect lands on fires several queries of its
+  // own — classes, templates, locations, reports). Playwright tries
+  // most-recently-registered matching routes first, so registering this one
+  // FIRST means every route added below it takes priority; this just
+  // prevents unmocked requests from reaching the real backend and 401ing,
+  // which would trip the global 401 interceptor and log the session back
+  // out mid-test.
+  await page.route('**/api/v1/**', async (route) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) })
+  })
+
   await page.route('**/api/v1/auth/login', async (route) => {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ access_token: ACCESS_TOKEN, refresh_token: 'rfr', token_type: 'bearer' }) })
   })
@@ -45,7 +57,11 @@ async function setupAndLogin(page: import('@playwright/test').Page) {
 test.describe('Instructors page', () => {
   test('lists instructors from the API', async ({ page }) => {
     await setupAndLogin(page)
-    await page.goto('/instructors')
+    // Navigate via the sidebar link (client-side routing) rather than
+    // page.goto() — accessToken lives only in memory (never persisted, by
+    // design per SECURITY_GUIDELINES), so a hard navigation would drop the
+    // session and bounce back to /login.
+    await page.getByRole('link', { name: 'Instructors' }).click()
 
     await expect(page.getByText('Maria Bianchi')).toBeVisible()
     await expect(page.getByText('Luca Verdi')).toBeVisible()
@@ -53,7 +69,11 @@ test.describe('Instructors page', () => {
 
   test('create instructor modal opens and fills form', async ({ page }) => {
     await setupAndLogin(page)
-    await page.goto('/instructors')
+    // Navigate via the sidebar link (client-side routing) rather than
+    // page.goto() — accessToken lives only in memory (never persisted, by
+    // design per SECURITY_GUIDELINES), so a hard navigation would drop the
+    // session and bounce back to /login.
+    await page.getByRole('link', { name: 'Instructors' }).click()
 
     const addBtn = page.getByRole('button', { name: /add|new|nuovo|aggiungi/i })
     await addBtn.click()
@@ -92,7 +112,11 @@ test.describe('Instructors page', () => {
       }
     })
 
-    await page.goto('/instructors')
+    // Navigate via the sidebar link (client-side routing) rather than
+    // page.goto() — accessToken lives only in memory (never persisted, by
+    // design per SECURITY_GUIDELINES), so a hard navigation would drop the
+    // session and bounce back to /login.
+    await page.getByRole('link', { name: 'Instructors' }).click()
     await expect(page.getByText('Maria Bianchi')).toBeVisible()
 
     // Look for a deactivate/delete button near the first instructor
@@ -109,6 +133,9 @@ test.describe('Instructors page', () => {
   })
 
   test('shows empty state when no instructors', async ({ page }) => {
+    await page.route('**/api/v1/**', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) })
+    })
     await page.route('**/api/v1/auth/login', async (route) => {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ access_token: ACCESS_TOKEN, refresh_token: 'rfr', token_type: 'bearer' }) })
     })
@@ -123,7 +150,12 @@ test.describe('Instructors page', () => {
     await page.getByLabel(/email/i).fill('admin@example.com')
     await page.getByLabel(/password/i).fill('admin123')
     await page.getByRole('button', { name: /login|accedi|sign in/i }).click()
-    await page.goto('/instructors')
+    await page.waitForURL(/dashboard/)
+    // Navigate via the sidebar link (client-side routing) rather than
+    // page.goto() — accessToken lives only in memory (never persisted, by
+    // design per SECURITY_GUIDELINES), so a hard navigation would drop the
+    // session and bounce back to /login.
+    await page.getByRole('link', { name: 'Instructors' }).click()
 
     await expect(page.getByText(/no instructor|nessun instructor|empty/i)).toBeVisible()
   })
