@@ -23,6 +23,12 @@ const sidebars: SidebarsConfig = {
         'studio-manager/check-in',
         'studio-manager/reports',
         'studio-manager/settings',
+        'studio-manager/promo-codes',
+        'studio-manager/tags',
+        'studio-manager/gift-cards',
+        'studio-manager/sms-messaging',
+        'studio-manager/calendar-sync',
+        'studio-manager/waivers',
         'studio-manager/ai-support',
         'studio-manager/ai-actions'
       ]
@@ -34,6 +40,7 @@ const sidebars: SidebarsConfig = {
         'clients/booking-a-class',
         'clients/check-in',
         'clients/memberships',
+        'clients/calendar-sync',
         'clients/notifications'
       ]
     },
