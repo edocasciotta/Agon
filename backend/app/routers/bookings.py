@@ -1,10 +1,6 @@
 import logging
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
-from sqlalchemy import func
-from sqlalchemy.orm import Session
-
 from app.auth import decode_token, oauth2_scheme, require_manager
 from app.database import get_db
 from app.limiter import get_jwt_sub, limiter
@@ -35,6 +31,9 @@ from app.services.booking_service import (
 )
 from app.services.tag_service import evaluate_auto_tags
 from app.utils import utcnow
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
