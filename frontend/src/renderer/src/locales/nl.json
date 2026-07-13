@@ -930,5 +930,13 @@
     "day4": "Vrijdag",
     "day5": "Zaterdag",
     "day6": "Zondag"
+  },
+  "photoUpload": {
+    "changePhoto": "Foto wijzigen",
+    "uploading": "Bezig met uploaden...",
+    "invalidType": "Kies een JPG-, PNG- of WEBP-afbeelding.",
+    "tooLarge": "De afbeelding moet kleiner zijn dan 5MB.",
+    "uploadError": "Foto uploaden mislukt. Probeer het opnieuw.",
+    "altText": "Profielfoto van {{name}}"
   }
 }

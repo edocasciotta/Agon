@@ -45,4 +45,12 @@ export const clientsApi = {
     const res = await apiClient.get(`/api/v1/clients/${id}/memberships`)
     return res.data
   },
+  uploadPhoto: async (id: number, file: File): Promise<Client> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const res = await apiClient.post(`/api/v1/clients/${id}/photo`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return res.data
+  },
 }
