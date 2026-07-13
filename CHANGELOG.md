@@ -62,6 +62,9 @@ Agon uses [Semantic Versioning](https://semver.org/).
 - Performance test seed: `clients[i // 4]` ensures unique `(client_id, scheduled_class_id)` pairs
 - Email settings: saving the form no longer clears the configured SMTP password unless it was actually changed
 - SMS settings: saving the form no longer clears the configured Twilio auth token unless it was actually changed (same bug as Email settings, mirrored onto the new SMS tab)
+- Mobile Appointments tab (`app/(tabs)/appointments.tsx`): removed the redundant custom title `<Text>` above the list (the native tab header already shows "Appointments"); the "Book new appointment" button is now a full-width styled button instead of sitting under a duplicate heading.
+- Mobile appointment booking wizard (`app/appointment/book.tsx`): tapping "Back" no longer leaves a stale highlighted selection on a step the user is revisiting — `goBack()` now clears every step's state from the target step through the end of the wizard (via a `stepClearers` map keyed by `Step`) instead of only resetting the single step being returned to.
+- Mobile Membership tab (`app/(tabs)/membership.tsx`): root view was a bare `<>` Fragment with no safe-area handling. Now wraps in `SafeAreaView` (from `react-native-safe-area-context`), matching the pattern in `app/appointment/book.tsx`. Unlike that screen, the Membership tab keeps its native tab header (`headerShown` isn't disabled in `(tabs)/_layout.tsx`), which already insets for the status bar/notch — so `edges` is set to `['left', 'right', 'bottom']` (excluding `top`) to avoid stacking a second top inset on top of the header's.
 
 ---
 
