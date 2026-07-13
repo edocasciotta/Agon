@@ -138,9 +138,14 @@ export default function AppointmentsScreen() {
             <View style={styles.card}>
               <View style={styles.cardInfo}>
                 <Text style={styles.serviceName}>{serviceName(item.service_id)}</Text>
-                <Text style={styles.withInstructor}>
-                  {t('appointments.with')} {instructorName(item.instructor_id)}
-                </Text>
+                <TouchableOpacity
+                  onPress={() => router.push(`/instructor/${item.instructor_id}`)}
+                  hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
+                >
+                  <Text style={styles.withInstructor}>
+                    {t('appointments.with')} {instructorName(item.instructor_id)}
+                  </Text>
+                </TouchableOpacity>
                 <Text style={styles.dateText}>
                   {format(parseISO(item.starts_at), 'EEE, MMM d · HH:mm')}
                 </Text>

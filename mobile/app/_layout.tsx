@@ -80,7 +80,7 @@ function DeepLinkHandler() {
     // agon://bookings/123  →  navigate to booking detail
     const bookingMatch = url.match(/agon:\/\/bookings\/(\d+)/)
     if (bookingMatch) {
-      router.push(`/bookings/${bookingMatch[1]}` as never)
+      router.push(`/booking/${bookingMatch[1]}` as never)
       return
     }
     // agon://classes/123  →  navigate to class detail
