@@ -30,6 +30,7 @@ export interface Client {
   phone?: string
   is_active: boolean
   created_at: string
+  photo_url?: string | null
 }
 
 export interface ScheduledClass {
