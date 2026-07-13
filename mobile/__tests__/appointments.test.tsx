@@ -99,6 +99,16 @@ describe('AppointmentsScreen', () => {
     expect(getByText('Upcoming')).toBeTruthy()
   })
 
+  it('navigates to the instructor profile when the instructor name is pressed', async () => {
+    ;(appointmentsApi.list as jest.Mock).mockResolvedValue([mockAppointment])
+
+    const { getByText } = renderScreen(makeClient())
+
+    await waitFor(() => expect(getByText('with Elena Rossi')).toBeTruthy())
+    fireEvent.press(getByText('with Elena Rossi'))
+    expect(mockPush).toHaveBeenCalledWith('/instructor/5')
+  })
+
   it('navigates to the booking flow when "Book an Appointment" is pressed', async () => {
     ;(appointmentsApi.list as jest.Mock).mockResolvedValue([])
 
