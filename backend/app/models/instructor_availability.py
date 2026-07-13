@@ -1,7 +1,6 @@
+from app.database import Base
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, Integer, Time
 from sqlalchemy.sql import func
-
-from app.database import Base
 
 
 class InstructorAvailability(Base):
@@ -9,6 +8,9 @@ class InstructorAvailability(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     location_id = Column(Integer, nullable=False, default=1)
     instructor_id = Column(Integer, ForeignKey("instructors.id"), nullable=False)
+    # NULL = available for ALL services (wildcard, and the value every existing
+    # row has today). A specific id scopes this window to only that service.
+    service_id = Column(Integer, ForeignKey("appointment_services.id"), nullable=True)
     day_of_week = Column(Integer, nullable=False)  # 0=Monday ... 6=Sunday
     start_time = Column(Time, nullable=False)
     end_time = Column(Time, nullable=False)
@@ -22,4 +24,5 @@ class InstructorAvailability(Base):
             "day_of_week",
             "is_active",
         ),
+        Index("idx_availability_service", "service_id"),
     )
