@@ -53,8 +53,9 @@ export default function BookAppointmentScreen() {
   })
 
   const { data: instructors, isLoading: instructorsLoading } = useQuery({
-    queryKey: ['instructors'],
-    queryFn: () => instructorsApi.list(),
+    queryKey: ['available-instructors', serviceId],
+    queryFn: () => instructorsApi.listAvailableForService(serviceId as number),
+    enabled: serviceId !== null,
     staleTime: 5 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
   })

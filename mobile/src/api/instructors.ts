@@ -10,4 +10,10 @@ export const instructorsApi = {
     const res = await apiClient.get(`/api/v1/instructors/${id}`)
     return res.data
   },
+  listAvailableForService: async (serviceId: number): Promise<Instructor[]> => {
+    const res = await apiClient.get(
+      `/api/v1/appointment-services/${serviceId}/available-instructors`
+    )
+    return res.data
+  },
 }
