@@ -1,4 +1,5 @@
 import React from 'react'
+import { StyleSheet } from 'react-native'
 import { render, fireEvent, waitFor } from '@testing-library/react-native'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import BookAppointmentScreen from '../app/appointment/book'
@@ -123,6 +124,37 @@ describe('BookAppointmentScreen', () => {
     await waitFor(() => {
       expect(getByText('No instructors are available for this service yet.')).toBeTruthy()
     })
+  })
+
+  it('clears the current and downstream selections when going back, but not earlier steps', async () => {
+    const { getByText, getByTestId } = renderScreen(makeClient())
+
+    // Step 1: service
+    await waitFor(() => expect(getByTestId('service-1')).toBeTruthy())
+    fireEvent.press(getByTestId('service-1'))
+
+    // Step 2: instructor — select it, which auto-advances to the date step
+    await waitFor(() => expect(getByTestId('instructor-5')).toBeTruthy())
+    fireEvent.press(getByTestId('instructor-5'))
+
+    // Step 3: date — confirm we advanced past instructor
+    await waitFor(() => expect(getByText('Select a date')).toBeTruthy())
+
+    // Go back to the instructor step
+    fireEvent.press(getByText('Back'))
+
+    await waitFor(() => expect(getByTestId('instructor-5')).toBeTruthy())
+    const instructorCard = getByTestId('instructor-5')
+    const instructorStyle = StyleSheet.flatten(instructorCard.props.style) as Record<string, unknown>
+    // The selected-state style (border color) must not still be applied after
+    // navigating back to this step — only the base, unselected optionCard style remains.
+    expect(instructorStyle.borderColor).toBe('#E5E7EB')
+
+    // Re-selecting the instructor advances straight to the date step (no service step
+    // in between), proving serviceId — set before the step we revisited — survived the
+    // goBack() untouched, since the wizard would otherwise have nowhere valid to advance to.
+    fireEvent.press(getByTestId('instructor-5'))
+    await waitFor(() => expect(getByText('Select a date')).toBeTruthy())
   })
 
   it('shows a friendly error message when booking fails with a known error code', async () => {

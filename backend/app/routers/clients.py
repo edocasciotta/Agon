@@ -2,8 +2,9 @@ import uuid
 from datetime import timedelta
 from typing import Optional
 
-from app.auth import get_current_client, require_manager, require_staff
+from app.auth import decode_token, get_current_client, oauth2_scheme, require_manager, require_staff
 from app.database import get_db
+from app.limiter import get_jwt_sub, limiter
 from app.models.booking import Booking
 from app.models.client import Client
 from app.models.invitation_token import InvitationToken
@@ -16,11 +17,44 @@ from app.schemas.client import (
     ClientResponse,
     ClientUpdate,
 )
-from app.utils import utcnow
-from fastapi import APIRouter, Depends, HTTPException, Query
+from app.services.photo_service import delete_old_photo, validate_and_save_photo
+from app.utils import raise_api_error, utcnow
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile
 from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1/clients", tags=["clients"])
+
+
+def _authorize_client_photo_upload(
+    client_id: int,
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+) -> Client:
+    """A manager may upload on behalf of any client. A client may only upload
+    their own photo (path client_id must equal the token's sub). An instructor
+    token is rejected — instructors are staff but not authorized to manage
+    client profile data here.
+    """
+    payload = decode_token(token)
+    if payload.get("type") != "access":
+        raise_api_error("AUTH_TOKEN_INVALID", "Invalid token type", status_code=401)
+
+    role = payload.get("role", "client")
+    if role == "client":
+        sub = payload.get("sub")
+        if sub is None or str(sub) != str(client_id):
+            raise_api_error("FORBIDDEN", "You may only upload your own photo.", status_code=403)
+    elif role != "manager":
+        raise_api_error(
+            "AUTH_INSUFFICIENT_PERMISSIONS",
+            "Manager or client access required",
+            status_code=403,
+        )
+
+    client = db.query(Client).filter(Client.id == client_id).first()
+    if not client:
+        raise_api_error("NOT_FOUND", "Client not found", status_code=404)
+    return client
 
 
 # ---- /me routes MUST come before /{id} ----
@@ -203,6 +237,29 @@ def get_client(
             detail={"error": {"code": "NOT_FOUND", "message": "Client not found"}},
         )
     return client
+
+
+@router.post("/{client_id}/photo", response_model=ClientResponse)
+@limiter.limit("20/minute", key_func=get_jwt_sub)
+async def upload_client_photo(
+    request: Request,
+    client_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    client_obj: Client = Depends(_authorize_client_photo_upload),
+):
+    content = await file.read()
+    new_filename = validate_and_save_photo(file, content, prefix=f"client_{client_id}")
+
+    old_photo_path = client_obj.photo_path
+    client_obj.photo_path = new_filename
+    db.commit()
+    db.refresh(client_obj)
+
+    if old_photo_path:
+        delete_old_photo(old_photo_path)
+
+    return client_obj
 
 
 @router.put("/{client_id}", response_model=ClientResponse)
