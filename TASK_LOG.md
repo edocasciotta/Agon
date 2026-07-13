@@ -18,9 +18,10 @@ Gap Phase 1 (1.1–1.9) and Phase 2's Appointments (2.1) both fully shipped acro
 | Docs build | — | ✅ | PR #22 |
 
 ### Active branch
-`main` — through PR #34 (backend photo upload), merged 2026-07-13. Open, auto-merge enabled on
-all: #32 (mobile bookings/appointments enrichment UI), #33 (mobile membership purchase redesign),
-#35 (desktop photo upload UI), #36 (mobile photo upload UI).
+`main` — through PR #37 (availability/establishment scoping backend), merged 2026-07-13. All 8
+mobile-improvement-batch PRs (#30–#37) fully merged. Items 1/2/3/5/6/7 of that batch are complete.
+Item 4's desktop forms (AvailabilityTab/ServicesTab scoping UI) and item 8 (instructor mobile
+login) remain — see Next Task Candidates.
 
 ### Local dev
 - Backend: `cd backend && .venv/bin/uvicorn main:app --reload` (entry point is top-level `backend/main.py`, not `app/main.py`)
