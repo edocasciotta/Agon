@@ -21,9 +21,45 @@ export const membershipTypesApi = {
   },
 }
 
+/** Minimal shape of a picked image asset needed to build the multipart upload body.
+ * Matches the fields on `ImagePicker.ImagePickerAsset` we actually use, so this file
+ * doesn't need to depend on `expo-image-picker`'s types.
+ */
+export interface PickedPhotoAsset {
+  uri: string
+  fileName?: string | null
+  mimeType?: string | null
+}
+
+export interface ClientPhotoUploadResponse {
+  photo_url: string | null
+}
+
 export const clientsApi = {
   updatePushToken: async (pushToken: string) => {
     await apiClient.put('/api/v1/clients/me/push-token', { push_token: pushToken })
+  },
+
+  uploadPhoto: async (
+    clientId: number,
+    asset: PickedPhotoAsset
+  ): Promise<ClientPhotoUploadResponse> => {
+    const filename = asset.fileName ?? asset.uri.split('/').pop() ?? `photo_${Date.now()}.jpg`
+    const mimeType = asset.mimeType ?? 'image/jpeg'
+
+    // React Native's FormData accepts a { uri, name, type } object in place of a Blob
+    // for file parts — this is the standard RN multipart-upload shape, not a real Blob.
+    const formData = new FormData()
+    formData.append('file', {
+      uri: asset.uri,
+      name: filename,
+      type: mimeType,
+    } as unknown as Blob)
+
+    const res = await apiClient.post(`/api/v1/clients/${clientId}/photo`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return res.data
   },
 }
 

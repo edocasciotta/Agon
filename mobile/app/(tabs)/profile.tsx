@@ -5,27 +5,81 @@ import { useAuthStore } from '../../src/store/authStore'
 import { useStudioStore } from '../../src/store/studioStore'
 import { tagsApi } from '../../src/api/tags'
 import { calendarSyncApi } from '../../src/api/calendarSync'
+import { clientsApi, type ClientPhotoUploadResponse } from '../../src/api/memberships'
 import { OfflineBanner } from '../../src/components/OfflineBanner'
 import { useT } from '../../src/i18n'
 import * as Notifications from 'expo-notifications'
 import * as Clipboard from 'expo-clipboard'
+import * as SecureStore from 'expo-secure-store'
+import * as ImagePicker from 'expo-image-picker'
+import { Image } from 'expo-image'
+import { Pencil } from 'lucide-react-native'
 import { useState, useEffect } from 'react'
 import type { ClientTag } from '../../src/types'
-import type { ApiError } from '../../src/api/client'
+import { TOKEN_KEY, type ApiError } from '../../src/api/client'
 import { useTheme } from '../../src/theme/ThemeContext'
+import { getErrorMessage } from '../../src/lib/errorMessages'
+
+const MAX_PHOTO_SIZE_BYTES = 5 * 1024 * 1024
 
 export default function ProfileScreen() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const user = useAuthStore((s) => s.user)
+  const studioUrl = useStudioStore((s) => s.studioUrl)
   const t = useT()
   const { primary } = useTheme()
   const [notifStatus, setNotifStatus] = useState<string>('unknown')
   const [linkCopied, setLinkCopied] = useState(false)
+  const [photoError, setPhotoError] = useState<string | null>(null)
+  const [authToken, setAuthToken] = useState<string | null>(null)
 
   useEffect(() => {
     Notifications.getPermissionsAsync().then(({ status }) => setNotifStatus(status))
   }, [])
+
+  // Needed to attach the JWT as a header when displaying the (auth-protected) photo —
+  // see `<Image source={{ uri, headers }} />` below.
+  useEffect(() => {
+    SecureStore.getItemAsync(TOKEN_KEY).then(setAuthToken)
+  }, [])
+
+  const uploadPhotoMutation = useMutation({
+    mutationFn: (asset: ImagePicker.ImagePickerAsset) => clientsApi.uploadPhoto(user!.id, asset),
+    onSuccess: (updated: ClientPhotoUploadResponse) => {
+      setPhotoError(null)
+      useAuthStore.getState().setUser({ ...user!, photo_url: updated.photo_url })
+    },
+    onError: (err: ApiError) => {
+      setPhotoError(getErrorMessage(err.code ?? 'SERVER_ERROR'))
+    },
+  })
+
+  const handlePickPhoto = async () => {
+    if (!user || uploadPhotoMutation.isPending) return
+    setPhotoError(null)
+
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
+    if (!permission.granted) {
+      setPhotoError(t('profile.photoPermissionDenied'))
+      return
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 0.8,
+    })
+    if (result.canceled || result.assets.length === 0) return
+
+    const asset = result.assets[0]
+    if (asset.fileSize && asset.fileSize > MAX_PHOTO_SIZE_BYTES) {
+      setPhotoError(t('profile.photoTooLarge'))
+      return
+    }
+
+    uploadPhotoMutation.mutate(asset)
+  }
 
   const { data: tags, isLoading: tagsLoading } = useQuery({
     queryKey: ['client-tags', user?.id],
@@ -122,13 +176,41 @@ export default function ProfileScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <OfflineBanner />
       <View style={styles.avatarSection}>
-        <View style={[styles.avatar, { backgroundColor: primary }]}>
-          <Text style={styles.avatarText}>
-            {user?.full_name?.charAt(0)?.toUpperCase() ?? '?'}
-          </Text>
-        </View>
+        <TouchableOpacity
+          style={styles.avatarWrapper}
+          onPress={handlePickPhoto}
+          disabled={uploadPhotoMutation.isPending}
+          accessibilityLabel={t('profile.changePhoto')}
+        >
+          {user?.photo_url && studioUrl && authToken ? (
+            <Image
+              source={{
+                uri: `${studioUrl}${user.photo_url}`,
+                headers: { Authorization: `Bearer ${authToken}` },
+              }}
+              style={styles.avatarImage}
+              contentFit="cover"
+            />
+          ) : (
+            <View style={[styles.avatar, { backgroundColor: primary }]}>
+              <Text style={styles.avatarText}>
+                {user?.full_name?.charAt(0)?.toUpperCase() ?? '?'}
+              </Text>
+            </View>
+          )}
+          {uploadPhotoMutation.isPending ? (
+            <View style={styles.avatarOverlay}>
+              <ActivityIndicator size="small" color="#fff" />
+            </View>
+          ) : (
+            <View style={[styles.editBadge, { backgroundColor: primary }]}>
+              <Pencil size={14} color="#fff" />
+            </View>
+          )}
+        </TouchableOpacity>
         <Text style={styles.name}>{user?.full_name ?? '—'}</Text>
         <Text style={styles.email}>{user?.email ?? '—'}</Text>
+        {photoError && <Text style={styles.photoErrorText}>{photoError}</Text>}
       </View>
 
       {/* Tags Section */}
@@ -234,6 +316,11 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     paddingTop: 12,
   },
+  avatarWrapper: {
+    width: 80,
+    height: 80,
+    marginBottom: 12,
+  },
   avatar: {
     width: 80,
     height: 80,
@@ -241,7 +328,34 @@ const styles = StyleSheet.create({
     backgroundColor: '#4F46E5',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+  },
+  avatarImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
+  avatarOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 40,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  editBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#F9FAFB',
   },
   avatarText: {
     fontSize: 32,
@@ -343,6 +457,12 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 14,
     color: '#DC2626',
+  },
+  photoErrorText: {
+    fontSize: 13,
+    color: '#DC2626',
+    textAlign: 'center',
+    marginTop: 8,
   },
   primaryButton: {
     backgroundColor: '#4F46E5',

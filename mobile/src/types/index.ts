@@ -160,3 +160,11 @@ export interface StudioBranding {
   primary_color: string | null
   secondary_color: string | null
 }
+
+export interface ClientUser {
+  id: number
+  email: string
+  full_name: string
+  role: string
+  photo_url: string | null
+}

@@ -11,9 +11,18 @@ import * as Clipboard from 'expo-clipboard'
 // --- module mocks ---
 
 jest.mock('expo-secure-store', () => ({
-  getItemAsync: jest.fn(),
+  getItemAsync: jest.fn().mockResolvedValue(null),
   setItemAsync: jest.fn(),
   deleteItemAsync: jest.fn(),
+}))
+
+jest.mock('expo-image', () => ({
+  Image: () => null,
+}))
+
+jest.mock('expo-image-picker', () => ({
+  requestMediaLibraryPermissionsAsync: jest.fn(),
+  launchImageLibraryAsync: jest.fn(),
 }))
 
 jest.mock('expo-router', () => ({
@@ -39,6 +48,13 @@ jest.mock('../src/api/calendarSync', () => ({
   calendarSyncApi: {
     get: jest.fn(),
     regenerate: jest.fn(),
+  },
+}))
+
+jest.mock('../src/api/memberships', () => ({
+  clientsApi: {
+    uploadPhoto: jest.fn(),
+    updatePushToken: jest.fn(),
   },
 }))
 
@@ -79,7 +95,7 @@ const mockFeedUrl = 'https://studio.example.com/api/v1/calendar/abc123.ics'
 beforeEach(() => {
   jest.clearAllMocks()
   useAuthStore.setState({
-    user: { id: 42, email: 'test@test.com', full_name: 'Test Client', role: 'client' },
+    user: { id: 42, email: 'test@test.com', full_name: 'Test Client', role: 'client', photo_url: null },
   })
   ;(tagsApi.getClientTags as jest.Mock).mockResolvedValue([])
 })

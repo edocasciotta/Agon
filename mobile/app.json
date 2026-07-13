@@ -37,6 +37,14 @@
         {
           "cameraPermission": "Allow Agon to scan QR codes to connect to your studio."
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Agon to access your photos so you can set a profile picture.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
       ]
     ],
     "scheme": "agon"

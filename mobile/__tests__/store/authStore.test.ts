@@ -14,7 +14,9 @@ describe('authStore', () => {
   })
 
   it('sets user', () => {
-    useAuthStore.getState().setUser({ id: 1, email: 'a@b.com', full_name: 'Test', role: 'client' })
+    useAuthStore
+      .getState()
+      .setUser({ id: 1, email: 'a@b.com', full_name: 'Test', role: 'client', photo_url: null })
     expect(useAuthStore.getState().user?.email).toBe('a@b.com')
   })
 })

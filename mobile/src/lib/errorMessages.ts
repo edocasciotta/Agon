@@ -25,6 +25,11 @@ export const errorMessages: Record<string, string> = {
   APPOINTMENT_ALREADY_CANCELLED: 'This appointment is no longer confirmed.',
   NOT_FOUND: 'Not found.',
   SERVER_ERROR: 'Something went wrong. Please try again.',
+  FORBIDDEN: "You don't have permission to do that.",
+  PHOTO_EMPTY_FILE: 'That file appears to be empty. Please choose another photo.',
+  PHOTO_TOO_LARGE: 'This photo is too large. Please choose one under 5MB.',
+  PHOTO_INVALID_TYPE: 'Please choose a JPG, PNG, or WEBP photo.',
+  PHOTO_INVALID_FILENAME: 'That file name is not valid. Please choose another photo.',
 }
 
 export function getErrorMessage(code: string): string {
