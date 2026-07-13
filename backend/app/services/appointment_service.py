@@ -14,25 +14,36 @@ from typing import List, Optional
 
 from app.models.appointment import Appointment
 from app.models.appointment_service import AppointmentService
+from app.models.appointment_service_location import AppointmentServiceLocation
 from app.models.instructor import Instructor
 from app.models.instructor_availability import InstructorAvailability
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 
 def get_availability_windows(
-    db: Session, instructor_id: int, day_of_week: int
+    db: Session, instructor_id: int, day_of_week: int, service_id: Optional[int] = None
 ) -> List[InstructorAvailability]:
-    """Active availability windows for an instructor on a given weekday (0=Monday)."""
-    return (
-        db.query(InstructorAvailability)
-        .filter(
-            InstructorAvailability.instructor_id == instructor_id,
-            InstructorAvailability.day_of_week == day_of_week,
-            InstructorAvailability.is_active.is_(True),
-        )
-        .order_by(InstructorAvailability.start_time)
-        .all()
+    """Active availability windows for an instructor on a given weekday (0=Monday).
+
+    When `service_id` is given, a window applies only if its own `service_id`
+    is NULL (wildcard — available for ALL services, the value every
+    pre-existing row has) or equal to the requested `service_id`. When
+    `service_id` is omitted, no service-scoping filter is applied.
+    """
+    query = db.query(InstructorAvailability).filter(
+        InstructorAvailability.instructor_id == instructor_id,
+        InstructorAvailability.day_of_week == day_of_week,
+        InstructorAvailability.is_active.is_(True),
     )
+    if service_id is not None:
+        query = query.filter(
+            or_(
+                InstructorAvailability.service_id.is_(None),
+                InstructorAvailability.service_id == service_id,
+            )
+        )
+    return query.order_by(InstructorAvailability.start_time).all()
 
 
 def get_busy_intervals(
@@ -74,7 +85,7 @@ def compute_available_slots(
     is accounted for.
     """
     day_of_week = target_date.weekday()  # Monday=0 ... Sunday=6
-    windows = get_availability_windows(db, instructor_id, day_of_week)
+    windows = get_availability_windows(db, instructor_id, day_of_week, service_id=service.id)
     if not windows:
         return []
 
@@ -111,12 +122,17 @@ def compute_available_slots(
 
 
 def slot_fits_availability(
-    db: Session, instructor_id: int, starts_at: datetime, ends_at: datetime
+    db: Session,
+    instructor_id: int,
+    starts_at: datetime,
+    ends_at: datetime,
+    service_id: Optional[int] = None,
 ) -> bool:
     """True if [starts_at, ends_at) is fully contained within one of the
-    instructor's active availability windows for that weekday."""
+    instructor's active availability windows for that weekday, scoped to
+    service_id (NULL window = wildcard, applies to every service)."""
     day_of_week = starts_at.weekday()
-    windows = get_availability_windows(db, instructor_id, day_of_week)
+    windows = get_availability_windows(db, instructor_id, day_of_week, service_id=service_id)
     for window in windows:
         window_start = datetime.combine(starts_at.date(), window.start_time)
         window_end = datetime.combine(starts_at.date(), window.end_time)
@@ -160,3 +176,34 @@ def has_conflicting_appointment(
 
 def get_active_instructor(db: Session, instructor_id: int) -> Optional[Instructor]:
     return db.query(Instructor).filter(Instructor.id == instructor_id).first()
+
+
+def get_eligible_instructor_ids_for_service(db: Session, service_id: int) -> List[int]:
+    """Instructor ids with at least one active availability window scoped to
+    service_id (NULL window = wildcard, applies to every service). No
+    date/day filtering here — that is `available-slots`'s job per-instructor;
+    this is just "which instructors are even eligible for this service"."""
+    rows = (
+        db.query(InstructorAvailability.instructor_id)
+        .filter(
+            InstructorAvailability.is_active.is_(True),
+            or_(
+                InstructorAvailability.service_id.is_(None),
+                InstructorAvailability.service_id == service_id,
+            ),
+        )
+        .distinct()
+        .all()
+    )
+    return [row[0] for row in rows]
+
+
+def get_service_location_ids(db: Session, service_id: int) -> List[int]:
+    """Location ids this service is explicitly linked to. Empty list means
+    the service has no establishment scoping — offered at ALL locations."""
+    rows = (
+        db.query(AppointmentServiceLocation.location_id)
+        .filter(AppointmentServiceLocation.service_id == service_id)
+        .all()
+    )
+    return [row[0] for row in rows]

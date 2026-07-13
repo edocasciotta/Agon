@@ -1,4 +1,5 @@
 from datetime import datetime, time
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -8,6 +9,9 @@ class InstructorAvailabilityCreate(BaseModel):
     day_of_week: int = Field(ge=0, le=6)
     start_time: time
     end_time: time
+    # NULL/omitted = available for ALL services (wildcard). A specific id
+    # scopes this window to only that service.
+    service_id: Optional[int] = None
 
     @model_validator(mode="after")
     def end_after_start(self) -> "InstructorAvailabilityCreate":
@@ -20,6 +24,7 @@ class InstructorAvailabilityResponse(BaseModel):
     id: int
     location_id: int
     instructor_id: int
+    service_id: Optional[int] = None
     day_of_week: int
     start_time: time
     end_time: time

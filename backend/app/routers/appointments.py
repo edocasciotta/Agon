@@ -236,8 +236,11 @@ def create_appointment(
 
     ends_at = starts_at + timedelta(minutes=service.duration_minutes)
 
-    # 3. Requested slot must fit inside the instructor's availability for that weekday.
-    if not slot_fits_availability(db, payload.instructor_id, starts_at, ends_at):
+    # 3. Requested slot must fit inside the instructor's availability for that weekday,
+    #    scoped to this service (a NULL-service_id window is a wildcard for every service).
+    if not slot_fits_availability(
+        db, payload.instructor_id, starts_at, ends_at, service_id=payload.service_id
+    ):
         raise_api_error(
             "APPOINTMENT_OUTSIDE_AVAILABILITY",
             "Requested time is outside the instructor's availability",
