@@ -6,12 +6,14 @@ import { membershipTypesApi } from '../../src/api/memberships'
 import { LoadingView } from '../../src/components/LoadingView'
 import { ErrorView } from '../../src/components/ErrorView'
 import { OfflineBanner } from '../../src/components/OfflineBanner'
+import { useT } from '../../src/i18n'
 import type { MembershipType } from '../../src/types'
 import type { ApiError } from '../../src/api/client'
 import { useTheme } from '../../src/theme/ThemeContext'
 
 export default function PurchaseScreen() {
   const router = useRouter()
+  const t = useT()
   const { primary } = useTheme()
 
   const { data: types, isLoading, error } = useQuery({
@@ -63,7 +65,7 @@ export default function PurchaseScreen() {
                   <Text style={styles.typeName}>{item.name}</Text>
                   {item.is_intro_offer && (
                     <View style={styles.introBadge}>
-                      <Text style={styles.introBadgeText}>Intro</Text>
+                      <Text style={styles.introBadgeText}>{t('membership.introOfferBadge')}</Text>
                     </View>
                   )}
                 </View>
