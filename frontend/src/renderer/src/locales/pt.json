@@ -908,7 +908,10 @@
     "noServices": "Ainda não há serviços",
     "emptyDesc": "Crie um serviço como personal training, massagem ou coaching privado que os clientes possam marcar individualmente.",
     "failedCreate": "Falha ao criar o serviço",
-    "failedEdit": "Falha ao atualizar o serviço"
+    "failedEdit": "Falha ao atualizar o serviço",
+    "establishments": "Estabelecimentos",
+    "establishmentsHelp": "Deixe em branco para oferecer este serviço em todos os estabelecimentos.",
+    "allLocations": "Todos os estabelecimentos"
   },
   "instructorAvailability": {
     "instructor": "Instrutor",
@@ -923,6 +926,8 @@
     "invalidWindow": "A hora de fim deve ser posterior à hora de início.",
     "failedAdd": "Falha ao adicionar a janela de disponibilidade",
     "failedRemove": "Falha ao remover a janela de disponibilidade",
+    "service": "Serviço",
+    "allServices": "Todos os serviços",
     "day0": "Segunda-feira",
     "day1": "Terça-feira",
     "day2": "Quarta-feira",

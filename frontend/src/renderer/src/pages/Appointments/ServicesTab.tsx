@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { appointmentServicesApi } from '../../api/appointmentServices'
+import { locationsApi, type Location } from '../../api/locations'
 import type { AppointmentService } from '../../types'
 import {
   appointmentServiceSchema,
@@ -17,18 +18,28 @@ const emptyForm: AppointmentServiceFormData = {
   description: '',
   duration_minutes: 60,
   buffer_minutes: 0,
+  establishment_ids: [],
 }
 
 interface ServiceModalProps {
   initial: AppointmentServiceFormData
   title: string
+  locations: Location[]
   onSave: (data: AppointmentServiceFormData) => void
   onClose: () => void
   saving: boolean
   error: string | null
 }
 
-function ServiceModal({ initial, title, onSave, onClose, saving, error }: ServiceModalProps) {
+function ServiceModal({
+  initial,
+  title,
+  locations,
+  onSave,
+  onClose,
+  saving,
+  error,
+}: ServiceModalProps) {
   const { t } = useTranslation()
   const [form, setForm] = useState<AppointmentServiceFormData>(initial)
   const [validationError, setValidationError] = useState<string | null>(null)
@@ -42,6 +53,15 @@ function ServiceModal({ initial, title, onSave, onClose, saving, error }: Servic
     }
     setValidationError(null)
     onSave(form)
+  }
+
+  function toggleEstablishment(id: number) {
+    setForm((f) => ({
+      ...f,
+      establishment_ids: f.establishment_ids.includes(id)
+        ? f.establishment_ids.filter((existing) => existing !== id)
+        : [...f.establishment_ids, id],
+    }))
   }
 
   return (
@@ -109,6 +129,36 @@ function ServiceModal({ initial, title, onSave, onClose, saving, error }: Servic
               />
             </div>
           </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t('appointmentServices.establishments')}
+            </label>
+            <p className="text-xs text-gray-500 mb-2">
+              {t('appointmentServices.establishmentsHelp')}
+            </p>
+            <div className="border border-gray-200 rounded-md max-h-36 overflow-y-auto divide-y divide-gray-100">
+              {locations.length === 0 ? (
+                <p className="px-3 py-2 text-xs text-gray-400">
+                  {t('appointmentServices.allLocations')}
+                </p>
+              ) : (
+                locations.map((location) => (
+                  <label
+                    key={location.id}
+                    className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-50"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={form.establishment_ids.includes(location.id)}
+                      onChange={() => toggleEstablishment(location.id)}
+                      className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    {location.name}
+                  </label>
+                ))
+              )}
+            </div>
+          </div>
           {(validationError || error) && (
             <div className="rounded-md bg-red-50 p-3 text-sm text-red-700 border border-red-200">
               {validationError ?? error}
@@ -152,6 +202,19 @@ export function ServicesTab() {
     queryKey: ['appointment-services', true],
     queryFn: () => appointmentServicesApi.list(true),
   })
+
+  const { data: locations = [] } = useQuery({
+    queryKey: ['locations'],
+    queryFn: () => locationsApi.list(),
+  })
+
+  const locationName = (id: number): string =>
+    locations.find((location) => location.id === id)?.name ?? `#${id}`
+
+  const establishmentsSummary = (service: AppointmentService): string =>
+    service.establishment_ids.length === 0
+      ? t('appointmentServices.allLocations')
+      : service.establishment_ids.map(locationName).join(', ')
 
   const createMutation = useMutation({
     mutationFn: appointmentServicesApi.create,
@@ -259,6 +322,9 @@ export function ServicesTab() {
                   {t('appointmentServices.bufferMinutes')}
                 </th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">
+                  {t('appointmentServices.establishments')}
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">
                   {t('common.status')}
                 </th>
                 <th className="px-4 py-3" />
@@ -281,6 +347,7 @@ export function ServicesTab() {
                   <td className="px-4 py-3 text-gray-600">
                     {t('appointmentServices.minutesValue', { count: service.buffer_minutes })}
                   </td>
+                  <td className="px-4 py-3 text-gray-600">{establishmentsSummary(service)}</td>
                   <td className="px-4 py-3">
                     <span
                       className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
@@ -316,6 +383,7 @@ export function ServicesTab() {
         <ServiceModal
           title={t('appointmentServices.newService')}
           initial={emptyForm}
+          locations={locations}
           onSave={(data) => createMutation.mutate(data)}
           onClose={() => {
             setCreateOpen(false)
@@ -334,7 +402,9 @@ export function ServicesTab() {
             description: editItem.description ?? '',
             duration_minutes: editItem.duration_minutes,
             buffer_minutes: editItem.buffer_minutes,
+            establishment_ids: editItem.establishment_ids,
           }}
+          locations={locations}
           onSave={(data) => updateMutation.mutate({ id: editItem.id, data })}
           onClose={() => {
             setEditItem(null)
