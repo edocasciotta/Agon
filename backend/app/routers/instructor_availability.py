@@ -1,10 +1,8 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Query
-from sqlalchemy.orm import Session
-
 from app.auth import require_authenticated, require_staff
 from app.database import get_db
+from app.models.appointment_service import AppointmentService
 from app.models.instructor import Instructor
 from app.models.instructor_availability import InstructorAvailability
 from app.schemas.instructor_availability import (
@@ -12,6 +10,8 @@ from app.schemas.instructor_availability import (
     InstructorAvailabilityResponse,
 )
 from app.utils import raise_api_error
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1", tags=["instructor-availability"])
 
@@ -57,6 +57,13 @@ def create_instructor_availability(
         raise_api_error("NOT_FOUND", "Instructor not found", status_code=404)
 
     _assert_can_manage(current_user, instructor)
+
+    if payload.service_id is not None:
+        service = (
+            db.query(AppointmentService).filter(AppointmentService.id == payload.service_id).first()
+        )
+        if not service:
+            raise_api_error("NOT_FOUND", "Appointment service not found", status_code=404)
 
     availability = InstructorAvailability(**payload.model_dump())
     db.add(availability)

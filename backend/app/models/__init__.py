@@ -1,5 +1,6 @@
 from app.models.appointment import Appointment
 from app.models.appointment_service import AppointmentService
+from app.models.appointment_service_location import AppointmentServiceLocation
 from app.models.auto_tag_rule import AutoTagRule
 from app.models.booking import Booking
 from app.models.checkin import Checkin
@@ -50,6 +51,7 @@ __all__ = [
     "Booking",
     "Waitlist",
     "AppointmentService",
+    "AppointmentServiceLocation",
     "Appointment",
     "Tag",
     "ClientTag",

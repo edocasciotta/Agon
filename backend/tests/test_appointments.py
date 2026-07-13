@@ -913,3 +913,530 @@ def test_get_appointment_enriched_fields_with_location(
     )
     assert resp.status_code == 200, resp.text
     assert resp.json()["location_name"] == "Main Street Studio"
+
+
+# ---------------------------------------------------------------------------
+# Service scoping (InstructorAvailability.service_id) and establishment
+# scoping (AppointmentService <-> Location, via appointment_service_locations)
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def service_b_fixture(db_session):
+    """A second, distinct appointment service (e.g. a different modality)."""
+    from app.models.appointment_service import AppointmentService
+
+    svc = AppointmentService(
+        name="Massage",
+        description="Deep tissue",
+        duration_minutes=60,
+        buffer_minutes=0,
+        is_active=True,
+    )
+    db_session.add(svc)
+    db_session.commit()
+    db_session.refresh(svc)
+    return svc
+
+
+@pytest.fixture
+def second_instructor_user_and_headers(client, db_session):
+    from app.models.instructor import Instructor
+
+    user = User(
+        email="pt-instructor-2@test.com",
+        password_hash=hash_password("instpass123"),
+        full_name="Second Instructor",
+        role="instructor",
+        is_active=True,
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+
+    instructor = Instructor(user_id=user.id, bio="Second PT")
+    db_session.add(instructor)
+    db_session.commit()
+    db_session.refresh(instructor)
+
+    resp = client.post(
+        "/api/v1/auth/login",
+        json={"email": "pt-instructor-2@test.com", "password": "instpass123"},
+    )
+    assert resp.status_code == 200, resp.text
+    headers = {"Authorization": f"Bearer {resp.json()['access_token']}"}
+    return instructor, headers
+
+
+@pytest.fixture
+def two_locations(db_session):
+    from app.models.location import Location
+
+    loc_a = Location(name="Downtown")
+    loc_b = Location(name="Uptown")
+    db_session.add_all([loc_a, loc_b])
+    db_session.commit()
+    db_session.refresh(loc_a)
+    db_session.refresh(loc_b)
+    return loc_a, loc_b
+
+
+def test_create_instructor_availability_with_service_id(
+    client, manager_auth_headers, instructor_user_and_headers, appointment_service_fixture
+):
+    instructor, _ = instructor_user_and_headers
+    resp = client.post(
+        "/api/v1/instructor-availability",
+        json={
+            "instructor_id": instructor.id,
+            "service_id": appointment_service_fixture.id,
+            "day_of_week": 0,
+            "start_time": "09:00:00",
+            "end_time": "17:00:00",
+        },
+        headers=manager_auth_headers,
+    )
+    assert resp.status_code == 201, resp.text
+    assert resp.json()["service_id"] == appointment_service_fixture.id
+
+
+def test_create_instructor_availability_service_id_not_found(
+    client, manager_auth_headers, instructor_user_and_headers
+):
+    instructor, _ = instructor_user_and_headers
+    resp = client.post(
+        "/api/v1/instructor-availability",
+        json={
+            "instructor_id": instructor.id,
+            "service_id": 999999,
+            "day_of_week": 0,
+            "start_time": "09:00:00",
+            "end_time": "17:00:00",
+        },
+        headers=manager_auth_headers,
+    )
+    assert resp.status_code == 404
+    assert resp.json()["detail"]["error"]["code"] == "NOT_FOUND"
+
+
+def test_availability_without_service_id_defaults_to_null(
+    client, availability_fixture, manager_auth_headers
+):
+    """A pre-existing availability row (created without service_id) is the
+    wildcard case — it must round-trip as service_id=None, not error."""
+    resp = client.get(
+        f"/api/v1/instructor-availability?instructor_id={availability_fixture.instructor_id}",
+        headers=manager_auth_headers,
+    )
+    assert resp.status_code == 200
+    row = next(r for r in resp.json() if r["id"] == availability_fixture.id)
+    assert row["service_id"] is None
+
+
+def test_service_scoped_availability_excludes_other_service(
+    client,
+    manager_auth_headers,
+    client_auth_headers,
+    instructor_user_and_headers,
+    appointment_service_fixture,
+    service_b_fixture,
+    bookable_slot,
+):
+    """An availability window scoped to service A must not produce slots for
+    service B on the same instructor/day."""
+    instructor, _ = instructor_user_and_headers
+    resp = client.post(
+        "/api/v1/instructor-availability",
+        json={
+            "instructor_id": instructor.id,
+            "service_id": appointment_service_fixture.id,
+            "day_of_week": 0,
+            "start_time": "09:00:00",
+            "end_time": "17:00:00",
+        },
+        headers=manager_auth_headers,
+    )
+    assert resp.status_code == 201, resp.text
+
+    # Service A (the one this window is scoped to) sees slots.
+    resp_a = client.get(
+        "/api/v1/appointments/available-slots",
+        params={
+            "service_id": appointment_service_fixture.id,
+            "instructor_id": instructor.id,
+            "date": bookable_slot.date().isoformat(),
+        },
+        headers=client_auth_headers,
+    )
+    assert resp_a.status_code == 200
+    assert len(resp_a.json()) > 0
+
+    # Service B (a different service) sees no slots — the window is scoped away.
+    resp_b = client.get(
+        "/api/v1/appointments/available-slots",
+        params={
+            "service_id": service_b_fixture.id,
+            "instructor_id": instructor.id,
+            "date": bookable_slot.date().isoformat(),
+        },
+        headers=client_auth_headers,
+    )
+    assert resp_b.status_code == 200
+    assert resp_b.json() == []
+
+
+def test_null_service_id_availability_shows_for_every_service(
+    client,
+    client_auth_headers,
+    availability_fixture,
+    appointment_service_fixture,
+    service_b_fixture,
+    bookable_slot,
+):
+    """A wildcard (service_id=NULL) availability window shows up for every
+    service, not just the one it was originally intended for."""
+    resp_a = client.get(
+        "/api/v1/appointments/available-slots",
+        params={
+            "service_id": appointment_service_fixture.id,
+            "instructor_id": availability_fixture.instructor_id,
+            "date": bookable_slot.date().isoformat(),
+        },
+        headers=client_auth_headers,
+    )
+    assert resp_a.status_code == 200
+    assert len(resp_a.json()) > 0
+
+    resp_b = client.get(
+        "/api/v1/appointments/available-slots",
+        params={
+            "service_id": service_b_fixture.id,
+            "instructor_id": availability_fixture.instructor_id,
+            "date": bookable_slot.date().isoformat(),
+        },
+        headers=client_auth_headers,
+    )
+    assert resp_b.status_code == 200
+    assert len(resp_b.json()) > 0
+
+
+def test_create_appointment_rejected_when_service_scoped_elsewhere(
+    client,
+    manager_auth_headers,
+    client_auth_headers,
+    client_membership,
+    instructor_user_and_headers,
+    appointment_service_fixture,
+    service_b_fixture,
+    bookable_slot,
+):
+    """Booking service B against a window scoped only to service A must be
+    rejected as outside availability, even though the time itself is free."""
+    instructor, _ = instructor_user_and_headers
+    resp = client.post(
+        "/api/v1/instructor-availability",
+        json={
+            "instructor_id": instructor.id,
+            "service_id": appointment_service_fixture.id,
+            "day_of_week": 0,
+            "start_time": "09:00:00",
+            "end_time": "17:00:00",
+        },
+        headers=manager_auth_headers,
+    )
+    assert resp.status_code == 201, resp.text
+
+    resp = client.post(
+        "/api/v1/appointments",
+        json={
+            "service_id": service_b_fixture.id,
+            "instructor_id": instructor.id,
+            "starts_at": bookable_slot.isoformat(),
+        },
+        headers=client_auth_headers,
+    )
+    assert resp.status_code == 409
+    assert resp.json()["detail"]["error"]["code"] == "APPOINTMENT_OUTSIDE_AVAILABILITY"
+
+
+# ---------------------------------------------------------------------------
+# AppointmentService <-> Location (establishment) scoping
+# ---------------------------------------------------------------------------
+
+
+def test_create_appointment_service_with_establishment_ids(
+    client, manager_auth_headers, two_locations
+):
+    loc_a, loc_b = two_locations
+    resp = client.post(
+        "/api/v1/appointment-services",
+        json={
+            "name": "Scoped Service",
+            "duration_minutes": 30,
+            "establishment_ids": [loc_a.id, loc_b.id],
+        },
+        headers=manager_auth_headers,
+    )
+    assert resp.status_code == 201, resp.text
+    assert sorted(resp.json()["establishment_ids"]) == sorted([loc_a.id, loc_b.id])
+
+
+def test_create_appointment_service_no_establishments_defaults_empty(client, manager_auth_headers):
+    resp = client.post(
+        "/api/v1/appointment-services",
+        json={"name": "Unscoped Service", "duration_minutes": 30},
+        headers=manager_auth_headers,
+    )
+    assert resp.status_code == 201, resp.text
+    assert resp.json()["establishment_ids"] == []
+
+
+def test_create_appointment_service_establishment_id_not_found(client, manager_auth_headers):
+    resp = client.post(
+        "/api/v1/appointment-services",
+        json={
+            "name": "Bad Service",
+            "duration_minutes": 30,
+            "establishment_ids": [999999],
+        },
+        headers=manager_auth_headers,
+    )
+    assert resp.status_code == 404
+    assert resp.json()["detail"]["error"]["code"] == "NOT_FOUND"
+
+
+def test_update_appointment_service_replaces_establishment_ids(
+    client, manager_auth_headers, appointment_service_fixture, two_locations
+):
+    loc_a, loc_b = two_locations
+    resp = client.patch(
+        f"/api/v1/appointment-services/{appointment_service_fixture.id}",
+        json={"establishment_ids": [loc_a.id]},
+        headers=manager_auth_headers,
+    )
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["establishment_ids"] == [loc_a.id]
+
+    # PUT/PATCH replaces the entire set — it does not merge with the previous one.
+    resp = client.patch(
+        f"/api/v1/appointment-services/{appointment_service_fixture.id}",
+        json={"establishment_ids": [loc_b.id]},
+        headers=manager_auth_headers,
+    )
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["establishment_ids"] == [loc_b.id]
+
+
+def test_update_appointment_service_without_establishment_ids_leaves_unchanged(
+    client, manager_auth_headers, appointment_service_fixture, two_locations
+):
+    loc_a, _ = two_locations
+    resp = client.patch(
+        f"/api/v1/appointment-services/{appointment_service_fixture.id}",
+        json={"establishment_ids": [loc_a.id]},
+        headers=manager_auth_headers,
+    )
+    assert resp.status_code == 200, resp.text
+
+    resp = client.patch(
+        f"/api/v1/appointment-services/{appointment_service_fixture.id}",
+        json={"duration_minutes": 75},
+        headers=manager_auth_headers,
+    )
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["duration_minutes"] == 75
+    assert resp.json()["establishment_ids"] == [loc_a.id]
+
+
+# ---------------------------------------------------------------------------
+# GET /appointment-services/{id}/available-instructors
+# ---------------------------------------------------------------------------
+
+
+def test_available_instructors_service_scoped_instructor_only(
+    client,
+    manager_auth_headers,
+    client_auth_headers,
+    instructor_user_and_headers,
+    second_instructor_user_and_headers,
+    appointment_service_fixture,
+    service_b_fixture,
+):
+    """Instructor A is scoped to service A only; instructor B is a wildcard
+    (available for every service). Service A's eligible list must include
+    both; service B's must include only B."""
+    instructor_a, _ = instructor_user_and_headers
+    instructor_b, _ = second_instructor_user_and_headers
+
+    client.post(
+        "/api/v1/instructor-availability",
+        json={
+            "instructor_id": instructor_a.id,
+            "service_id": appointment_service_fixture.id,
+            "day_of_week": 0,
+            "start_time": "09:00:00",
+            "end_time": "17:00:00",
+        },
+        headers=manager_auth_headers,
+    )
+    client.post(
+        "/api/v1/instructor-availability",
+        json={
+            "instructor_id": instructor_b.id,
+            "day_of_week": 1,
+            "start_time": "09:00:00",
+            "end_time": "17:00:00",
+        },
+        headers=manager_auth_headers,
+    )
+
+    resp_a = client.get(
+        f"/api/v1/appointment-services/{appointment_service_fixture.id}/available-instructors",
+        headers=client_auth_headers,
+    )
+    assert resp_a.status_code == 200, resp_a.text
+    ids_a = {i["id"] for i in resp_a.json()}
+    assert ids_a == {instructor_a.id, instructor_b.id}
+
+    resp_b = client.get(
+        f"/api/v1/appointment-services/{service_b_fixture.id}/available-instructors",
+        headers=client_auth_headers,
+    )
+    assert resp_b.status_code == 200, resp_b.text
+    ids_b = {i["id"] for i in resp_b.json()}
+    assert ids_b == {instructor_b.id}
+
+
+def test_available_instructors_service_not_found(client, client_auth_headers):
+    resp = client.get(
+        "/api/v1/appointment-services/999999/available-instructors",
+        headers=client_auth_headers,
+    )
+    assert resp.status_code == 404
+
+
+def test_available_instructors_excludes_instructor_at_other_establishment(
+    client,
+    manager_auth_headers,
+    client_auth_headers,
+    db_session,
+    instructor_user_and_headers,
+    second_instructor_user_and_headers,
+    two_locations,
+):
+    """A service scoped to a specific establishment must exclude an
+    otherwise-eligible instructor who is based at a different location."""
+    from app.models.appointment_service import AppointmentService
+
+    loc_a, loc_b = two_locations
+    instructor_a, _ = instructor_user_and_headers
+    instructor_b, _ = second_instructor_user_and_headers
+
+    # instructor_a stays at the default location_id=1; put instructor_b at loc_b.
+    instructor_b.location_id = loc_b.id
+    db_session.add(instructor_b)
+    db_session.commit()
+
+    scoped_service = AppointmentService(
+        name="Loc-scoped Service", duration_minutes=30, is_active=True
+    )
+    db_session.add(scoped_service)
+    db_session.commit()
+    db_session.refresh(scoped_service)
+
+    resp = client.patch(
+        f"/api/v1/appointment-services/{scoped_service.id}",
+        json={"establishment_ids": [loc_a.id]},
+        headers=manager_auth_headers,
+    )
+    assert resp.status_code == 200, resp.text
+
+    for instructor in (instructor_a, instructor_b):
+        client.post(
+            "/api/v1/instructor-availability",
+            json={
+                "instructor_id": instructor.id,
+                "day_of_week": 0,
+                "start_time": "09:00:00",
+                "end_time": "17:00:00",
+            },
+            headers=manager_auth_headers,
+        )
+
+    # instructor_a has no location_id column value set explicitly, so it is
+    # whatever the model default is (location_id=1). loc_a.id is very unlikely
+    # to be 1 in this in-memory DB (locations table starts empty at id 1), so
+    # instructor_a's location must be pinned explicitly for a deterministic test.
+    instructor_a.location_id = loc_a.id
+    db_session.add(instructor_a)
+    db_session.commit()
+
+    resp = client.get(
+        f"/api/v1/appointment-services/{scoped_service.id}/available-instructors",
+        headers=client_auth_headers,
+    )
+    assert resp.status_code == 200, resp.text
+    ids = {i["id"] for i in resp.json()}
+    assert ids == {instructor_a.id}
+    assert instructor_b.id not in ids
+
+
+def test_available_instructors_service_with_no_establishments_open_to_everyone(
+    client,
+    manager_auth_headers,
+    client_auth_headers,
+    db_session,
+    instructor_user_and_headers,
+    second_instructor_user_and_headers,
+    two_locations,
+):
+    """A service with zero linked establishments is offered everywhere —
+    instructors at any location are eligible."""
+    loc_a, loc_b = two_locations
+    instructor_a, _ = instructor_user_and_headers
+    instructor_b, _ = second_instructor_user_and_headers
+
+    instructor_a.location_id = loc_a.id
+    instructor_b.location_id = loc_b.id
+    db_session.add_all([instructor_a, instructor_b])
+    db_session.commit()
+
+    resp = client.post(
+        "/api/v1/appointment-services",
+        json={"name": "Open Service", "duration_minutes": 30},
+        headers=manager_auth_headers,
+    )
+    assert resp.status_code == 201, resp.text
+    service_id = resp.json()["id"]
+    assert resp.json()["establishment_ids"] == []
+
+    for instructor in (instructor_a, instructor_b):
+        client.post(
+            "/api/v1/instructor-availability",
+            json={
+                "instructor_id": instructor.id,
+                "day_of_week": 0,
+                "start_time": "09:00:00",
+                "end_time": "17:00:00",
+            },
+            headers=manager_auth_headers,
+        )
+
+    resp = client.get(
+        f"/api/v1/appointment-services/{service_id}/available-instructors",
+        headers=client_auth_headers,
+    )
+    assert resp.status_code == 200, resp.text
+    ids = {i["id"] for i in resp.json()}
+    assert ids == {instructor_a.id, instructor_b.id}
+
+
+def test_available_instructors_no_availability_returns_empty(
+    client, client_auth_headers, appointment_service_fixture
+):
+    resp = client.get(
+        f"/api/v1/appointment-services/{appointment_service_fixture.id}/available-instructors",
+        headers=client_auth_headers,
+    )
+    assert resp.status_code == 200
+    assert resp.json() == []
