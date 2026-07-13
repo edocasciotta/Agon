@@ -861,3 +861,55 @@ def test_complete_appointment_not_confirmed(client, manager_auth_headers, confir
     )
     assert resp.status_code == 409
     assert resp.json()["detail"]["error"]["code"] == "APPOINTMENT_NOT_CONFIRMED"
+
+
+# ---------------------------------------------------------------------------
+# Denormalised fields on GET /appointments and GET /appointments/{id} —
+# mobile appointment cards need service/instructor/location info instead of
+# bare IDs, avoiding 3 separate round-trip queries.
+# ---------------------------------------------------------------------------
+
+
+def test_list_appointments_includes_enriched_fields(
+    client, manager_auth_headers, confirmed_appointment
+):
+    resp = client.get("/api/v1/appointments", headers=manager_auth_headers)
+    assert resp.status_code == 200, resp.text
+    data = resp.json()
+    appt = next(a for a in data if a["id"] == confirmed_appointment["id"])
+    assert appt["service_name"] == "Personal Training"
+    assert appt["instructor_name"] == "PT Instructor"
+    # No Location row exists for the default location_id=1 in these fixtures —
+    # enrichment must degrade to None, not error.
+    assert appt["location_name"] is None
+
+
+def test_get_appointment_includes_enriched_fields(
+    client, client_auth_headers, confirmed_appointment
+):
+    resp = client.get(
+        f"/api/v1/appointments/{confirmed_appointment['id']}", headers=client_auth_headers
+    )
+    assert resp.status_code == 200, resp.text
+    data = resp.json()
+    assert data["service_name"] == "Personal Training"
+    assert data["instructor_name"] == "PT Instructor"
+    assert data["location_name"] is None
+
+
+def test_get_appointment_enriched_fields_with_location(
+    client, manager_auth_headers, confirmed_appointment, db_session
+):
+    """When a Location row exists for the appointment's location_id, its name
+    is surfaced too."""
+    from app.models.location import Location
+
+    location = Location(id=1, name="Main Street Studio")
+    db_session.add(location)
+    db_session.commit()
+
+    resp = client.get(
+        f"/api/v1/appointments/{confirmed_appointment['id']}", headers=manager_auth_headers
+    )
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["location_name"] == "Main Street Studio"

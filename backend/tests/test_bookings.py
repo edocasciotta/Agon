@@ -11,6 +11,8 @@ Tests for the booking engine (Phase 3):
 
 import datetime
 
+import pytest
+
 # ---------------------------------------------------------------------------
 # Helper to get client id from registered_client fixture
 # ---------------------------------------------------------------------------
@@ -20,6 +22,63 @@ def _get_client_id(db_session, email):
     from app.models.client import Client
 
     return db_session.query(Client).filter_by(email=email).first().id
+
+
+# ---------------------------------------------------------------------------
+# Fixture: a scheduled class with a real instructor + location, for asserting
+# the denormalised booking fields (class_type_name/location_name/
+# instructor_name/class_starts_at/class_ends_at) added for the mobile
+# booking-card enrichment.
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def enriched_class_fixture(db_session, manager_user):
+    from app.auth import hash_password
+    from app.models.class_template import ClassTemplate
+    from app.models.instructor import Instructor
+    from app.models.location import Location
+    from app.models.scheduled_class import ScheduledClass
+    from app.models.user import User
+
+    location = Location(name="Downtown Studio")
+    db_session.add(location)
+    db_session.commit()
+
+    instructor_user = User(
+        email="enrich-instructor@example.com",
+        password_hash=hash_password("instpass123"),
+        full_name="Jane Instructor",
+        role="instructor",
+        is_active=True,
+    )
+    db_session.add(instructor_user)
+    db_session.commit()
+
+    instructor = Instructor(user_id=instructor_user.id)
+    db_session.add(instructor)
+    db_session.commit()
+
+    tmpl = ClassTemplate(
+        name="Yoga Flow", duration_minutes=60, default_capacity=10, color="#123456", is_active=True
+    )
+    db_session.add(tmpl)
+    db_session.commit()
+
+    future = datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+    sc = ScheduledClass(
+        template_id=tmpl.id,
+        instructor_id=instructor.id,
+        location_id=location.id,
+        starts_at=future,
+        ends_at=future + datetime.timedelta(hours=1),
+        capacity=10,
+        status="scheduled",
+    )
+    db_session.add(sc)
+    db_session.commit()
+    db_session.refresh(sc)
+    return sc
 
 
 # ---------------------------------------------------------------------------
@@ -642,6 +701,7 @@ def test_create_booking_already_started_blocks_client(
 ):
     """Clients cannot book a class that has already started."""
     from app.utils import utcnow
+
     scheduled_class_fixture.starts_at = utcnow() - datetime.timedelta(hours=1)
     db_session.commit()
 
@@ -655,12 +715,17 @@ def test_create_booking_already_started_blocks_client(
 
 
 def test_manager_can_book_already_started_class(
-    client, manager_auth_headers, registered_client, client_membership,
-    scheduled_class_fixture, db_session
+    client,
+    manager_auth_headers,
+    registered_client,
+    client_membership,
+    scheduled_class_fixture,
+    db_session,
 ):
     """Managers can retroactively book a client into a class that has already started."""
-    from app.utils import utcnow
     from app.models.client import Client
+    from app.utils import utcnow
+
     scheduled_class_fixture.starts_at = utcnow() - datetime.timedelta(hours=1)
     db_session.commit()
 
@@ -672,3 +737,72 @@ def test_manager_can_book_already_started_class(
     )
     assert resp.status_code == 201, resp.text
     assert resp.json()["status"] == "confirmed"
+
+
+# ---------------------------------------------------------------------------
+# Denormalised fields on GET /bookings and GET /bookings/{id} — mobile
+# booking cards need class/location/instructor info instead of bare IDs.
+# ---------------------------------------------------------------------------
+
+
+def test_list_bookings_includes_enriched_fields(
+    client, client_auth_headers, client_membership, enriched_class_fixture
+):
+    create_resp = client.post(
+        "/api/v1/bookings",
+        json={"scheduled_class_id": enriched_class_fixture.id},
+        headers=client_auth_headers,
+    )
+    assert create_resp.status_code == 201, create_resp.text
+
+    resp = client.get("/api/v1/bookings", headers=client_auth_headers)
+    assert resp.status_code == 200, resp.text
+    data = resp.json()
+    booking = next(b for b in data if b["scheduled_class_id"] == enriched_class_fixture.id)
+    assert booking["class_type_name"] == "Yoga Flow"
+    assert booking["location_name"] == "Downtown Studio"
+    assert booking["instructor_name"] == "Jane Instructor"
+    assert booking["class_starts_at"] == enriched_class_fixture.starts_at.isoformat()
+    assert booking["class_ends_at"] == enriched_class_fixture.ends_at.isoformat()
+
+
+def test_get_booking_includes_enriched_fields(
+    client, client_auth_headers, client_membership, enriched_class_fixture
+):
+    create_resp = client.post(
+        "/api/v1/bookings",
+        json={"scheduled_class_id": enriched_class_fixture.id},
+        headers=client_auth_headers,
+    )
+    assert create_resp.status_code == 201, create_resp.text
+    booking_id = create_resp.json()["id"]
+
+    resp = client.get(f"/api/v1/bookings/{booking_id}", headers=client_auth_headers)
+    assert resp.status_code == 200, resp.text
+    data = resp.json()
+    assert data["class_type_name"] == "Yoga Flow"
+    assert data["location_name"] == "Downtown Studio"
+    assert data["instructor_name"] == "Jane Instructor"
+    assert data["class_starts_at"] == enriched_class_fixture.starts_at.isoformat()
+    assert data["class_ends_at"] == enriched_class_fixture.ends_at.isoformat()
+
+
+def test_list_bookings_enriched_fields_none_when_no_instructor_or_location(
+    client, client_auth_headers, client_membership, scheduled_class_fixture
+):
+    """scheduled_class_fixture has no instructor and no Location row for its
+    default location_id=1 — enrichment must degrade to None, not error."""
+    create_resp = client.post(
+        "/api/v1/bookings",
+        json={"scheduled_class_id": scheduled_class_fixture.id},
+        headers=client_auth_headers,
+    )
+    assert create_resp.status_code == 201, create_resp.text
+
+    resp = client.get("/api/v1/bookings", headers=client_auth_headers)
+    assert resp.status_code == 200, resp.text
+    data = resp.json()
+    booking = next(b for b in data if b["scheduled_class_id"] == scheduled_class_fixture.id)
+    assert booking["class_type_name"] == "Yoga"
+    assert booking["location_name"] is None
+    assert booking["instructor_name"] is None

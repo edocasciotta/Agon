@@ -1,13 +1,20 @@
 import logging
 from typing import List, Optional
 
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from sqlalchemy import func
+from sqlalchemy.orm import Session
+
 from app.auth import decode_token, oauth2_scheme, require_manager
 from app.database import get_db
 from app.limiter import get_jwt_sub, limiter
 from app.models.booking import Booking
 from app.models.class_template import ClassTemplate
+from app.models.instructor import Instructor
+from app.models.location import Location
 from app.models.payment import Payment
 from app.models.scheduled_class import ScheduledClass
+from app.models.user import User
 from app.models.waitlist import Waitlist
 from app.schemas.booking import (
     BookingCancelRequest,
@@ -28,9 +35,6 @@ from app.services.booking_service import (
 )
 from app.services.tag_service import evaluate_auto_tags
 from app.utils import utcnow
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
-from sqlalchemy import func
-from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +70,45 @@ def _resolve_caller(token: str, db: Session):
 
 
 # ---------------------------------------------------------------------------
+# Denormalisation helpers — mirrors the ScheduledClassResponse.template_name
+# pattern in app/routers/classes.py (outerjoins + post-validation attribute
+# assignment, since Pydantic V2 models are mutable by default). Used only by
+# the list/detail GET endpoints below; write endpoints are unaffected.
+# ---------------------------------------------------------------------------
+
+
+def _booking_enrichment_columns():
+    return (
+        ClassTemplate.name.label("class_type_name"),
+        Location.name.label("location_name"),
+        User.full_name.label("instructor_name"),
+        ScheduledClass.starts_at.label("class_starts_at"),
+        ScheduledClass.ends_at.label("class_ends_at"),
+    )
+
+
+def _with_booking_enrichment_joins(query):
+    return (
+        query.outerjoin(ScheduledClass, Booking.scheduled_class_id == ScheduledClass.id)
+        .outerjoin(ClassTemplate, ScheduledClass.template_id == ClassTemplate.id)
+        .outerjoin(Location, ScheduledClass.location_id == Location.id)
+        .outerjoin(Instructor, ScheduledClass.instructor_id == Instructor.id)
+        .outerjoin(User, Instructor.user_id == User.id)
+    )
+
+
+def _booking_row_to_response(row) -> BookingResponse:
+    booking, class_type_name, location_name, instructor_name, class_starts_at, class_ends_at = row
+    response = BookingResponse.model_validate(booking)
+    response.class_type_name = class_type_name
+    response.location_name = location_name
+    response.instructor_name = instructor_name
+    response.class_starts_at = class_starts_at
+    response.class_ends_at = class_ends_at
+    return response
+
+
+# ---------------------------------------------------------------------------
 # GET /bookings
 # ---------------------------------------------------------------------------
 
@@ -79,19 +122,22 @@ def list_bookings(
 ):
     role, subject_id, _ = _resolve_caller(token, db)
 
+    base_query = _with_booking_enrichment_joins(db.query(Booking, *_booking_enrichment_columns()))
+
     if role in ("manager", "instructor"):
-        query = db.query(Booking)
+        query = base_query
         if client_id is not None:
             query = query.filter(Booking.client_id == client_id)
         if class_id is not None:
             query = query.filter(Booking.scheduled_class_id == class_id)
     else:
         # client — only own bookings
-        query = db.query(Booking).filter(Booking.client_id == subject_id)
+        query = base_query.filter(Booking.client_id == subject_id)
         if class_id is not None:
             query = query.filter(Booking.scheduled_class_id == class_id)
 
-    return query.order_by(Booking.created_at.desc()).all()
+    rows = query.order_by(Booking.created_at.desc()).all()
+    return [_booking_row_to_response(row) for row in rows]
 
 
 # ---------------------------------------------------------------------------
@@ -587,13 +633,18 @@ def get_booking(
 ):
     role, subject_id, _ = _resolve_caller(token, db)
 
-    booking = db.query(Booking).filter(Booking.id == booking_id).first()
-    if not booking:
+    row = (
+        _with_booking_enrichment_joins(db.query(Booking, *_booking_enrichment_columns()))
+        .filter(Booking.id == booking_id)
+        .first()
+    )
+    if not row:
         raise HTTPException(
             status_code=404,
             detail={"error": {"code": "NOT_FOUND", "message": "Booking not found"}},
         )
 
+    booking = row[0]
     if role == "client" and booking.client_id != subject_id:
         raise HTTPException(
             status_code=403,
@@ -602,7 +653,7 @@ def get_booking(
             },
         )
 
-    return booking
+    return _booking_row_to_response(row)
 
 
 # ---------------------------------------------------------------------------

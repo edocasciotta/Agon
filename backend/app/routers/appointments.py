@@ -11,6 +11,9 @@ from app.database import get_db
 from app.limiter import get_jwt_sub, limiter
 from app.models.appointment import Appointment
 from app.models.appointment_service import AppointmentService
+from app.models.instructor import Instructor
+from app.models.location import Location
+from app.models.user import User
 from app.schemas.appointment import (
     AppointmentCancelRequest,
     AppointmentCompleteRequest,
@@ -94,6 +97,39 @@ def get_available_slots(
 
 
 # ---------------------------------------------------------------------------
+# Denormalisation helpers — mirrors the ScheduledClassResponse.template_name
+# pattern in app/routers/classes.py (outerjoins + post-validation attribute
+# assignment). Used only by the list/detail GET endpoints below.
+# ---------------------------------------------------------------------------
+
+
+def _appointment_enrichment_columns():
+    return (
+        AppointmentService.name.label("service_name"),
+        User.full_name.label("instructor_name"),
+        Location.name.label("location_name"),
+    )
+
+
+def _with_appointment_enrichment_joins(query):
+    return (
+        query.outerjoin(AppointmentService, Appointment.service_id == AppointmentService.id)
+        .outerjoin(Instructor, Appointment.instructor_id == Instructor.id)
+        .outerjoin(User, Instructor.user_id == User.id)
+        .outerjoin(Location, Appointment.location_id == Location.id)
+    )
+
+
+def _appointment_row_to_response(row) -> AppointmentResponse:
+    appointment, service_name, instructor_name, location_name = row
+    response = AppointmentResponse.model_validate(appointment)
+    response.service_name = service_name
+    response.instructor_name = instructor_name
+    response.location_name = location_name
+    return response
+
+
+# ---------------------------------------------------------------------------
 # GET /appointments
 # ---------------------------------------------------------------------------
 
@@ -110,7 +146,9 @@ def list_appointments(
 ):
     role, subject_id, _ = _resolve_caller(token, db)
 
-    query = db.query(Appointment)
+    query = _with_appointment_enrichment_joins(
+        db.query(Appointment, *_appointment_enrichment_columns())
+    )
 
     if role in ("manager", "instructor"):
         if instructor_id is not None:
@@ -130,7 +168,8 @@ def list_appointments(
     if status is not None:
         query = query.filter(Appointment.status == status)
 
-    return query.order_by(Appointment.starts_at.desc()).all()
+    rows = query.order_by(Appointment.starts_at.desc()).all()
+    return [_appointment_row_to_response(row) for row in rows]
 
 
 # ---------------------------------------------------------------------------
@@ -179,7 +218,6 @@ def create_appointment(
     instructor = get_active_instructor(db, payload.instructor_id)
     if not instructor:
         raise_api_error("NOT_FOUND", "Instructor not found", status_code=404)
-    from app.models.user import User
 
     instructor_user = db.query(User).filter(User.id == instructor.user_id).first()
     if not instructor_user or not instructor_user.is_active:
@@ -264,14 +302,21 @@ def get_appointment(
 ):
     role, subject_id, _ = _resolve_caller(token, db)
 
-    appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
-    if not appointment:
+    row = (
+        _with_appointment_enrichment_joins(
+            db.query(Appointment, *_appointment_enrichment_columns())
+        )
+        .filter(Appointment.id == appointment_id)
+        .first()
+    )
+    if not row:
         raise_api_error("NOT_FOUND", "Appointment not found", status_code=404)
 
+    appointment = row[0]
     if role == "client" and appointment.client_id != subject_id:
         raise_api_error("AUTH_INSUFFICIENT_PERMISSIONS", "Not your appointment", status_code=403)
 
-    return appointment
+    return _appointment_row_to_response(row)
 
 
 # ---------------------------------------------------------------------------
