@@ -930,5 +930,13 @@
     "day4": "Vendredi",
     "day5": "Samedi",
     "day6": "Dimanche"
+  },
+  "photoUpload": {
+    "changePhoto": "Changer la photo",
+    "uploading": "Téléchargement en cours...",
+    "invalidType": "Veuillez choisir une image JPG, PNG ou WEBP.",
+    "tooLarge": "L'image doit être inférieure à 5 Mo.",
+    "uploadError": "Échec du téléchargement de la photo. Veuillez réessayer.",
+    "altText": "Photo de profil de {{name}}"
   }
 }

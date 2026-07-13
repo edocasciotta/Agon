@@ -8,7 +8,10 @@ import { LoadingSpinner } from '../components/LoadingSpinner'
 import { PageHeader } from '../components/PageHeader'
 import { EmptyState } from '../components/EmptyState'
 import { Pagination } from '../components/Pagination'
+import { PhotoUpload } from '../components/PhotoUpload'
+import { AuthenticatedImage } from '../components/AuthenticatedImage'
 import { instructorSchema } from '../lib/formSchemas'
+import { resolveApiError } from '../lib/errorMessages'
 
 const PAGE_SIZE = 12
 
@@ -51,6 +54,7 @@ export function InstructorsPage() {
   const [confirmDeactivate, setConfirmDeactivate] = useState<Instructor | null>(null)
   const [confirmRemove, setConfirmRemove] = useState<Instructor | null>(null)
   const [removeError, setRemoveError] = useState<string | null>(null)
+  const [photoError, setPhotoError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -126,6 +130,16 @@ export function InstructorsPage() {
     },
   })
 
+  const uploadPhotoMutation = useMutation({
+    mutationFn: ({ id, file }: { id: number; file: File }) => instructorsApi.uploadPhoto(id, file),
+    onSuccess: (updated) => {
+      queryClient.invalidateQueries({ queryKey: ['instructors'] })
+      setEditing(updated)
+      setPhotoError(null)
+    },
+    onError: (err) => setPhotoError(resolveApiError(err, t('photoUpload.uploadError'))),
+  })
+
   const removeMutation = useMutation({
     mutationFn: (id: number) => instructorsApi.remove(id),
     onSuccess: () => {
@@ -148,6 +162,7 @@ export function InstructorsPage() {
     setFormData(DEFAULT_FORM)
     setFormErrors({})
     setApiError(null)
+    setPhotoError(null)
     setShowModal(true)
   }
 
@@ -156,6 +171,7 @@ export function InstructorsPage() {
     setFormData({ full_name: inst.full_name, email: inst.email, password: '', bio: inst.bio ?? '' })
     setFormErrors({})
     setApiError(null)
+    setPhotoError(null)
     setShowModal(true)
   }
 
@@ -165,6 +181,7 @@ export function InstructorsPage() {
     setFormData(DEFAULT_FORM)
     setFormErrors({})
     setApiError(null)
+    setPhotoError(null)
   }
 
   const validate = (): boolean => {
@@ -273,7 +290,15 @@ export function InstructorsPage() {
                   className={`bg-white border rounded-xl p-4 flex flex-col gap-3 ${inst.is_active ? 'border-gray-200' : 'border-gray-100 opacity-60'}`}
                 >
                   <div className="flex items-center gap-3">
-                    <InitialsAvatar name={inst.full_name} color={color} />
+                    {inst.photo_url ? (
+                      <AuthenticatedImage
+                        src={inst.photo_url}
+                        alt={t('photoUpload.altText', { name: inst.full_name })}
+                        className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                      />
+                    ) : (
+                      <InitialsAvatar name={inst.full_name} color={color} />
+                    )}
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5">
                         <p className="text-sm font-semibold text-gray-900 truncate">{inst.full_name}</p>
@@ -345,6 +370,27 @@ export function InstructorsPage() {
             <h3 className="text-sm font-semibold text-gray-900 mb-4">
               {editing ? t('instructors.editTitle') : t('instructors.addTitle')}
             </h3>
+
+            {editing && (
+              <div className="mb-4">
+                <PhotoUpload
+                  photoUrl={editing.photo_url}
+                  fallback={
+                    <InitialsAvatar
+                      name={editing.full_name}
+                      color={AVATAR_COLORS[editing.id % AVATAR_COLORS.length]}
+                    />
+                  }
+                  onUpload={(file) => uploadPhotoMutation.mutate({ id: editing.id, file })}
+                  isUploading={uploadPhotoMutation.isPending}
+                  size={56}
+                  inputId="instructor-photo-input"
+                  name={editing.full_name}
+                />
+                {photoError && <p className="text-xs text-red-500 mt-1">{photoError}</p>}
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>

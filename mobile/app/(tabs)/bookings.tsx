@@ -9,15 +9,20 @@ import {
   ActivityIndicator,
 } from 'react-native'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useRouter } from 'expo-router'
 import { bookingsApi } from '../../src/api/bookings'
 import { LoadingView } from '../../src/components/LoadingView'
 import { ErrorView } from '../../src/components/ErrorView'
+import { OfflineBanner } from '../../src/components/OfflineBanner'
+import { useT } from '../../src/i18n'
 import type { Booking } from '../../src/types'
 import type { ApiError } from '../../src/api/client'
-import { format, parseISO, isAfter } from 'date-fns'
+import { format, parseISO } from 'date-fns'
 import { useTheme } from '../../src/theme/ThemeContext'
 
 export default function BookingsScreen() {
+  const t = useT()
+  const router = useRouter()
   const queryClient = useQueryClient()
   const [cancellingId, setCancellingId] = useState<number | null>(null)
   const { primary } = useTheme()
@@ -61,7 +66,6 @@ export default function BookingsScreen() {
   if (isLoading) return <LoadingView message="Loading bookings..." />
   if (error) return <ErrorView code={(error as unknown as ApiError).code} />
 
-  const now = new Date()
   const upcoming = (bookings ?? []).filter(
     (b: Booking) => b.status === 'confirmed'
   )
@@ -74,56 +78,72 @@ export default function BookingsScreen() {
     { title: 'Past', data: past },
   ].filter((s) => s.data.length > 0)
 
-  if (sections.length === 0) {
-    return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>No bookings yet.</Text>
-        <Text style={styles.emptySubtext}>Browse classes to make your first booking.</Text>
-      </View>
-    )
-  }
-
   return (
-    <SectionList
-      style={styles.container}
-      sections={sections}
-      keyExtractor={(item) => String(item.id)}
-      renderSectionHeader={({ section }) => (
-        <Text style={styles.sectionHeader}>{section.title}</Text>
-      )}
-      renderItem={({ item, section }) => (
-        <View style={styles.bookingCard}>
-          <View style={styles.bookingInfo}>
-            <Text style={styles.bookingId}>Booking #{item.id}</Text>
-            <Text style={styles.bookingDate}>
-              Created {format(parseISO(item.created_at), 'MMM d, yyyy')}
-            </Text>
-            <Text style={styles.bookingClass}>Class #{item.scheduled_class_id}</Text>
-          </View>
-          <View style={styles.rightColumn}>
-            <View style={[styles.statusBadge, { backgroundColor: STATUS_COLORS[item.status] + '22' }]}>
-              <Text style={[styles.statusText, { color: STATUS_COLORS[item.status] }]}>
-                {item.status}
-              </Text>
-            </View>
-            {section.title === 'Upcoming' && (
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => handleCancel(item.id)}
-                disabled={cancellingId === item.id}
-              >
-                {cancellingId === item.id ? (
-                  <ActivityIndicator size="small" color="#DC2626" />
-                ) : (
-                  <Text style={styles.cancelText}>Cancel</Text>
-                )}
-              </TouchableOpacity>
-            )}
-          </View>
+    <View style={styles.container}>
+      <OfflineBanner />
+      {sections.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No bookings yet.</Text>
+          <Text style={styles.emptySubtext}>Browse classes to make your first booking.</Text>
         </View>
+      ) : (
+        <SectionList
+          style={styles.list}
+          sections={sections}
+          keyExtractor={(item) => String(item.id)}
+          renderSectionHeader={({ section }) => (
+            <Text style={styles.sectionHeader}>{section.title}</Text>
+          )}
+          renderItem={({ item, section }) => (
+            <TouchableOpacity
+              style={styles.bookingCard}
+              onPress={() => router.push(`/booking/${item.id}`)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.bookingInfo}>
+                <Text style={styles.bookingTitle}>
+                  {item.class_type_name ?? `${t('bookings.classFallback')} #${item.scheduled_class_id}`}
+                </Text>
+                {item.class_starts_at && (
+                  <Text style={styles.bookingDate}>
+                    {format(parseISO(item.class_starts_at), 'EEE, MMM d · HH:mm')}
+                  </Text>
+                )}
+                {item.instructor_name && (
+                  <Text style={styles.bookingInstructor}>
+                    {t('bookings.with')} {item.instructor_name}
+                  </Text>
+                )}
+                {item.location_name && (
+                  <Text style={styles.bookingLocation}>{item.location_name}</Text>
+                )}
+              </View>
+              <View style={styles.rightColumn}>
+                <View style={[styles.statusBadge, { backgroundColor: STATUS_COLORS[item.status] + '22' }]}>
+                  <Text style={[styles.statusText, { color: STATUS_COLORS[item.status] }]}>
+                    {item.status}
+                  </Text>
+                </View>
+                {section.title === 'Upcoming' && (
+                  <TouchableOpacity
+                    style={styles.cancelButton}
+                    onPress={() => handleCancel(item.id)}
+                    disabled={cancellingId === item.id}
+                  >
+                    {cancellingId === item.id ? (
+                      <ActivityIndicator size="small" color="#DC2626" />
+                    ) : (
+                      <Text style={styles.cancelText}>Cancel</Text>
+                    )}
+                  </TouchableOpacity>
+                )}
+              </View>
+            </TouchableOpacity>
+          )}
+          contentContainerStyle={styles.listContent}
+        />
       )}
-      contentContainerStyle={styles.listContent}
-    />
+    </View>
   )
 }
 
@@ -131,6 +151,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F9FAFB',
+  },
+  list: {
+    flex: 1,
   },
   listContent: {
     paddingBottom: 20,
@@ -179,7 +202,7 @@ const styles = StyleSheet.create({
   bookingInfo: {
     flex: 1,
   },
-  bookingId: {
+  bookingTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: '#111827',
@@ -187,9 +210,14 @@ const styles = StyleSheet.create({
   bookingDate: {
     fontSize: 12,
     color: '#9CA3AF',
+    marginTop: 4,
+  },
+  bookingInstructor: {
+    fontSize: 13,
+    color: '#6B7280',
     marginTop: 2,
   },
-  bookingClass: {
+  bookingLocation: {
     fontSize: 13,
     color: '#6B7280',
     marginTop: 2,
