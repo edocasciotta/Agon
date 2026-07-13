@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'expo-router'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { clientMembershipsApi, billingApi } from '../../src/api/memberships'
 import { LoadingView } from '../../src/components/LoadingView'
 import { ErrorView } from '../../src/components/ErrorView'
@@ -80,7 +81,10 @@ export default function MembershipScreen() {
 
   if (!activeMembership && !subscription) {
     return (
-      <View style={styles.emptyContainer}>
+      // edges excludes 'top': this screen already gets a native tab header (see
+      // (tabs)/_layout.tsx — headerShown isn't disabled for the Membership tab), which
+      // already accounts for the status bar/notch. Adding a top inset here would double it.
+      <SafeAreaView style={styles.emptyContainer} edges={['left', 'right', 'bottom']}>
         <Text style={styles.emptyTitle}>No Active Membership</Text>
         <Text style={styles.emptySubtext}>
           You don't have an active membership. Contact your studio or purchase one below.
@@ -97,7 +101,7 @@ export default function MembershipScreen() {
         >
           <Text style={styles.giftCardButtonText}>{t('giftCard.giveAGiftCard')}</Text>
         </TouchableOpacity>
-      </View>
+      </SafeAreaView>
     )
   }
 
@@ -106,7 +110,10 @@ export default function MembershipScreen() {
     : 'Unlimited'
 
   return (
-    <>
+    // edges excludes 'top': the Membership tab already renders a native header (see
+    // (tabs)/_layout.tsx — headerShown isn't disabled), which already insets for the
+    // status bar/notch. Adding a top inset here on top of that would double the padding.
+    <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
       <OfflineBanner />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         {activeMembership && (
@@ -205,7 +212,7 @@ export default function MembershipScreen() {
           <Text style={styles.giftCardButtonText}>{t('giftCard.giveAGiftCard')}</Text>
         </TouchableOpacity>
       </ScrollView>
-    </>
+    </SafeAreaView>
   )
 }
 

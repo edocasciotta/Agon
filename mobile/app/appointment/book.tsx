@@ -85,6 +85,16 @@ export default function BookAppointmentScreen() {
   const selectedService = services?.find((s) => s.id === serviceId)
   const selectedInstructor = instructors?.find((i) => i.id === instructorId)
 
+  // One clearer per step, keyed by Step so goBack can wipe a step (and everything after
+  // it) generically off STEP_ORDER instead of hardcoding each transition.
+  const stepClearers: Record<Step, () => void> = {
+    service: () => setServiceId(null),
+    instructor: () => setInstructorId(null),
+    date: () => setDate(null),
+    slot: () => setSelectedSlot(null),
+    notes: () => setNotes(''),
+  }
+
   function goNext() {
     const idx = STEP_ORDER.indexOf(step)
     if (idx < STEP_ORDER.length - 1) setStep(STEP_ORDER[idx + 1])
@@ -92,8 +102,17 @@ export default function BookAppointmentScreen() {
 
   function goBack() {
     const idx = STEP_ORDER.indexOf(step)
-    if (idx > 0) setStep(STEP_ORDER[idx - 1])
-    else router.back()
+    if (idx > 0) {
+      const targetIdx = idx - 1
+      // Clear the state for the step we're returning to and every step after it — those
+      // choices are no longer valid once the revisited step might change.
+      for (let i = targetIdx; i < STEP_ORDER.length; i++) {
+        stepClearers[STEP_ORDER[i]]()
+      }
+      setStep(STEP_ORDER[targetIdx])
+    } else {
+      router.back()
+    }
   }
 
   function handleConfirm() {

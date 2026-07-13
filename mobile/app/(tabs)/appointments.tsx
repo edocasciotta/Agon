@@ -112,7 +112,6 @@ export default function AppointmentsScreen() {
     <View style={styles.container}>
       <OfflineBanner />
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>{t('appointments.title')}</Text>
         <TouchableOpacity
           style={[styles.bookButton, { backgroundColor: primary }]}
           onPress={() => router.push('/appointment/book')}
@@ -185,27 +184,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 8,
   },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#111827',
-  },
   bookButton: {
     backgroundColor: '#4F46E5',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    alignItems: 'center',
   },
   bookButtonText: {
     color: '#fff',
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '600',
   },
   list: {
