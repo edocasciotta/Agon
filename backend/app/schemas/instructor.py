@@ -23,6 +23,7 @@ class InstructorResponse(BaseModel):
     full_name: str  # denormalised from user
     email: str  # denormalised from user
     is_active: bool  # denormalised from user
+    photo_url: Optional[str] = None
     created_at: datetime
     updated_at: datetime
     model_config = {"from_attributes": True}

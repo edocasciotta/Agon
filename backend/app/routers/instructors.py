@@ -1,13 +1,16 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile, status
 from sqlalchemy.orm import Session
 
-from app.auth import get_current_user, hash_password, require_manager
+from app.auth import decode_token, get_current_user, hash_password, oauth2_scheme, require_manager
 from app.database import get_db
+from app.limiter import get_jwt_sub, limiter
 from app.models.instructor import Instructor
 from app.models.user import User
 from app.schemas.instructor import InstructorCreate, InstructorResponse, InstructorUpdate
+from app.services.photo_service import delete_old_photo, validate_and_save_photo
+from app.utils import raise_api_error
 
 router = APIRouter(prefix="/api/v1/instructors", tags=["instructors"])
 
@@ -20,9 +23,44 @@ def _build_instructor_response(instructor: Instructor, user: User) -> dict:
         "full_name": user.full_name,
         "email": user.email,
         "is_active": user.is_active,
+        "photo_url": f"/api/v1/photos/{instructor.photo_path}" if instructor.photo_path else None,
         "created_at": instructor.created_at,
         "updated_at": instructor.updated_at,
     }
+
+
+def _authorize_instructor_photo_upload(
+    instructor_id: int,
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+) -> Instructor:
+    """A manager may upload on behalf of any instructor. An instructor may only
+    upload their own photo — resolved via Instructor.user_id, never by trusting
+    the path's instructor_id against the token's sub directly (role/entity
+    confusion risk per SECURITY_GUIDELINES.md §1.1).
+    """
+    payload = decode_token(token)
+    if payload.get("type") != "access":
+        raise_api_error("AUTH_TOKEN_INVALID", "Invalid token type", status_code=401)
+
+    role = payload.get("role", "client")
+    if role not in ("manager", "instructor"):
+        raise_api_error("AUTH_INSUFFICIENT_PERMISSIONS", "Staff access required", status_code=403)
+
+    instructor = db.query(Instructor).filter(Instructor.id == instructor_id).first()
+    if not instructor:
+        raise_api_error("NOT_FOUND", "Instructor not found", status_code=404)
+
+    if role == "instructor":
+        sub = payload.get("sub")
+        if sub is None or instructor.user_id != int(sub):
+            raise_api_error(
+                "AUTH_INSUFFICIENT_PERMISSIONS",
+                "You may only upload your own photo.",
+                status_code=403,
+            )
+
+    return instructor
 
 
 @router.get("", response_model=List[InstructorResponse])
@@ -120,6 +158,30 @@ def get_instructor(
             status_code=404,
             detail={"error": {"code": "NOT_FOUND", "message": "Instructor not found"}},
         )
+    user = db.query(User).filter(User.id == instructor.user_id).first()
+    return _build_instructor_response(instructor, user)
+
+
+@router.post("/{instructor_id}/photo", response_model=InstructorResponse)
+@limiter.limit("20/minute", key_func=get_jwt_sub)
+async def upload_instructor_photo(
+    request: Request,
+    instructor_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    instructor: Instructor = Depends(_authorize_instructor_photo_upload),
+):
+    content = await file.read()
+    new_filename = validate_and_save_photo(file, content, prefix=f"instructor_{instructor_id}")
+
+    old_photo_path = instructor.photo_path
+    instructor.photo_path = new_filename
+    db.commit()
+    db.refresh(instructor)
+
+    if old_photo_path:
+        delete_old_photo(old_photo_path)
+
     user = db.query(User).filter(User.id == instructor.user_id).first()
     return _build_instructor_response(instructor, user)
 
