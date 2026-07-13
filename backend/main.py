@@ -27,6 +27,7 @@ from app.routers import (
     migration,
     notifications,
     payments,
+    photos,
     promo_codes,
     reports,
     smart_lists,
@@ -145,6 +146,7 @@ app.include_router(notifications.router)
 app.include_router(reports.router)
 app.include_router(gdpr.router)
 app.include_router(migration.router)
+app.include_router(photos.router)
 app.include_router(support.router)
 app.include_router(email_settings.router)
 app.include_router(email_templates.router)

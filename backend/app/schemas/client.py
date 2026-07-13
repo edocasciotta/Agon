@@ -29,6 +29,7 @@ class ClientResponse(BaseModel):
     phone: Optional[str] = None
     date_of_birth: Optional[date] = None
     is_active: bool
+    photo_url: Optional[str] = None
     created_at: datetime
     updated_at: datetime
     model_config = {"from_attributes": True}

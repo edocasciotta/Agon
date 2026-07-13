@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class BookingCreate(BaseModel):
@@ -20,8 +20,17 @@ class BookingResponse(BaseModel):
     fee_charged: Optional[float] = None
     created_at: datetime
     updated_at: datetime
+    # Denormalised fields (populated via outerjoin in bookings.py list/detail
+    # endpoints only — mirrors the ScheduledClassResponse.template_name pattern
+    # in scheduled_class.py) so mobile booking cards can show useful info
+    # instead of bare IDs. None on any response path that doesn't enrich them.
+    class_type_name: Optional[str] = None
+    location_name: Optional[str] = None
+    instructor_name: Optional[str] = None
+    class_starts_at: Optional[datetime] = None
+    class_ends_at: Optional[datetime] = None
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(from_attributes=True)
 
 
 class BookingCancelRequest(BaseModel):
