@@ -818,3 +818,155 @@ def test_instructor_cannot_manage_another_instructors_availability(
         headers=instructor_headers,
     )
     assert resp.status_code == 403
+
+
+# ── IDOR: profile photo upload ──────────────────────────────────────────────
+
+
+def _png_bytes():
+    import io
+
+    from PIL import Image
+
+    buf = io.BytesIO()
+    Image.new("RGB", (4, 4), color=(1, 2, 3)).save(buf, format="PNG")
+    return buf.getvalue()
+
+
+@pytest.fixture
+def instructor_a_with_row(client, db_session):
+    """An instructor user WITH a linked Instructor row (photo endpoints need
+    the row, unlike the plain `instructor_headers` fixture)."""
+    from app.models.instructor import Instructor
+
+    user = User(
+        email="photo-idor-instructor-a@test.com",
+        password_hash=hash_password("instpass123"),
+        full_name="Instructor A",
+        role="instructor",
+        is_active=True,
+    )
+    db_session.add(user)
+    db_session.commit()
+    instructor = Instructor(user_id=user.id)
+    db_session.add(instructor)
+    db_session.commit()
+    db_session.refresh(instructor)
+
+    resp = client.post(
+        "/api/v1/auth/login",
+        json={"email": "photo-idor-instructor-a@test.com", "password": "instpass123"},
+    )
+    assert resp.status_code == 200, resp.text
+    headers = {"Authorization": f"Bearer {resp.json()['access_token']}"}
+    return {"instructor_id": instructor.id, "headers": headers}
+
+
+@pytest.fixture
+def instructor_b_with_row(client, db_session):
+    """A second instructor user with a linked Instructor row."""
+    from app.models.instructor import Instructor
+
+    user = User(
+        email="photo-idor-instructor-b@test.com",
+        password_hash=hash_password("instpass123"),
+        full_name="Instructor B",
+        role="instructor",
+        is_active=True,
+    )
+    db_session.add(user)
+    db_session.commit()
+    instructor = Instructor(user_id=user.id)
+    db_session.add(instructor)
+    db_session.commit()
+    db_session.refresh(instructor)
+
+    resp = client.post(
+        "/api/v1/auth/login",
+        json={"email": "photo-idor-instructor-b@test.com", "password": "instpass123"},
+    )
+    assert resp.status_code == 200, resp.text
+    headers = {"Authorization": f"Bearer {resp.json()['access_token']}"}
+    return {"instructor_id": instructor.id, "headers": headers}
+
+
+def test_client_b_cannot_upload_client_a_photo(
+    client, client_b_headers, registered_client, db_session
+):
+    """Client B must receive 403 uploading to Client A's photo endpoint."""
+    from app.models.client import Client
+
+    client_a = db_session.query(Client).filter_by(email=registered_client["email"]).first()
+    files = {"file": ("hack.png", _png_bytes(), "image/png")}
+    resp = client.post(
+        f"/api/v1/clients/{client_a.id}/photo", files=files, headers=client_b_headers
+    )
+    assert resp.status_code == 403
+    assert resp.json()["detail"]["error"]["code"] == "FORBIDDEN"
+
+
+def test_instructor_cannot_upload_client_photo(
+    client, instructor_headers, registered_client, db_session
+):
+    """An instructor token must be rejected by the client photo upload endpoint."""
+    from app.models.client import Client
+
+    client_a = db_session.query(Client).filter_by(email=registered_client["email"]).first()
+    files = {"file": ("hack.png", _png_bytes(), "image/png")}
+    resp = client.post(
+        f"/api/v1/clients/{client_a.id}/photo", files=files, headers=instructor_headers
+    )
+    assert resp.status_code == 403
+    assert resp.json()["detail"]["error"]["code"] == "AUTH_INSUFFICIENT_PERMISSIONS"
+
+
+def test_instructor_cannot_upload_another_instructors_photo(
+    client, instructor_a_with_row, instructor_b_with_row
+):
+    """Instructor A must receive 403 uploading to Instructor B's photo endpoint."""
+    files = {"file": ("hack.png", _png_bytes(), "image/png")}
+    resp = client.post(
+        f"/api/v1/instructors/{instructor_b_with_row['instructor_id']}/photo",
+        files=files,
+        headers=instructor_a_with_row["headers"],
+    )
+    assert resp.status_code == 403
+    assert resp.json()["detail"]["error"]["code"] == "AUTH_INSUFFICIENT_PERMISSIONS"
+
+
+def test_client_cannot_upload_instructor_photo(client, client_auth_headers, instructor_a_with_row):
+    """A client token must be rejected by the instructor photo upload endpoint."""
+    files = {"file": ("hack.png", _png_bytes(), "image/png")}
+    resp = client.post(
+        f"/api/v1/instructors/{instructor_a_with_row['instructor_id']}/photo",
+        files=files,
+        headers=client_auth_headers,
+    )
+    assert resp.status_code == 403
+    assert resp.json()["detail"]["error"]["code"] == "AUTH_INSUFFICIENT_PERMISSIONS"
+
+
+def test_client_a_can_upload_own_photo_not_403(
+    client, client_auth_headers, registered_client, db_session
+):
+    """Sanity check: the owning client is NOT rejected (contrast with the
+    IDOR tests above)."""
+    from app.models.client import Client
+
+    client_a = db_session.query(Client).filter_by(email=registered_client["email"]).first()
+    files = {"file": ("me.png", _png_bytes(), "image/png")}
+    resp = client.post(
+        f"/api/v1/clients/{client_a.id}/photo", files=files, headers=client_auth_headers
+    )
+    assert resp.status_code == 200
+
+
+def test_instructor_a_can_upload_own_photo_not_403(client, instructor_a_with_row):
+    """Sanity check: an instructor uploading their own photo is NOT rejected."""
+    files = {"file": ("me.png", _png_bytes(), "image/png")}
+    resp = client.post(
+        f"/api/v1/instructors/{instructor_a_with_row['instructor_id']}/photo",
+        files=files,
+        headers=instructor_a_with_row["headers"],
+    )
+    assert resp.status_code == 200
