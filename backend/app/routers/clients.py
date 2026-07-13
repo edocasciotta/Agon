@@ -2,9 +2,6 @@ import uuid
 from datetime import timedelta
 from typing import Optional
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile
-from sqlalchemy.orm import Session
-
 from app.auth import decode_token, get_current_client, oauth2_scheme, require_manager, require_staff
 from app.database import get_db
 from app.limiter import get_jwt_sub, limiter
@@ -22,6 +19,8 @@ from app.schemas.client import (
 )
 from app.services.photo_service import delete_old_photo, validate_and_save_photo
 from app.utils import raise_api_error, utcnow
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1/clients", tags=["clients"])
 

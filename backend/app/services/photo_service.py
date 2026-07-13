@@ -17,9 +17,8 @@ import re
 import secrets
 from typing import Optional
 
-from fastapi import UploadFile
-
 from app.utils import raise_api_error, utcnow
+from fastapi import UploadFile
 
 logger = logging.getLogger(__name__)
 

@@ -1,11 +1,10 @@
 import os
 
-from fastapi import APIRouter, Depends
-from fastapi.responses import FileResponse
-
 from app.auth import require_authenticated
 from app.services.photo_service import resolve_safe_photo_path
 from app.utils import raise_api_error
+from fastapi import APIRouter, Depends
+from fastapi.responses import FileResponse
 
 router = APIRouter(prefix="/api/v1/photos", tags=["photos"])
 
