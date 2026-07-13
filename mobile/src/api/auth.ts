@@ -1,6 +1,7 @@
 import { apiClient } from './client'
 import * as SecureStore from 'expo-secure-store'
 import { TOKEN_KEY } from './client'
+import type { ClientUser } from '../types'
 
 export const authApi = {
   register: async (email: string, password: string, full_name: string) => {
@@ -11,7 +12,7 @@ export const authApi = {
     const res = await apiClient.post('/api/v1/auth/login', { email, password })
     return res.data as { access_token: string; refresh_token: string }
   },
-  me: async () => {
+  me: async (): Promise<ClientUser> => {
     const res = await apiClient.get('/api/v1/auth/me')
     return res.data
   },

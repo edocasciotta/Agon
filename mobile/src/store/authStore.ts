@@ -1,13 +1,9 @@
 import { create } from 'zustand'
 import * as SecureStore from 'expo-secure-store'
 import { TOKEN_KEY } from '../api/client'
+import type { ClientUser } from '../types'
 
-interface ClientUser {
-  id: number
-  email: string
-  full_name: string
-  role: string
-}
+export type { ClientUser }
 
 interface AuthStore {
   user: ClientUser | null

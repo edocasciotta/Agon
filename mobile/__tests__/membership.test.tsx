@@ -77,7 +77,7 @@ const mockCanceledSubscription = {
 beforeEach(() => {
   jest.clearAllMocks()
   useAuthStore.setState({
-    user: { id: 42, email: 'test@test.com', full_name: 'Test User', role: 'client' },
+    user: { id: 42, email: 'test@test.com', full_name: 'Test User', role: 'client', photo_url: null },
   })
   ;(clientMembershipsApi.getOwn as jest.Mock).mockResolvedValue([mockActiveMembership])
 })

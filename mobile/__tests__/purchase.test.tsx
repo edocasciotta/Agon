@@ -116,7 +116,7 @@ const mockTypeNotOnline = {
 beforeEach(() => {
   jest.clearAllMocks()
   useAuthStore.setState({
-    user: { id: 42, email: 'test@test.com', full_name: 'Test', role: 'client' },
+    user: { id: 42, email: 'test@test.com', full_name: 'Test', role: 'client', photo_url: null },
   })
 })
 

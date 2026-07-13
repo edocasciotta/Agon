@@ -81,6 +81,9 @@ const translations: Record<Locale, Record<string, string>> = {
     'profile.account': 'Account',
     'profile.signOut': 'Sign Out',
     'profile.disconnectStudio': 'Disconnect from Studio',
+    'profile.changePhoto': 'Change photo',
+    'profile.photoPermissionDenied': 'Allow photo library access to change your profile photo.',
+    'profile.photoTooLarge': 'This photo is too large. Please choose one under 5MB.',
     'calendarSync.title': 'Sync to Calendar',
     'calendarSync.description': "See your upcoming bookings in your phone's calendar app.",
     'calendarSync.addToCalendar': 'Add to Calendar',
@@ -209,6 +212,10 @@ const translations: Record<Locale, Record<string, string>> = {
     'profile.account': 'Account',
     'profile.signOut': 'Esci',
     'profile.disconnectStudio': 'Disconnetti dallo studio',
+    'profile.changePhoto': 'Cambia foto',
+    'profile.photoPermissionDenied':
+      "Consenti l'accesso alla libreria foto per cambiare la tua foto profilo.",
+    'profile.photoTooLarge': 'Questa foto è troppo grande. Scegline una inferiore a 5MB.',
     'calendarSync.title': 'Sincronizza con il calendario',
     'calendarSync.description':
       'Visualizza le tue prossime prenotazioni nell\'app calendario del telefono.',
@@ -338,6 +345,10 @@ const translations: Record<Locale, Record<string, string>> = {
     'profile.account': 'Compte',
     'profile.signOut': 'Déconnexion',
     'profile.disconnectStudio': 'Se déconnecter du studio',
+    'profile.changePhoto': 'Changer la photo',
+    'profile.photoPermissionDenied':
+      "Autorisez l'accès à la photothèque pour changer votre photo de profil.",
+    'profile.photoTooLarge': 'Cette photo est trop volumineuse. Veuillez en choisir une de moins de 5 Mo.',
     'calendarSync.title': 'Synchroniser avec le calendrier',
     'calendarSync.description':
       "Retrouvez vos prochaines réservations dans l'application calendrier de votre téléphone.",
@@ -467,6 +478,10 @@ const translations: Record<Locale, Record<string, string>> = {
     'profile.account': 'Konto',
     'profile.signOut': 'Abmelden',
     'profile.disconnectStudio': 'Vom Studio trennen',
+    'profile.changePhoto': 'Foto ändern',
+    'profile.photoPermissionDenied':
+      'Erlaube den Zugriff auf die Fotobibliothek, um dein Profilfoto zu ändern.',
+    'profile.photoTooLarge': 'Dieses Foto ist zu groß. Bitte wähle eines unter 5MB.',
     'calendarSync.title': 'Mit Kalender synchronisieren',
     'calendarSync.description':
       'Sieh deine anstehenden Buchungen in der Kalender-App deines Telefons.',
@@ -596,6 +611,10 @@ const translations: Record<Locale, Record<string, string>> = {
     'profile.account': 'Cuenta',
     'profile.signOut': 'Cerrar sesión',
     'profile.disconnectStudio': 'Desconectar del estudio',
+    'profile.changePhoto': 'Cambiar foto',
+    'profile.photoPermissionDenied':
+      'Permite el acceso a la biblioteca de fotos para cambiar tu foto de perfil.',
+    'profile.photoTooLarge': 'Esta foto es demasiado grande. Elige una de menos de 5MB.',
     'calendarSync.title': 'Sincronizar con el calendario',
     'calendarSync.description':
       'Consulta tus próximas reservas en la app de calendario de tu teléfono.',
@@ -725,6 +744,10 @@ const translations: Record<Locale, Record<string, string>> = {
     'profile.account': 'Conta',
     'profile.signOut': 'Sair',
     'profile.disconnectStudio': 'Desconectar do estúdio',
+    'profile.changePhoto': 'Alterar foto',
+    'profile.photoPermissionDenied':
+      'Permita o acesso à biblioteca de fotos para alterar sua foto de perfil.',
+    'profile.photoTooLarge': 'Esta foto é muito grande. Escolha uma com menos de 5MB.',
     'calendarSync.title': 'Sincronizar com o calendário',
     'calendarSync.description':
       'Veja suas próximas reservas no app de calendário do seu telefone.',
@@ -854,6 +877,10 @@ const translations: Record<Locale, Record<string, string>> = {
     'profile.account': 'Account',
     'profile.signOut': 'Uitloggen',
     'profile.disconnectStudio': 'Loskoppelen van studio',
+    'profile.changePhoto': 'Foto wijzigen',
+    'profile.photoPermissionDenied':
+      'Geef toegang tot je fotobibliotheek om je profielfoto te wijzigen.',
+    'profile.photoTooLarge': 'Deze foto is te groot. Kies er een onder de 5MB.',
     'calendarSync.title': 'Synchroniseren met agenda',
     'calendarSync.description':
       'Bekijk je aankomende boekingen in de agenda-app van je telefoon.',
