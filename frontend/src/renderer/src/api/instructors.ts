@@ -9,6 +9,7 @@ export interface Instructor {
   is_active: boolean
   created_at?: string
   updated_at?: string
+  photo_url?: string | null
 }
 
 export interface InstructorCreate {
@@ -47,5 +48,13 @@ export const instructorsApi = {
   },
   remove: async (id: number): Promise<void> => {
     await apiClient.delete(`/api/v1/instructors/${id}/remove`)
+  },
+  uploadPhoto: async (id: number, file: File): Promise<Instructor> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const res = await apiClient.post(`/api/v1/instructors/${id}/photo`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return res.data
   },
 }

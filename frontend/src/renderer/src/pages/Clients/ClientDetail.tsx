@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, User } from 'lucide-react'
 import { clientsApi } from '../../api/clients'
 import { membershipTypesApi, membershipsApi } from '../../api/memberships'
 import { billingApi } from '../../api/billing'
@@ -14,6 +14,8 @@ import { waiversApi } from '../../api/waivers'
 import { LoadingSpinner } from '../../components/LoadingSpinner'
 import { ErrorMessage } from '../../components/ErrorMessage'
 import { PageHeader } from '../../components/PageHeader'
+import { PhotoUpload } from '../../components/PhotoUpload'
+import { resolveApiError } from '../../lib/errorMessages'
 import type { ApiError } from '../../api/client'
 
 export function ClientDetail() {
@@ -38,6 +40,7 @@ export function ClientDetail() {
   const [smsMsg, setSmsMsg] = useState<{ text: string; ok: boolean } | null>(null)
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false)
   const [feedUrlCopied, setFeedUrlCopied] = useState(false)
+  const [photoError, setPhotoError] = useState<string | null>(null)
 
   const { data: client, isLoading: clientLoading, error: clientError } = useQuery({
     queryKey: ['client', clientId],
@@ -139,6 +142,17 @@ export function ClientDetail() {
     },
   })
 
+  const uploadPhotoMutation = useMutation({
+    mutationFn: (file: File) => clientsApi.uploadPhoto(clientId, file),
+    onSuccess: (updated) => {
+      // Apply the server's response directly (same pattern as calendar-sync regenerate above)
+      // rather than invalidating, so the new photo appears immediately without a refetch race.
+      queryClient.setQueryData(['client', clientId], updated)
+      setPhotoError(null)
+    },
+    onError: (err) => setPhotoError(resolveApiError(err, t('photoUpload.uploadError'))),
+  })
+
   const sendSmsMutation = useMutation({
     mutationFn: (body: string) => smsApi.send(clientId, body),
     onSuccess: () => {
@@ -222,6 +236,23 @@ export function ClientDetail() {
 
       {/* Client Info */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+        <div className="mb-4">
+          <PhotoUpload
+            photoUrl={client.photo_url}
+            fallback={
+              <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
+                <User className="w-8 h-8" />
+              </div>
+            }
+            onUpload={(file) => uploadPhotoMutation.mutate(file)}
+            isUploading={uploadPhotoMutation.isPending}
+            size={64}
+            inputId="client-photo-input"
+            name={client.full_name}
+          />
+          {photoError && <p className="text-xs text-red-500 mt-1">{photoError}</p>}
+        </div>
+
         {editing ? (
           <div className="space-y-3">
             <div>

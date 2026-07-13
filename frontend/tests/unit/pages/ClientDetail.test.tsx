@@ -21,7 +21,14 @@ vi.mock('../../../src/renderer/src/api/clients', () => ({
     bookings: vi.fn().mockResolvedValue([]),
     memberships: vi.fn().mockResolvedValue([]),
     update: vi.fn().mockResolvedValue(baseClient),
+    uploadPhoto: vi.fn(),
   },
+}))
+
+// AuthenticatedImage (used to display an uploaded photo) fetches through the shared apiClient.
+const apiClientGetMock = vi.fn().mockResolvedValue({ data: new Blob(['x'], { type: 'image/png' }) })
+vi.mock('../../../src/renderer/src/api/client', () => ({
+  apiClient: { get: (...args: unknown[]) => apiClientGetMock(...args) },
 }))
 
 vi.mock('../../../src/renderer/src/api/memberships', () => ({
@@ -102,6 +109,10 @@ beforeEach(async () => {
   Object.assign(navigator, {
     clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
   })
+
+  // jsdom doesn't implement these; stub them for AuthenticatedImage's object-URL flow.
+  URL.createObjectURL = vi.fn(() => 'blob:mock-url')
+  URL.revokeObjectURL = vi.fn()
 })
 
 describe('ClientDetail — Calendar Sync', () => {
@@ -224,5 +235,57 @@ describe('ClientDetail — Waivers', () => {
     expect(await screen.findByText('Injury Release')).toBeTruthy()
     expect(screen.getByText('Blocks booking')).toBeTruthy()
     expect(screen.getByText('Not signed')).toBeTruthy()
+  })
+})
+
+describe('ClientDetail — Photo Upload', () => {
+  it('uploads a new photo on file selection and displays it once the upload succeeds', async () => {
+    const { clientsApi } = await import('../../../src/renderer/src/api/clients')
+    vi.mocked(clientsApi.uploadPhoto).mockResolvedValue({
+      ...baseClient,
+      photo_url: '/api/v1/photos/jane.png',
+    })
+
+    renderPage()
+    await screen.findByText(baseClient.full_name)
+
+    const changePhotoButton = await screen.findByTitle('Change photo')
+    fireEvent.click(changePhotoButton)
+
+    const fileInput = document.getElementById('client-photo-input') as HTMLInputElement
+    const file = new File([new Uint8Array(10)], 'photo.png', { type: 'image/png' })
+    fireEvent.change(fileInput, { target: { files: [file] } })
+
+    await waitFor(() => {
+      expect(clientsApi.uploadPhoto).toHaveBeenCalledWith(1, file)
+    })
+
+    expect(await screen.findByAltText("Jane Doe's profile photo")).toBeTruthy()
+  })
+
+  it('shows a client-side validation error and does not call the API for an oversized file', async () => {
+    const { clientsApi } = await import('../../../src/renderer/src/api/clients')
+    renderPage()
+    await screen.findByText(baseClient.full_name)
+
+    const fileInput = document.getElementById('client-photo-input') as HTMLInputElement
+    const bigFile = new File([new Uint8Array(6 * 1024 * 1024)], 'big.png', { type: 'image/png' })
+    fireEvent.change(fileInput, { target: { files: [bigFile] } })
+
+    expect(await screen.findByText(/smaller than 5MB/i)).toBeTruthy()
+    expect(clientsApi.uploadPhoto).not.toHaveBeenCalled()
+  })
+
+  it('shows a client-side validation error and does not call the API for an unsupported file type', async () => {
+    const { clientsApi } = await import('../../../src/renderer/src/api/clients')
+    renderPage()
+    await screen.findByText(baseClient.full_name)
+
+    const fileInput = document.getElementById('client-photo-input') as HTMLInputElement
+    const badFile = new File([new Uint8Array(10)], 'doc.pdf', { type: 'application/pdf' })
+    fireEvent.change(fileInput, { target: { files: [badFile] } })
+
+    expect(await screen.findByText(/JPG, PNG, or WEBP/i)).toBeTruthy()
+    expect(clientsApi.uploadPhoto).not.toHaveBeenCalled()
   })
 })
