@@ -27,6 +27,12 @@ class AppointmentResponse(BaseModel):
     notes: Optional[str] = None
     created_at: datetime
     updated_at: datetime
+    # Denormalised fields (populated via outerjoin in appointments.py list/detail
+    # endpoints only — same pattern as BookingResponse / ScheduledClassResponse)
+    # so mobile appointment cards don't need separate service/instructor round-trips.
+    service_name: Optional[str] = None
+    instructor_name: Optional[str] = None
+    location_name: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
