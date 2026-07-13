@@ -16,6 +16,13 @@ export interface Booking {
   status: 'confirmed' | 'cancelled' | 'no_show'
   credit_deducted: boolean
   created_at: string
+  // Enriched fields resolved server-side from the linked scheduled class. All
+  // optional/nullable — a cancelled or orphaned class may not resolve.
+  class_type_name?: string | null
+  location_name?: string | null
+  instructor_name?: string | null
+  class_starts_at?: string | null
+  class_ends_at?: string | null
 }
 
 export interface Instructor {
@@ -56,6 +63,10 @@ export interface Appointment {
   notes?: string | null
   created_at: string
   updated_at: string
+  // Enriched fields resolved server-side. All optional/nullable.
+  service_name?: string | null
+  instructor_name?: string | null
+  location_name?: string | null
 }
 
 export interface AppointmentCreate {

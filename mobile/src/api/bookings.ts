@@ -6,6 +6,10 @@ export const bookingsApi = {
     const res = await apiClient.get('/api/v1/bookings')
     return res.data
   },
+  get: async (id: number): Promise<Booking> => {
+    const res = await apiClient.get(`/api/v1/bookings/${id}`)
+    return res.data
+  },
   create: async (scheduled_class_id: number): Promise<Booking> => {
     const res = await apiClient.post('/api/v1/bookings', { scheduled_class_id })
     return res.data
