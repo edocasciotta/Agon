@@ -41,6 +41,36 @@ Create Appointment Service
 
 ---
 
+## `GET /api/v1/appointment-services/{service_id}/available-instructors`
+
+List Available Instructors For Service
+
+Instructors eligible for this service: at least one active
+availability window scoped to the service (NULL-service_id windows are
+wildcards for every service), and — when the service is scoped to
+specific establishments — whose own location matches one of them (a
+service with no establishment links is open to instructors anywhere).
+
+This does NOT filter by a specific date/day; `GET
+/appointments/available-slots` already does that per-instructor. This
+endpoint only narrows down which instructors are eligible at all.
+
+
+**Parameters**
+
+| Name | In | Required | Type | Description |
+|------|-----|----------|------|-------------|
+| `service_id` | path | Yes | integer |  |
+
+
+
+**Responses**
+
+- **200** — Successful Response
+- **422** — Validation Error
+
+---
+
 ## `GET /api/v1/appointment-services/{service_id}`
 
 Get Appointment Service
