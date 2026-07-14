@@ -12,7 +12,7 @@ import * as Clipboard from 'expo-clipboard'
 import * as SecureStore from 'expo-secure-store'
 import * as ImagePicker from 'expo-image-picker'
 import { Image } from 'expo-image'
-import { Pencil } from 'lucide-react-native'
+import { Pencil, ChevronRight } from 'lucide-react-native'
 import { useState, useEffect } from 'react'
 import type { ClientTag } from '../../src/types'
 import { TOKEN_KEY, type ApiError } from '../../src/api/client'
@@ -247,6 +247,18 @@ export default function ProfileScreen() {
         </View>
       ) : null}
 
+      {/* Waivers Section */}
+      <TouchableOpacity
+        style={[styles.section, styles.waiversRow]}
+        onPress={() => router.push('/waivers')}
+      >
+        <View style={styles.waiversRowText}>
+          <Text style={styles.sectionTitle}>{t('profile.waivers')}</Text>
+          <Text style={styles.waiversSubtitle}>{t('profile.waiversSubtitle')}</Text>
+        </View>
+        <ChevronRight size={20} color="#9CA3AF" />
+      </TouchableOpacity>
+
       {/* Calendar Sync Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{t('calendarSync.title')}</Text>
@@ -395,6 +407,20 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 12,
+  },
+  waiversRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  waiversRowText: {
+    flex: 1,
+    marginRight: 8,
+  },
+  waiversSubtitle: {
+    fontSize: 13,
+    color: '#6B7280',
+    marginTop: -8,
   },
   tagsContainer: {
     flexDirection: 'row',
