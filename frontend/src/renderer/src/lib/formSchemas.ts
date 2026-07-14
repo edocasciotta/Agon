@@ -157,6 +157,48 @@ export const bookAppointmentSchema = z.object({
   notes: z.string().max(1000).optional(),
 })
 
+// Mirrors mobile/src/lib/validateStudioUrl.ts's rules: the Mobile Access URL is
+// baked into the QR code the mobile app's own onboarding scanner validates, so a
+// manager must never be able to save a value the scanner will later reject. The
+// `message` on each issue is a stable reason code, not user-facing copy — the
+// caller (Settings.tsx) maps it to a translated string so the rule can carry
+// per-locale wording without duplicating the regex/logic per language.
+const PRIVATE_HOST_RE =
+  /^(localhost|127\.\d+\.\d+\.\d+|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|\[?::1\]?)$/i
+
+export function isPrivateHost(hostname: string): boolean {
+  return PRIVATE_HOST_RE.test(hostname)
+}
+
+export type MobileUrlErrorReason = 'required' | 'invalid_format' | 'invalid_scheme' | 'public_http'
+
+export const mobileUrlSchema = z
+  .string()
+  .trim()
+  .min(1, 'required' satisfies MobileUrlErrorReason)
+  .superRefine((raw, ctx) => {
+    let parsed: URL
+    try {
+      parsed = new URL(raw)
+    } catch {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'invalid_format' satisfies MobileUrlErrorReason })
+      return
+    }
+
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'invalid_scheme' satisfies MobileUrlErrorReason })
+      return
+    }
+
+    // Plain http is only acceptable on the local machine or a private LAN, same
+    // as validateStudioUrl.ts — a public http URL would send credentials in
+    // cleartext, and the mobile scanner rejects it outright.
+    if (parsed.protocol === 'http:' && !isPrivateHost(parsed.hostname)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'public_http' satisfies MobileUrlErrorReason })
+    }
+  })
+  .transform((raw) => new URL(raw).origin)
+
 export type ClientFormData = z.infer<typeof clientSchema>
 export type InstructorFormData = z.infer<typeof instructorSchema>
 export type MembershipTypeFormData = z.infer<typeof membershipTypeSchema>
