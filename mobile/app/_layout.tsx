@@ -157,6 +157,7 @@ export default function RootLayout() {
               <Stack.Screen name="onboarding/register" options={{ title: 'Create Account' }} />
               <Stack.Screen name="onboarding/login" options={{ title: 'Sign In' }} />
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="(instructor-tabs)" options={{ headerShown: false }} />
             </Stack>
           </View>
         </ThemeProvider>

@@ -1,6 +1,19 @@
 import { apiClient } from './client'
 import type { Instructor } from '../types'
 
+/** Minimal shape of a picked image asset needed to build the multipart upload body.
+ * Matches the fields on `ImagePicker.ImagePickerAsset` we actually use, so this file
+ * doesn't need to depend on `expo-image-picker`'s types. */
+export interface PickedPhotoAsset {
+  uri: string
+  fileName?: string | null
+  mimeType?: string | null
+}
+
+export interface InstructorPhotoUploadResponse {
+  photo_url: string | null
+}
+
 export const instructorsApi = {
   list: async (): Promise<Instructor[]> => {
     const res = await apiClient.get('/api/v1/instructors')
@@ -14,6 +27,34 @@ export const instructorsApi = {
     const res = await apiClient.get(
       `/api/v1/appointment-services/${serviceId}/available-instructors`
     )
+    return res.data
+  },
+  /** Resolves the authenticated instructor's own `Instructor` record via the
+   * backend's dedicated /me endpoint (resolves the JWT sub to Instructor.id
+   * server-side through Instructor.user_id — no params needed). */
+  getMe: async (): Promise<Instructor> => {
+    const res = await apiClient.get('/api/v1/instructors/me')
+    return res.data
+  },
+  uploadPhoto: async (
+    instructorId: number,
+    asset: PickedPhotoAsset
+  ): Promise<InstructorPhotoUploadResponse> => {
+    const filename = asset.fileName ?? asset.uri.split('/').pop() ?? `photo_${Date.now()}.jpg`
+    const mimeType = asset.mimeType ?? 'image/jpeg'
+
+    // React Native's FormData accepts a { uri, name, type } object in place of a Blob
+    // for file parts — this is the standard RN multipart-upload shape, not a real Blob.
+    const formData = new FormData()
+    formData.append('file', {
+      uri: asset.uri,
+      name: filename,
+      type: mimeType,
+    } as unknown as Blob)
+
+    const res = await apiClient.post(`/api/v1/instructors/${instructorId}/photo`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
     return res.data
   },
 }
