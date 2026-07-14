@@ -4,7 +4,6 @@ import { Stack, useRouter } from 'expo-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { StatusBar } from 'expo-status-bar'
-import * as Notifications from 'expo-notifications'
 import * as SplashScreen from 'expo-splash-screen'
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter'
 import { OfflineBanner } from '../src/components/OfflineBanner'
@@ -15,6 +14,7 @@ import { useLanguageStore } from '../src/store/languageStore'
 import { useSessionStore } from '../src/store/sessionStore'
 import { useAuthStore } from '../src/store/authStore'
 import { ThemeProvider } from '../src/theme/ThemeContext'
+import { loadExpoNotifications } from '../src/lib/expoNotifications'
 
 SplashScreen.preventAutoHideAsync()
 
@@ -104,8 +104,13 @@ function DeepLinkHandler() {
   }
 
   useEffect(() => {
-    // Handle notification tap when app is already open
-    const notifSub = Notifications.addNotificationResponseReceivedListener((response) => {
+    // Handle notification tap when app is already open. A notification response listener is
+    // useless without remote push (there's nothing to ever receive), and Expo Go (SDK 53+) has no
+    // remote push support — loading `expo-notifications` there also fires a disruptive
+    // module-scope console.error on Android (see `src/lib/expoNotifications.ts`), so skip it
+    // entirely; `loadExpoNotifications()` returns `null` without ever requiring the package.
+    const Notifications = loadExpoNotifications()
+    const notifSub = Notifications?.addNotificationResponseReceivedListener((response) => {
       const data = response.notification.request.content.data as Record<string, unknown>
       if (data?.url && typeof data.url === 'string') {
         handleUrl(data.url)
@@ -118,7 +123,7 @@ function DeepLinkHandler() {
     const linkSub = Linking.addEventListener('url', (event) => handleUrl(event.url))
 
     return () => {
-      notifSub.remove()
+      notifSub?.remove()
       linkSub.remove()
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
