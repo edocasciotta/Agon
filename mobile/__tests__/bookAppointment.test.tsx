@@ -20,7 +20,7 @@ jest.mock('../src/api/appointmentServices', () => ({
 }))
 
 jest.mock('../src/api/instructors', () => ({
-  instructorsApi: { list: jest.fn() },
+  instructorsApi: { list: jest.fn(), listAvailableForService: jest.fn() },
 }))
 
 jest.mock('../src/api/appointments', () => ({
@@ -57,7 +57,7 @@ const mockInstructors = [
 beforeEach(() => {
   jest.clearAllMocks()
   ;(appointmentServicesApi.list as jest.Mock).mockResolvedValue(mockServices)
-  ;(instructorsApi.list as jest.Mock).mockResolvedValue(mockInstructors)
+  ;(instructorsApi.listAvailableForService as jest.Mock).mockResolvedValue(mockInstructors)
   ;(appointmentsApi.availableSlots as jest.Mock).mockResolvedValue([
     { starts_at: '2026-08-01T10:00:00', ends_at: '2026-08-01T11:00:00' },
   ])
@@ -114,7 +114,7 @@ describe('BookAppointmentScreen', () => {
   })
 
   it('shows an empty-state message when no instructors are available', async () => {
-    ;(instructorsApi.list as jest.Mock).mockResolvedValue([])
+    ;(instructorsApi.listAvailableForService as jest.Mock).mockResolvedValue([])
 
     const { getByTestId, getByText } = renderScreen(makeClient())
 
@@ -124,6 +124,26 @@ describe('BookAppointmentScreen', () => {
     await waitFor(() => {
       expect(getByText('No instructors are available for this service yet.')).toBeTruthy()
     })
+    expect(instructorsApi.listAvailableForService).toHaveBeenCalledWith(1)
+  })
+
+  it('only shows instructors eligible for the selected service', async () => {
+    ;(instructorsApi.listAvailableForService as jest.Mock).mockResolvedValue([
+      { id: 5, user_id: 5, full_name: 'Elena Rossi', email: 'elena@test.com', is_active: true },
+    ])
+
+    const { getByTestId, getByText, queryByText } = renderScreen(makeClient())
+
+    await waitFor(() => expect(getByTestId('service-1')).toBeTruthy())
+    fireEvent.press(getByTestId('service-1'))
+
+    await waitFor(() => {
+      expect(instructorsApi.listAvailableForService).toHaveBeenCalledWith(1)
+    })
+    await waitFor(() => expect(getByText('Elena Rossi')).toBeTruthy())
+    // Only the instructor(s) returned by the service-scoped endpoint should render —
+    // no fallback to an unfiltered instructor list.
+    expect(queryByText('Marco Bianchi')).toBeNull()
   })
 
   it('clears the current and downstream selections when going back, but not earlier steps', async () => {
