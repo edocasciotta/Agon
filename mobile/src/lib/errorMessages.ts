@@ -30,6 +30,11 @@ export const errorMessages: Record<string, string> = {
   PHOTO_TOO_LARGE: 'This photo is too large. Please choose one under 5MB.',
   PHOTO_INVALID_TYPE: 'Please choose a JPG, PNG, or WEBP photo.',
   PHOTO_INVALID_FILENAME: 'That file name is not valid. Please choose another photo.',
+  CHECKIN_BOOKING_NOT_CONFIRMED: 'This booking is not confirmed, so this client cannot be checked in.',
+  CHECKIN_ALREADY_CHECKED_IN: 'This client is already checked in for this class.',
+  CHECKIN_WINDOW_NOT_OPEN: 'Check-in has not opened yet for this class.',
+  CHECKIN_WINDOW_CLOSED: 'Check-in has closed for this class.',
+  CHECKIN_BOOKING_NOT_FOUND: 'No confirmed booking was found for this client and class.',
 }
 
 export function getErrorMessage(code: string): string {

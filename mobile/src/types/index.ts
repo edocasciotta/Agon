@@ -2,9 +2,11 @@ export interface ScheduledClass {
   id: number
   template_id: number
   template_name?: string
+  instructor_id: number
   starts_at: string
   ends_at: string
   capacity: number
+  booking_count: number
   status: 'scheduled' | 'cancelled' | 'completed'
   notes?: string
 }
@@ -32,6 +34,28 @@ export interface Instructor {
   email: string
   bio?: string
   is_active: boolean
+  photo_url: string | null
+}
+
+/** One row of `GET /api/v1/classes/{class_id}/roster` — confirmed bookings only. */
+export interface RosterEntry {
+  booking_id: number
+  client_id: number
+  full_name: string | null
+  email: string | null
+  status: string
+}
+
+/** One row of `GET /api/v1/checkins/class/{class_id}`. */
+export interface Checkin {
+  id: number
+  booking_id: number
+  client_id: number
+  scheduled_class_id: number
+  method: string
+  checked_in_at: string
+  checked_in_by: number | null
+  client_name: string
 }
 
 export interface AppointmentService {
