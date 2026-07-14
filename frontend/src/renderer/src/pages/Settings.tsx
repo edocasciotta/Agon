@@ -8,6 +8,7 @@ import { smsApi } from '../api/sms'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { PageHeader } from '../components/PageHeader'
 import { StudioQRCode } from '../components/StudioQRCode'
+import { mobileUrlSchema, type MobileUrlErrorReason } from '../lib/formSchemas'
 import type { StudioSettings, EmailSettings } from '../types'
 import type { ApiError } from '../api/client'
 
@@ -48,6 +49,7 @@ export function SettingsPage() {
   // Mobile tab state
   const [mobileUrl, setMobileUrl] = useState('')
   const [mobileUrlSaved, setMobileUrlSaved] = useState(false)
+  const [mobileUrlError, setMobileUrlError] = useState<string | null>(null)
 
   // Billing tab state
   const [billingForm, setBillingForm] = useState<{
@@ -126,6 +128,7 @@ export function SettingsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['studio'] })
       setMobileUrlSaved(true)
+      setMobileUrlError(null)
       setTimeout(() => setMobileUrlSaved(false), 3000)
     },
   })
@@ -255,6 +258,30 @@ export function SettingsPage() {
     const { auth_token, ...rest } = smsForm
     void auth_token
     smsUpdateMutation.mutate(rest)
+  }
+
+  const mobileUrlErrorMessages: Record<MobileUrlErrorReason, string> = {
+    required: t('settings.mobileUrlErrorRequired'),
+    invalid_format: t('settings.mobileUrlErrorFormat'),
+    invalid_scheme: t('settings.mobileUrlErrorScheme'),
+    public_http: t('settings.mobileUrlErrorPublicHttp'),
+  }
+
+  const handleMobileUrlSave = () => {
+    const result = mobileUrlSchema.safeParse(mobileUrl)
+    if (!result.success) {
+      const reason = result.error.issues[0]?.message as MobileUrlErrorReason
+      setMobileUrlError(mobileUrlErrorMessages[reason] ?? t('settings.mobileUrlErrorFormat'))
+      return
+    }
+    setMobileUrlError(null)
+    mobileUrlMutation.mutate(result.data)
+  }
+
+  const handleMobileUrlResetToDetected = () => {
+    if (!settings?.lan_url) return
+    setMobileUrl(settings.lan_url)
+    setMobileUrlError(null)
   }
 
   const handleBillingSave = () => {
@@ -890,17 +917,31 @@ export function SettingsPage() {
                     type="text"
                     value={mobileUrl}
                     onChange={(e) => setMobileUrl(e.target.value)}
+                    aria-label={t('settings.mobileUrlLabel')}
+                    aria-invalid={mobileUrlError ? true : undefined}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
                     placeholder={settings?.lan_url ?? 'http://192.168.x.x:8000'}
                   />
                   <button
-                    onClick={() => mobileUrlMutation.mutate(mobileUrl)}
+                    onClick={handleMobileUrlSave}
                     disabled={mobileUrlMutation.isPending}
                     className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors shrink-0"
                   >
                     {mobileUrlSaved ? t('settings.mobileUrlSaved') : t('settings.mobileUrlSave')}
                   </button>
                 </div>
+                {mobileUrlError && (
+                  <p className="mt-1 text-xs text-red-600">{mobileUrlError}</p>
+                )}
+                {settings?.lan_url && (
+                  <button
+                    type="button"
+                    onClick={handleMobileUrlResetToDetected}
+                    className="mt-1 text-xs text-gray-400 hover:text-gray-600"
+                  >
+                    {t('settings.mobileUrlResetToDetected')}
+                  </button>
+                )}
               </section>
 
               {/* QR code */}

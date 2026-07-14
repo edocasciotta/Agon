@@ -30,6 +30,7 @@ vi.mock('../../../src/renderer/src/api/studio', () => ({
       self_service_purchases_enabled: false,
       reminder_hours_before: 24,
       stripe_connected: false,
+      lan_url: 'http://192.168.30.50:8000',
     }),
     update: vi.fn().mockResolvedValue({}),
     getEmailSettings: vi.fn().mockResolvedValue({
@@ -222,5 +223,114 @@ describe('SettingsPage', () => {
     expect(
       !('auth_token' in secondSmsCallPayload) || secondSmsCallPayload.auth_token === undefined
     ).toBe(true)
+  })
+
+  it('saves a well-formed private http Mobile Access URL and calls the mutation', async () => {
+    const { studioApi } = await import('../../../src/renderer/src/api/studio')
+    renderPage()
+
+    const mobileTab = await screen.findByRole('tab', { name: /mobile/i })
+    fireEvent.click(mobileTab)
+
+    const urlInput = await screen.findByLabelText(/mobile access url/i)
+    fireEvent.change(urlInput, { target: { value: 'http://192.168.1.20:8000' } })
+    fireEvent.click(await screen.findByRole('button', { name: /^save$/i }))
+
+    await waitFor(() => {
+      expect(studioApi.update).toHaveBeenCalledWith({ tunnel_url: 'http://192.168.1.20:8000' })
+    })
+  })
+
+  it('rejects a bare hostname with no scheme (the real-world tunnel_url bug) and does not call the mutation', async () => {
+    const { studioApi } = await import('../../../src/renderer/src/api/studio')
+    renderPage()
+
+    const mobileTab = await screen.findByRole('tab', { name: /mobile/i })
+    fireEvent.click(mobileTab)
+
+    const urlInput = await screen.findByLabelText(/mobile access url/i)
+    fireEvent.change(urlInput, { target: { value: '192.168.30.187' } })
+    fireEvent.click(await screen.findByRole('button', { name: /^save$/i }))
+
+    expect(await screen.findByText(/http:\/\/ or https:\/\//i)).toBeTruthy()
+    expect(studioApi.update).not.toHaveBeenCalled()
+  })
+
+  it('rejects a javascript: URL and does not call the mutation', async () => {
+    const { studioApi } = await import('../../../src/renderer/src/api/studio')
+    renderPage()
+
+    const mobileTab = await screen.findByRole('tab', { name: /mobile/i })
+    fireEvent.click(mobileTab)
+
+    const urlInput = await screen.findByLabelText(/mobile access url/i)
+    fireEvent.change(urlInput, { target: { value: 'javascript:alert(1)' } })
+    fireEvent.click(await screen.findByRole('button', { name: /^save$/i }))
+
+    expect(await screen.findByText(/only http:\/\/ or https:\/\/ addresses/i)).toBeTruthy()
+    expect(studioApi.update).not.toHaveBeenCalled()
+  })
+
+  it('rejects a file: URL and does not call the mutation', async () => {
+    const { studioApi } = await import('../../../src/renderer/src/api/studio')
+    renderPage()
+
+    const mobileTab = await screen.findByRole('tab', { name: /mobile/i })
+    fireEvent.click(mobileTab)
+
+    const urlInput = await screen.findByLabelText(/mobile access url/i)
+    fireEvent.change(urlInput, { target: { value: 'file:///etc/passwd' } })
+    fireEvent.click(await screen.findByRole('button', { name: /^save$/i }))
+
+    expect(await screen.findByText(/only http:\/\/ or https:\/\/ addresses/i)).toBeTruthy()
+    expect(studioApi.update).not.toHaveBeenCalled()
+  })
+
+  it('rejects a plain http URL to a public-looking host, mirroring the mobile scanner rule', async () => {
+    const { studioApi } = await import('../../../src/renderer/src/api/studio')
+    renderPage()
+
+    const mobileTab = await screen.findByRole('tab', { name: /mobile/i })
+    fireEvent.click(mobileTab)
+
+    const urlInput = await screen.findByLabelText(/mobile access url/i)
+    fireEvent.change(urlInput, { target: { value: 'http://studio.example.com:8000' } })
+    fireEvent.click(await screen.findByRole('button', { name: /^save$/i }))
+
+    expect(await screen.findByText(/private network address/i)).toBeTruthy()
+    expect(studioApi.update).not.toHaveBeenCalled()
+  })
+
+  it('saves a valid https URL to any host', async () => {
+    const { studioApi } = await import('../../../src/renderer/src/api/studio')
+    renderPage()
+
+    const mobileTab = await screen.findByRole('tab', { name: /mobile/i })
+    fireEvent.click(mobileTab)
+
+    const urlInput = await screen.findByLabelText(/mobile access url/i)
+    fireEvent.change(urlInput, { target: { value: 'https://studio.example.com' } })
+    fireEvent.click(await screen.findByRole('button', { name: /^save$/i }))
+
+    await waitFor(() => {
+      expect(studioApi.update).toHaveBeenCalledWith({ tunnel_url: 'https://studio.example.com' })
+    })
+  })
+
+  it('offers a "reset to detected address" affordance that restores the auto-detected LAN URL', async () => {
+    renderPage()
+
+    const mobileTab = await screen.findByRole('tab', { name: /mobile/i })
+    fireEvent.click(mobileTab)
+
+    const urlInput = (await screen.findByLabelText(/mobile access url/i)) as HTMLInputElement
+    fireEvent.change(urlInput, { target: { value: '192.168.30.187' } })
+    fireEvent.click(await screen.findByRole('button', { name: /^save$/i }))
+    expect(await screen.findByText(/http:\/\/ or https:\/\//i)).toBeTruthy()
+
+    fireEvent.click(await screen.findByRole('button', { name: /reset to detected address/i }))
+
+    expect(urlInput.value).toBe('http://192.168.30.50:8000')
+    expect(screen.queryByText(/http:\/\/ or https:\/\//i)).toBeNull()
   })
 })
