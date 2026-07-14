@@ -241,12 +241,67 @@ Scaffolding → DB models → Core API → Booking engine → Check-in → Membe
 
 ---
 
+## In Progress (2026-07-14, started this session)
+
+Competitive-gap follow-up after re-checking `docs/COMPETITIVE_ANALYSIS_2026_07.md` against live code
+(doc now carries a "Status Update — 2026-07-14" section + per-table annotations reflecting reality).
+Three sub-agents dispatched in parallel, each in its own worktree, none merged yet:
+
+1. **Mobile waiver-signing UI** — ✅ **shipped**, [PR #48](https://github.com/edocasciotta/Agon/pull/48)
+   (independently re-verified: typecheck clean, 32/32 suites / 127/127 tests, code diff spot-checked
+   against `mobile/CLAUDE.md`'s offline/i18n conventions before push). Closes the last open surface of
+   1.9 Forms/Waivers (backend+desktop had already shipped). New `mobile/app/waivers/index.tsx` (list)
+   + `[id].tsx` (sign: typed name + consent checkbox, offline-disabled not queued — signing is an
+   explicit real-time consent action, mirrors the photo-upload precedent). `class/[id].tsx`'s
+   `bookMutation.onError` now handles `WAIVER_SIGNATURE_REQUIRED` distinctly (shows blocking
+   waiver(s), links to sign screen, keeps Book available to retry). New Profile entry point. i18n in
+   all 7 locales. **Forms/Waivers is now fully closed across all four surfaces.**
+2. **Backend: real tunnel provider + public widget schedule endpoint** — ✅ **shipped**,
+   [PR #50](https://github.com/edocasciotta/Agon/pull/50) (independently re-verified in a fresh venv:
+   666/666 pytest, clean `alembic upgrade head` from both pre-existing and fresh DB, `ruff`/`black`
+   clean on touched files, isort disagreement confirmed as the known pre-existing tooling conflict
+   — not introduced by this PR — code-reviewed `tunnel.py`'s subprocess handling and the IDOR-style
+   widget test). Implements `CloudflareTunnelProvider` for real (was a stub), adds
+   `StudioSettings.public_studio_id`/`directory_secret`, wires tunnel startup into `main.py` lifespan
+   (gated off for `AGON_ENV in ("test", "development")`), and a new public
+   `GET /api/v1/widget/{public_studio_id}/schedule` endpoint (IP-rate-limited 30/min, minimal-fields
+   response, generic 404). `DIRECTORY_WORKER_URL` is still a placeholder pending PR #49's live deploy.
+3. **`directory-worker/`** — ✅ **shipped**, [PR #49](https://github.com/edocasciotta/Agon/pull/49)
+   (independently re-verified: `tsc --noEmit` clean, 5/5 vitest passing, code-reviewed for
+   constant-time secret comparison and no leaked secrets in `wrangler.toml`). New Cloudflare Worker +
+   KV, `studio_id → tunnel_url` directory (the one deliberately-centralized piece of infra in this
+   project, per `docs/agon_project_bible.md`'s Local-First principle — stores nothing but a URL per
+   studio, `{ tunnel_url, updated_at, secret_hash }`, never the raw secret). `POST /register`
+   (trust-on-first-use secret claim, strict `https://`-only validation) + `GET /resolve/{id}` (public,
+   generic 404 that never distinguishes malformed from unknown ids). Not live-deployed to a real
+   Cloudflare account yet — verified locally via `wrangler dev` + miniflare; deploying it and filling
+   in the real KV namespace id is a manual follow-up once the backend PR (still in progress) is ready
+   to point at it.
+
+**Architecture context**: full plan at the time of dispatch is `/Users/edoardo/.claude/plans/humming-tickling-bird.md`
+(orchestrator-local, not in the repo). Root `CLAUDE.md` was updated this session to add `widget/` and
+`directory-worker/` to the Environment tree and Agent Hierarchy (new `widget/CLAUDE.md` persistent
+sub-agent brief; `directory-worker/CLAUDE.md` is a one-off brief, no persistent sub-agent). Scope for
+this round is **deliberately limited to Phase 1 (tunnel) + Phase 2 (read-only widget)** — a studio's
+website can show its live schedule, but booking-inside-the-widget (Phase 3, low risk, deferred) and
+anonymous-visitor checkout (Phase 4, high risk — first-ever unauthenticated `Client`-creation path,
+needs a scoped exception to `SECURITY_GUIDELINES.md` §3 — deferred deliberately until Phase 1/2 prove
+real studio adoption) are explicitly NOT being built yet.
+
+**All three Phase 1+2 tracks now shipped** (PRs #48–#50 — note #48 is the unrelated mobile waiver
+fix from the same session, #49 directory-worker, #50 backend tunnel+widget). **Still to delegate**:
+`widget/` SPA itself (new persistent sub-agent, brief at `widget/CLAUDE.md`), a new "Website Widget"
+tab in `frontend/src/renderer/src/pages/Settings.tsx`, docs-site pages for both the tunnel (automatic,
+no manager action) and the widget embed snippet, and a manual step to actually `wrangler deploy`
+PR #49's Worker + fill in the real `DIRECTORY_WORKER_URL` in backend config once deployed. None of
+PRs #48–#50 are merged into `main` yet (all pushed + open on GitHub) — merge them (and run the full
+suite once more post-merge) before starting the widget SPA, since it depends on PR #50's endpoint
+contract being the actual `main` state.
+
 ## Next Task Candidates
 
-- **Mobile waiver-signing UI** — closes out the 1.9 Forms/Waivers feature (backend + desktop already
-  ship; mobile is the last open surface, see Known Open Items).
-- Phase 2 (next gap after Appointments): Marketing Automations, Web Widgets, Online Classes, Custom
-  Roles, Payroll, Invoicing — per `docs/COMPETITIVE_ANALYSIS_2026_07.md` RICE ranking.
+- Phase 2 (after Web Booking Widget Phase 1+2 above lands): Marketing Automations, Online Classes,
+  Custom Roles, Payroll, Invoicing — per `docs/COMPETITIVE_ANALYSIS_2026_07.md` RICE ranking.
 - Mobile: add a `lint` script to `mobile/package.json` and install eslint (currently missing entirely).
 - Mobile: install `react-native-web` so `npx expo export` works for the default/web target, not just `--platform ios/android`.
 - Frontend: fix the remaining 15 call sites still using the wrong Zod `.errors` API instead of `.issues`.

@@ -31,12 +31,14 @@ Update `TASK_LOG.md` after every completed task.
 
 ```
 agon/
-├── backend/        → FastAPI + Python (sub-agent: backend)
-├── frontend/       → Electron + React (sub-agent: frontend)
-├── mobile/         → React Native + Expo (sub-agent: mobile)
-├── docs-site/      → Docusaurus (sub-agent: docs)
-├── docs/           → specification documents (read-only)
-└── TASK_LOG.md     → coordination memory
+├── backend/            → FastAPI + Python (sub-agent: backend)
+├── frontend/           → Electron + React (sub-agent: frontend)
+├── mobile/             → React Native + Expo (sub-agent: mobile)
+├── widget/             → embeddable public booking-schedule SPA, iframe-served (sub-agent: widget)
+├── directory-worker/   → Cloudflare Worker + KV, studio_id→tunnel_url directory (one-off, orchestrator-delegated, no persistent sub-agent)
+├── docs-site/          → Docusaurus (sub-agent: docs)
+├── docs/               → specification documents (read-only)
+└── TASK_LOG.md         → coordination memory
 ```
 
 Each sub-agent has its own `CLAUDE.md`. Task tool loads it automatically.
@@ -50,8 +52,12 @@ Orchestrator (you)
 ├── Backend Agent       → /backend/CLAUDE.md
 ├── Frontend Agent      → /frontend/CLAUDE.md
 ├── Mobile Agent        → /mobile/CLAUDE.md
+├── Widget Agent        → /widget/CLAUDE.md   (embeddable public widget SPA — untrusted-iframe trust boundary, never assumes Electron/Expo APIs)
 └── Docs Agent          → /docs-site/CLAUDE.md
 ```
+
+`directory-worker/` has no persistent sub-agent (small, low-growth surface) — the orchestrator
+delegates one-off tasks against its own `directory-worker/CLAUDE.md` brief directly.
 
 Agents do not coordinate with each other — they receive tasks from you and return outputs.
 

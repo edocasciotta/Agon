@@ -1,24 +1,64 @@
 # Agon Competitive Analysis — July 2026
 
 **Competitors:** bsport · Momence · Mindbody
-**Date:** 2026-07-06
+**Date:** 2026-07-06 (original analysis) · **Status refreshed 2026-07-14**
 
 ---
 
-## Executive Summary — Top 10 Product Gaps
+## Status Update — 2026-07-14 (orchestrator re-check against live code)
 
-| # | Gap | Competitors with it | Impact |
-|---|-----|---------------------|--------|
-| 1 | **Appointments (1-on-1 booking)** | All three | Blocks entire personal training / wellness vertical |
-| 2 | **SMS messaging** | All three | Standard client communication channel missing |
-| 3 | **Online / virtual classes (Zoom / livestream)** | All three | Hybrid studios cannot use Agon |
-| 4 | **POS / retail sales** | All three | Revenue leakage — studios can't sell merchandise |
-| 5 | **Forms, waivers, digital signatures** | All three | Legal/compliance risk for studios |
-| 6 | **Gift cards** | All three | Marketing and revenue tool missing |
-| 7 | **Marketing automations / sequences** | All three | No drip campaigns, milestone triggers, or win-back flows |
-| 8 | **Advanced staff payroll & scheduling** | All three | Pay rates, commissions, time clock absent |
-| 9 | **Invoicing** | bsport, Momence | EU studios need proper sequential invoices with VAT |
-| 10 | **Web customer portal** | All three | Clients forced to use mobile app only |
+Since the original analysis, Agon shipped **Competitive Gap Phase 1** (9 quick wins, PRs #12 and
+follow-ons) and **Phase 2.1 Appointments** (PRs #18/#19/#22/#23), verified directly against the
+codebase (models/routers), not just against status claims in `TASK_LOG.md`:
+
+**Closed:**
+- ✅ Appointments (1-on-1 booking) — `backend/app/routers/appointments.py`,
+  `appointment_services.py`, `instructor_availability.py`. Covers 1-on-1 booking, availability
+  management, buffer time (`buffer_minutes` on `AppointmentService`), service/instructor/location
+  scoping. **Not** covered: recurring appointments, duo/group appointments, room/resource booking,
+  intake forms, SOAP notes, add-on services — see updated Appointments matrix below.
+- ✅ SMS messaging — `backend/app/services/sms_service.py`, `sms_settings.py` (Twilio).
+- ✅ Gift cards — `backend/app/models/gift_card.py`, `gift_card_redemption.py`.
+- ✅ Promo codes / discounts — `backend/app/models/promo_code.py`, `promo_code_usage.py`.
+- ✅ Rollover credits, intro offers/trials — `backend/app/models/membership.py`,
+  `membership_type.py`.
+- ✅ Late-cancel / no-show fees — shipped as part of the "fees" item in Phase 1.
+- ✅ Calendar sync (iCal) — `backend/app/routers/calendar_sync.py`.
+- ✅ Tags (manual, client-facing) — `backend/app/models/tag.py`.
+- ✅ Forms / waivers / digital signatures — **now fully shipped across all surfaces**
+  (`backend/app/models/waiver.py`, `waiver_signature.py`, `backend/app/routers/waivers.py`, desktop,
+  and as of [PR #48](https://github.com/edocasciotta/Agon/pull/48) mobile too — `mobile/app/waivers/`
+  list+sign screens, booking-flow `WAIVER_SIGNATURE_REQUIRED` handling).
+
+**Still open (unchanged since original analysis):**
+- ❌ Online / virtual classes (Zoom / livestream)
+- ❌ POS / retail sales
+- ❌ Marketing automations / sequences
+- ❌ Advanced staff payroll & scheduling
+- ❌ Invoicing (EU-compliant)
+- ❌ Web customer portal / embeddable booking widgets
+- ❌ Custom roles / permissions, franchise dashboard, aggregator integrations, public API/webhooks,
+  branded white-label app, AI sales agent (client-facing) — all lower-priority items, unchanged.
+
+**Net effect on the original Top 10 list:** 2 of 10 fully closed (Appointments, SMS), 1 partially
+closed (Forms/Waivers — backend+desktop done, mobile signing UI missing), 7 unchanged.
+
+---
+
+## Executive Summary — Top 10 Product Gaps (original, 2026-07-06)
+
+| # | Gap | Competitors with it | Impact | Status (2026-07-14) |
+|---|-----|---------------------|--------|----------------------|
+| 1 | **Appointments (1-on-1 booking)** | All three | Blocks entire personal training / wellness vertical | ✅ Closed |
+| 2 | **SMS messaging** | All three | Standard client communication channel missing | ✅ Closed |
+| 3 | **Online / virtual classes (Zoom / livestream)** | All three | Hybrid studios cannot use Agon | ❌ Open |
+| 4 | **POS / retail sales** | All three | Revenue leakage — studios can't sell merchandise | ❌ Open |
+| 5 | **Forms, waivers, digital signatures** | All three | Legal/compliance risk for studios | ✅ Closed (PR #48) |
+| 6 | **Gift cards** | All three | Marketing and revenue tool missing | ✅ Closed |
+| 7 | **Marketing automations / sequences** | All three | No drip campaigns, milestone triggers, or win-back flows | ❌ Open |
+| 8 | **Advanced staff payroll & scheduling** | All three | Pay rates, commissions, time clock absent | ❌ Open |
+| 9 | **Invoicing** | bsport, Momence | EU studios need proper sequential invoices with VAT | ❌ Open |
+| 10 | **Web customer portal** | All three | Clients forced to use mobile app only | ❌ Open |
 
 ---
 
@@ -51,22 +91,22 @@
 | **Onboarding Wizard** | 6-step guided setup for new studios | ✅ | ✅ | ❌ |
 | **Internationalization** | 7 languages (en, it, fr, de, es, pt, nl), full coverage mobile + desktop + AI | ✅ | ✅ | ✅ |
 
-### Features NOT Present in Agon
+### Features NOT Present in Agon (updated 2026-07-14 — see Status Update above)
 
-- Appointments / 1-on-1 booking
+- ~~Appointments / 1-on-1 booking~~ — ✅ shipped (buffer time, availability mgmt; no recurring/duo/room-booking/intake-forms yet)
 - POS / retail product sales
 - Invoicing (formal sequential invoices)
-- Gift cards
+- ~~Gift cards~~ — ✅ shipped
 - Loyalty / rewards
 - Referral program
 - Reviews / ratings
 - Online / video classes / livestream
-- Forms / waivers / digital signatures
-- SMS messaging
+- ~~Forms / waivers / digital signatures~~ — ✅ shipped, all surfaces (PR #48 closed the mobile gap)
+- ~~SMS messaging~~ — ✅ shipped (Twilio)
 - Marketing automations / drip campaigns / sequences
 - Staff scheduling / payroll (pay rates, commissions, time clock)
 - Web customer portal
-- Promo codes / discounts
+- ~~Promo codes / discounts~~ — ✅ shipped
 - Room / resource management
 - Family / household accounts
 - Workshops / events / courses (multi-session)
@@ -74,7 +114,7 @@
 - Revenue forecasting / advanced analytics
 - Contracts / agreements
 - Webshop / retail inventory
-- Calendar sync (iCal / Google)
+- ~~Calendar sync (iCal / Google)~~ — ✅ shipped (iCal export)
 - Access control / door hardware
 - Aggregator integrations (ClassPass, Wellhub)
 
@@ -123,9 +163,9 @@
 
 | Feature | Agon | bsport | Momence | Mindbody |
 |---------|------|--------|---------|----------|
-| 1-on-1 appointment booking | ❌ | ✅ | ✅ | ✅ |
-| Availability management | ❌ | ✅ | ✅ | ✅ |
-| Buffer/prep time | ❌ | ✅ | ✅ | ✅ |
+| 1-on-1 appointment booking | ✅ | ✅ | ✅ | ✅ |
+| Availability management | ✅ | ✅ | ✅ | ✅ |
+| Buffer/prep time | ✅ | ✅ | ✅ | ✅ |
 | Recurring appointments | ❌ | ✅ | ✅ | ✅ |
 | Duo/group appointments | ❌ | ✅ | ✅ | ❌ |
 | Room/resource booking | ❌ | ✅ | ❌ | ✅ (Accelerate+) |
@@ -133,7 +173,10 @@
 | SOAP notes | ❌ | ❌ | ✅ | ❌ |
 | Add-on services | ❌ | ❌ | ✅ | ❌ |
 
-**Notes:** Agon has zero appointment support. This is the single largest functional gap — it blocks the entire personal training, wellness, and beauty vertical.
+**Notes (updated 2026-07-14):** Shipped 2026-07-12 (Phase 2.1, PRs #18/#19/#22/#23) — core booking,
+availability, and buffer time across backend/desktop/mobile/docs. Remaining sub-gaps (recurring,
+duo/group, room booking, intake forms, SOAP notes) are smaller follow-on items, not blockers to
+adoption the way the original zero-support gap was.
 
 ---
 
@@ -184,16 +227,18 @@
 | Pause/resume | ✅ | ✅ | ✅ | ⚠️ |
 | Online purchase | ✅ | ✅ | ✅ | ✅ |
 | Class-type restrictions | ✅ | ✅ | ✅ | ✅ |
-| Rollover credits | ❌ | ✅ | ✅ | ⚠️ |
+| Rollover credits | ✅ | ✅ | ✅ | ⚠️ |
 | Guest passes | ❌ | ❌ | ✅ | ❌ |
-| Intro offers / trials | ❌ | ✅ | ✅ | ✅ |
+| Intro offers / trials | ✅ | ✅ | ✅ | ✅ |
 | Cross-location memberships | ❌ | ✅ (universal passes) | ❌ | ✅ |
 | Transfer between members | ❌ | ❌ | ✅ | ❌ |
 | Commitment periods / contracts | ❌ | ✅ | ✅ | ✅ |
 | Card Updater (auto-update expired cards) | ❌ | ❌ | ❌ | ✅ |
-| Promo codes / discounts | ❌ | ✅ | ✅ | ✅ (Accelerate+) |
+| Promo codes / discounts | ✅ | ✅ | ✅ | ✅ (Accelerate+) |
 
-**Notes:** Agon has a solid core but lacks rollover credits, intro offers, promo codes, and contracts — all of which are standard.
+**Notes (updated 2026-07-14):** Rollover credits, intro offers, and promo codes shipped in Phase 1.
+Remaining gap: cross-location memberships, transfer between members, commitment periods/contracts,
+card updater.
 
 ---
 
@@ -211,7 +256,7 @@
 | HSA/FSA card acceptance | ❌ | ❌ | ✅ | ❌ |
 | Payment retry on failure | ❌ | ✅ | ✅ | ✅ |
 | Direct payment links | ❌ | ✅ | ❌ | ❌ |
-| Late cancel / no-show fees | ❌ | ✅ | ✅ | ✅ |
+| Late cancel / no-show fees | ✅ | ✅ | ✅ | ✅ |
 | Tap to Pay (mobile terminal) | ❌ | ❌ | ❌ | ✅ |
 
 ---
@@ -269,14 +314,16 @@
 | Notes | ✅ | ✅ | ✅ | ✅ |
 | Booking history | ✅ | ✅ | ✅ | ✅ |
 | Smart lists / segmentation | ✅ | ✅ | ✅ | 🟡 |
-| Tags (manual + auto) | ❌ | ✅ | ✅ | ❌ |
+| Tags (manual + auto) | ✅ (manual) | ✅ | ✅ | ❌ |
 | Family / child accounts | ❌ | ✅ | ✅ | ❌ |
 | Document storage | ❌ | ✅ | ❌ | ❌ |
 | Lead management pipeline | ❌ | ❌ | ✅ | ✅ (Ultimate) |
 | Account merge | ❌ | ✅ | ❌ | ⚠️ |
 | HIPAA compliance | ❌ | ❌ | ✅ | ❌ |
 
-**Notes:** Agon's Smart Lists are a genuine strength. Missing: tags, family accounts, lead pipeline.
+**Notes (updated 2026-07-14):** Agon's Smart Lists remain a genuine strength; manual tags shipped in
+Phase 1 (auto-tagging rules not yet built). Still missing: family accounts, lead pipeline, document
+storage.
 
 ---
 
@@ -305,7 +352,7 @@
 | Email (transactional) | ✅ | ✅ | ✅ | ✅ |
 | Email (marketing) | 🟡 (basic) | ✅ | ✅ | ✅ |
 | Push notifications | ✅ | ⚠️ | ✅ | ✅ |
-| SMS | ❌ | ✅ | ✅ | ✅ |
+| SMS | ✅ (Twilio) | ✅ | ✅ | ✅ |
 | WhatsApp | ❌ | ❌ | ✅ | ❌ |
 | In-app messaging / inbox | ❌ | ✅ | ✅ | ✅ |
 | Webchat widget | ❌ | ❌ | ✅ | ✅ (Messenger[ai]) |
@@ -362,11 +409,14 @@
 
 | Feature | Agon | bsport | Momence | Mindbody |
 |---------|------|--------|---------|----------|
-| Custom forms | ❌ | ✅ | ✅ | ✅ |
-| Liability waivers | ❌ | ✅ | ✅ | ✅ |
-| Digital signatures | ❌ | ❌ | ✅ | ✅ |
+| Custom forms | ✅ (desktop+backend) | ✅ | ✅ | ✅ |
+| Liability waivers | ✅ (desktop+backend) | ✅ | ✅ | ✅ |
+| Digital signatures | ✅ | ❌ | ✅ | ✅ |
 | Contracts / agreements | ❌ | ✅ | ✅ | ✅ |
 | GDPR consent tracking | ✅ | ⚠️ | ✅ | ✅ |
+
+**Notes (updated 2026-07-14):** Backend + desktop shipped in Phase 1 (1.9); mobile signing UI shipped
+[PR #48](https://github.com/edocasciotta/Agon/pull/48). Only remaining gap in this table: contracts/agreements.
 
 ---
 
@@ -374,7 +424,7 @@
 
 | Feature | Agon | bsport | Momence | Mindbody |
 |---------|------|--------|---------|----------|
-| Gift cards | ❌ | ✅ | ✅ | ✅ |
+| Gift cards | ✅ | ✅ | ✅ | ✅ |
 | Loyalty / rewards program | ❌ | ❌ | ✅ (perks) | ✅ |
 | Referral program | ❌ | 🟡 | ✅ | ✅ |
 | Reviews / ratings | ❌ | ❌ | ✅ | ✅ |
@@ -425,7 +475,7 @@
 | QuickBooks / Xero | ❌ | ✅ | ✅ | ❌ |
 | Google Analytics / Pixels | ❌ | ✅ | ✅ | ⚠️ |
 | Mailchimp | ❌ | ❌ | ✅ | ❌ |
-| Calendar sync (iCal/Google) | ❌ | ✅ | ✅ | ✅ |
+| Calendar sync (iCal/Google) | ✅ (iCal export) | ✅ | ✅ | ✅ |
 
 ---
 
@@ -568,40 +618,40 @@ Let studios configure the AI's personality and knowledge base so it feels like t
 
 ## Phase 5 — Prioritization
 
-| # | Feature | Customer Value | Business Impact | Implementation Complexity | Competitive Pressure | Score | Priority |
-|---|---------|---------------|----------------|--------------------------|---------------------|-------|----------|
-| 1 | Appointments (1-on-1) | 5 | 5 | 4 | 5 | **19** | **Critical** |
-| 2 | SMS Messaging | 5 | 4 | 2 | 5 | **16** | **Critical** |
-| 3 | Forms / Waivers | 5 | 4 | 2 | 5 | **16** | **Critical** |
-| 4 | Web Booking Widgets | 4 | 5 | 3 | 5 | **17** | **Critical** |
-| 5 | Marketing Automations | 4 | 5 | 4 | 5 | **18** | **Critical** |
-| 6 | Gift Cards | 4 | 4 | 2 | 5 | **15** | **High** |
-| 7 | POS / Retail | 4 | 4 | 4 | 5 | **17** | **High** |
-| 8 | Staff Payroll | 4 | 3 | 3 | 5 | **15** | **High** |
-| 9 | Online / Virtual Classes | 4 | 4 | 3 | 5 | **16** | **High** |
-| 10 | Invoicing (EU) | 5 | 4 | 3 | 3 | **15** | **High** |
-| 11 | Promo Codes / Discounts | 4 | 4 | 2 | 5 | **15** | **High** |
-| 12 | Intro Offers / Trials | 4 | 4 | 2 | 4 | **14** | **High** |
-| 13 | Rollover Credits | 3 | 3 | 2 | 4 | **12** | **High** |
-| 14 | Late Cancel / No-Show Fees | 4 | 3 | 2 | 5 | **14** | **High** |
-| 15 | Custom Roles / Permissions | 3 | 3 | 3 | 5 | **14** | **Medium** |
-| 16 | Calendar Sync (iCal/Google) | 3 | 2 | 2 | 4 | **11** | **Medium** |
-| 17 | Contracts / Commitments | 3 | 3 | 2 | 4 | **12** | **Medium** |
-| 18 | Tags (manual + auto) | 3 | 3 | 2 | 4 | **12** | **Medium** |
-| 19 | Family / Child Accounts | 3 | 2 | 3 | 3 | **11** | **Medium** |
-| 20 | Workshops / Events | 3 | 3 | 3 | 4 | **13** | **Medium** |
-| 21 | Franchise Dashboard | 3 | 4 | 4 | 4 | **15** | **Medium** |
-| 22 | Door Access Control | 2 | 2 | 3 | 3 | **10** | **Medium** |
-| 23 | Aggregator Integrations | 3 | 3 | 3 | 4 | **13** | **Medium** |
-| 24 | Webhooks / API | 3 | 3 | 3 | 3 | **12** | **Medium** |
-| 25 | Branded White-Label App | 3 | 3 | 5 | 4 | **15** | **Medium** |
-| 26 | Loyalty / Rewards | 2 | 3 | 3 | 3 | **11** | **Low** |
-| 27 | Referral Program | 2 | 3 | 2 | 3 | **10** | **Low** |
-| 28 | Reviews / Ratings | 2 | 2 | 2 | 2 | **8** | **Low** |
-| 29 | Video on Demand | 2 | 3 | 4 | 3 | **12** | **Low** |
-| 30 | Community Features | 2 | 2 | 3 | 1 | **8** | **Low** |
-| 31 | BI Tool Integration | 2 | 2 | 3 | 1 | **8** | **Low** |
-| 32 | AI Sales Agent (Client-Facing) | 3 | 4 | 4 | 2 | **13** | **Low** |
+| # | Feature | Customer Value | Business Impact | Implementation Complexity | Competitive Pressure | Score | Priority | Status (07-14) |
+|---|---------|---------------|----------------|--------------------------|---------------------|-------|----------|----------|
+| 1 | Appointments (1-on-1) | 5 | 5 | 4 | 5 | **19** | **Critical** | ✅ Shipped |
+| 2 | SMS Messaging | 5 | 4 | 2 | 5 | **16** | **Critical** | ✅ Shipped |
+| 3 | Forms / Waivers | 5 | 4 | 2 | 5 | **16** | **Critical** | ✅ Shipped (PR #48) |
+| 4 | Web Booking Widgets | 4 | 5 | 3 | 5 | **17** | **Critical** | ❌ Open |
+| 5 | Marketing Automations | 4 | 5 | 4 | 5 | **18** | **Critical** | ❌ Open |
+| 6 | Gift Cards | 4 | 4 | 2 | 5 | **15** | **High** | ✅ Shipped |
+| 7 | POS / Retail | 4 | 4 | 4 | 5 | **17** | **High** | ❌ Open |
+| 8 | Staff Payroll | 4 | 3 | 3 | 5 | **15** | **High** | ❌ Open |
+| 9 | Online / Virtual Classes | 4 | 4 | 3 | 5 | **16** | **High** | ❌ Open |
+| 10 | Invoicing (EU) | 5 | 4 | 3 | 3 | **15** | **High** | ❌ Open |
+| 11 | Promo Codes / Discounts | 4 | 4 | 2 | 5 | **15** | **High** | ✅ Shipped |
+| 12 | Intro Offers / Trials | 4 | 4 | 2 | 4 | **14** | **High** | ✅ Shipped |
+| 13 | Rollover Credits | 3 | 3 | 2 | 4 | **12** | **High** | ✅ Shipped |
+| 14 | Late Cancel / No-Show Fees | 4 | 3 | 2 | 5 | **14** | **High** | ✅ Shipped |
+| 15 | Custom Roles / Permissions | 3 | 3 | 3 | 5 | **14** | **Medium** | ❌ Open |
+| 16 | Calendar Sync (iCal/Google) | 3 | 2 | 2 | 4 | **11** | **Medium** | ✅ Shipped |
+| 17 | Contracts / Commitments | 3 | 3 | 2 | 4 | **12** | **Medium** | ❌ Open |
+| 18 | Tags (manual + auto) | 3 | 3 | 2 | 4 | **12** | **Medium** | ✅ Shipped (manual) |
+| 19 | Family / Child Accounts | 3 | 2 | 3 | 3 | **11** | **Medium** | ❌ Open |
+| 20 | Workshops / Events | 3 | 3 | 3 | 4 | **13** | **Medium** | ❌ Open |
+| 21 | Franchise Dashboard | 3 | 4 | 4 | 4 | **15** | **Medium** | ❌ Open |
+| 22 | Door Access Control | 2 | 2 | 3 | 3 | **10** | **Medium** | ❌ Open |
+| 23 | Aggregator Integrations | 3 | 3 | 3 | 4 | **13** | **Medium** | ❌ Open |
+| 24 | Webhooks / API | 3 | 3 | 3 | 3 | **12** | **Medium** | ❌ Open |
+| 25 | Branded White-Label App | 3 | 3 | 5 | 4 | **15** | **Medium** | ❌ Open |
+| 26 | Loyalty / Rewards | 2 | 3 | 3 | 3 | **11** | **Low** | ❌ Open |
+| 27 | Referral Program | 2 | 3 | 2 | 3 | **10** | **Low** | ❌ Open |
+| 28 | Reviews / Ratings | 2 | 2 | 2 | 2 | **8** | **Low** | ❌ Open |
+| 29 | Video on Demand | 2 | 3 | 4 | 3 | **12** | **Low** | ❌ Open |
+| 30 | Community Features | 2 | 2 | 3 | 1 | **8** | **Low** | ❌ Open |
+| 31 | BI Tool Integration | 2 | 2 | 3 | 1 | **8** | **Low** | ❌ Open |
+| 32 | AI Sales Agent (Client-Facing) | 3 | 4 | 4 | 2 | **13** | **Low** | ❌ Open |
 
 ### Scoring Methodology
 
@@ -686,9 +736,11 @@ Let studios configure the AI's personality and knowledge base so it feels like t
 
 ## Phase 7 — Final Report
 
-### Quick Wins (High Value, Low Complexity)
+### Quick Wins (High Value, Low Complexity) — ✅ 9/9 DELIVERED (Competitive Gap Phase 1, PR #12 + follow-ons)
 
-These can be built in 1-3 weeks each and immediately close competitive gaps:
+These can be built in 1-3 weeks each and immediately close competitive gaps. **Status 2026-07-14:
+all nine shipped.** Forms/Waivers is backend+desktop only — mobile signing UI is still open, see
+Status Update at the top of this document.
 
 | Feature | Estimated Effort | Why Quick |
 |---------|-----------------|-----------|
@@ -704,16 +756,16 @@ These can be built in 1-3 weeks each and immediately close competitive gaps:
 
 ### Strategic Investments (Large, Worth Planning)
 
-| Feature | Estimated Effort | Strategic Value |
-|---------|-----------------|----------------|
-| **Appointments System** | 6-8 weeks | Opens personal training, wellness, and beauty verticals. Requires: availability engine, buffer times, service types, appointment passes, recurring appointments. |
-| **Marketing Automation Engine** | 4-6 weeks | Transforms Agon from scheduling tool to business platform. Requires: trigger system, action pipeline, sequence builder UI, behavioral event bus. |
-| **Web Booking Widgets** | 3-4 weeks | Embeddable React components served via CDN. Schedule, booking, pricing widgets. Critical for studio websites. |
-| **POS / Retail** | 4-6 weeks | Product catalog, inventory, Stripe Terminal integration, barcode scanning. Revenue diversification. |
-| **Invoicing (EU Compliant)** | 3-4 weeks | Sequential numbering, PDF generation, VAT handling, Italian e-invoicing. Required for EU market. |
-| **Staff Payroll** | 3-4 weeks | Pay rates, commissions, time clock, payroll reports. Every competitor has this. |
-| **Online Classes (Zoom)** | 2-3 weeks | Zoom OAuth integration, meeting creation on class schedule, join links in booking confirmation. |
-| **Branded White-Label App** | 8-12 weeks | Configurable Expo build pipeline. App Store/Play Store publishing service. Major differentiator but complex. |
+| Feature | Estimated Effort | Strategic Value | Status (07-14) |
+|---------|-----------------|----------------|----------|
+| **Appointments System** | 6-8 weeks | Opens personal training, wellness, and beauty verticals. Requires: availability engine, buffer times, service types, appointment passes, recurring appointments. | ✅ Shipped (2026-07-12, Phase 2.1) — recurring appointments/duo/room-booking still open |
+| **Marketing Automation Engine** | 4-6 weeks | Transforms Agon from scheduling tool to business platform. Requires: trigger system, action pipeline, sequence builder UI, behavioral event bus. | ❌ Open — highest-scoring remaining gap (18) |
+| **Web Booking Widgets** | 3-4 weeks | Embeddable React components served via CDN. Schedule, booking, pricing widgets. Critical for studio websites. | ❌ Open |
+| **POS / Retail** | 4-6 weeks | Product catalog, inventory, Stripe Terminal integration, barcode scanning. Revenue diversification. | ❌ Open |
+| **Invoicing (EU Compliant)** | 3-4 weeks | Sequential numbering, PDF generation, VAT handling, Italian e-invoicing. Required for EU market. | ❌ Open |
+| **Staff Payroll** | 3-4 weeks | Pay rates, commissions, time clock, payroll reports. Every competitor has this. | ❌ Open |
+| **Online Classes (Zoom)** | 2-3 weeks | Zoom OAuth integration, meeting creation on class schedule, join links in booking confirmation. | ❌ Open |
+| **Branded White-Label App** | 8-12 weeks | Configurable Expo build pipeline. App Store/Play Store publishing service. Major differentiator but complex. | ❌ Open |
 
 ### Competitive Risks
 
@@ -765,6 +817,26 @@ These can be built in 1-3 weeks each and immediately close competitive gaps:
 | Q1 | AI sales agent (client-facing, 24/7 auto-responses) | Leverage existing AI infrastructure for customer-facing use. Unique in market. |
 
 **Outcome:** Feature parity with bsport and Momence. AI capabilities create clear differentiation vs. all competitors including Mindbody.
+
+---
+
+## Next Up — proposed as of 2026-07-14
+
+With Quick Wins (9/9) and Appointments both delivered, the three remaining **Critical**-priority
+gaps from Phase 5 are: **Marketing Automations** (score 18, highest of all open items), **Web
+Booking Widgets** (17), and **Online / Virtual Classes** (16) — plus the small residual **mobile
+waiver-signing UI** gap (backend/desktop already done, mobile is the only missing surface).
+Recommended sequencing, to be confirmed with the user before delegating:
+
+1. **Mobile waiver-signing UI** (days, not weeks) — closes out an already-95%-done feature; cheap
+   to finish before starting a new multi-week investment.
+2. **Web Booking Widgets** (3-4 weeks) — directly reduces client-acquisition friction (the #1
+   competitive risk flagged below) and is a prerequisite for studios embedding booking on their own
+   sites, which several Quick Win features (gift cards, promo codes) also benefit from once exposed
+   publicly.
+3. **Marketing Automation Engine** (4-6 weeks) — highest strategic score; builds on existing Smart
+   Lists + Email Events infrastructure rather than starting from zero.
+4. **Online Classes (Zoom)** (2-3 weeks) — lowest effort of the three remaining Critical gaps.
 
 ---
 
