@@ -908,7 +908,10 @@
     "noServices": "Noch keine Leistungen",
     "emptyDesc": "Erstellen Sie eine Leistung wie Personal Training, Massage oder privates Coaching, die Kunden einzeln buchen können.",
     "failedCreate": "Leistung konnte nicht erstellt werden",
-    "failedEdit": "Leistung konnte nicht aktualisiert werden"
+    "failedEdit": "Leistung konnte nicht aktualisiert werden",
+    "establishments": "Standorte",
+    "establishmentsHelp": "Leer lassen, um diese Leistung an allen Standorten anzubieten.",
+    "allLocations": "Alle Standorte"
   },
   "instructorAvailability": {
     "instructor": "Trainer",
@@ -923,6 +926,8 @@
     "invalidWindow": "Die Endzeit muss nach der Startzeit liegen.",
     "failedAdd": "Zeitfenster konnte nicht hinzugefügt werden",
     "failedRemove": "Zeitfenster konnte nicht entfernt werden",
+    "service": "Leistung",
+    "allServices": "Alle Leistungen",
     "day0": "Montag",
     "day1": "Dienstag",
     "day2": "Mittwoch",

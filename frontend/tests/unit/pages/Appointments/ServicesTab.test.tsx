@@ -13,6 +13,15 @@ vi.mock('../../../../src/renderer/src/api/appointmentServices', () => ({
   },
 }))
 
+vi.mock('../../../../src/renderer/src/api/locations', () => ({
+  locationsApi: {
+    list: vi.fn().mockResolvedValue([
+      { id: 1, name: 'Downtown Studio', is_active: true },
+      { id: 2, name: 'Uptown Studio', is_active: true },
+    ]),
+  },
+}))
+
 function renderTab() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
@@ -32,6 +41,7 @@ const sampleService = {
   is_active: true,
   created_at: '2024-01-01T00:00:00Z',
   updated_at: '2024-01-01T00:00:00Z',
+  establishment_ids: [] as number[],
 }
 
 beforeEach(() => {
@@ -55,7 +65,31 @@ describe('ServicesTab', () => {
     expect(screen.getByText('Active')).toBeTruthy()
   })
 
-  it('creates a new service via the modal', async () => {
+  it('shows "All locations" when a service has no establishment scoping', async () => {
+    const { appointmentServicesApi } = await import(
+      '../../../../src/renderer/src/api/appointmentServices'
+    )
+    vi.mocked(appointmentServicesApi.list).mockResolvedValue([sampleService])
+    renderTab()
+
+    await screen.findByText('Personal Training')
+    expect(screen.getByText('All locations')).toBeTruthy()
+  })
+
+  it('shows the linked establishment names when a service is scoped', async () => {
+    const { appointmentServicesApi } = await import(
+      '../../../../src/renderer/src/api/appointmentServices'
+    )
+    vi.mocked(appointmentServicesApi.list).mockResolvedValue([
+      { ...sampleService, establishment_ids: [2] },
+    ])
+    renderTab()
+
+    await screen.findByText('Personal Training')
+    expect(screen.getByText('Uptown Studio')).toBeTruthy()
+  })
+
+  it('creates a new service via the modal with no establishments selected (wildcard)', async () => {
     const { appointmentServicesApi } = await import(
       '../../../../src/renderer/src/api/appointmentServices'
     )
@@ -79,10 +113,46 @@ describe('ServicesTab', () => {
     await waitFor(() => {
       expect(appointmentServicesApi.create).toHaveBeenCalled()
     })
-    expect(vi.mocked(appointmentServicesApi.create).mock.calls[0][0]).toMatchObject({
+    expect(vi.mocked(appointmentServicesApi.create).mock.calls[0][0]).toEqual({
       name: 'Massage',
+      description: '',
       duration_minutes: 60,
       buffer_minutes: 0,
+      establishment_ids: [],
+    })
+  })
+
+  it('creates a new service with selected establishments', async () => {
+    const { appointmentServicesApi } = await import(
+      '../../../../src/renderer/src/api/appointmentServices'
+    )
+    vi.mocked(appointmentServicesApi.list).mockResolvedValue([sampleService])
+    vi.mocked(appointmentServicesApi.create).mockResolvedValue({
+      ...sampleService,
+      id: 2,
+      name: 'Massage',
+      establishment_ids: [1],
+    })
+    renderTab()
+
+    await screen.findByText('Personal Training')
+    fireEvent.click(screen.getByRole('button', { name: /new service/i }))
+
+    fireEvent.change(screen.getByPlaceholderText('e.g. Personal Training'), {
+      target: { value: 'Massage' },
+    })
+
+    const downtownCheckbox = await screen.findByLabelText('Downtown Studio')
+    fireEvent.click(downtownCheckbox)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    await waitFor(() => {
+      expect(appointmentServicesApi.create).toHaveBeenCalled()
+    })
+    expect(vi.mocked(appointmentServicesApi.create).mock.calls[0][0]).toMatchObject({
+      name: 'Massage',
+      establishment_ids: [1],
     })
   })
 

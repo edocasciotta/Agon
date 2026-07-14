@@ -908,7 +908,10 @@
     "noServices": "Nog geen diensten",
     "emptyDesc": "Maak een dienst zoals personal training, massage of privécoaching die klanten 1-op-1 kunnen boeken.",
     "failedCreate": "Aanmaken van dienst mislukt",
-    "failedEdit": "Bijwerken van dienst mislukt"
+    "failedEdit": "Bijwerken van dienst mislukt",
+    "establishments": "Vestigingen",
+    "establishmentsHelp": "Laat leeg om deze dienst op alle vestigingen aan te bieden.",
+    "allLocations": "Alle vestigingen"
   },
   "instructorAvailability": {
     "instructor": "Instructeur",
@@ -923,6 +926,8 @@
     "invalidWindow": "Eindtijd moet na starttijd liggen.",
     "failedAdd": "Toevoegen van beschikbaarheid mislukt",
     "failedRemove": "Verwijderen van beschikbaarheid mislukt",
+    "service": "Dienst",
+    "allServices": "Alle diensten",
     "day0": "Maandag",
     "day1": "Dinsdag",
     "day2": "Woensdag",

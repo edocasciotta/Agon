@@ -3,12 +3,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { instructorsApi } from '../../api/instructors'
 import { instructorAvailabilityApi } from '../../api/instructorAvailability'
+import { appointmentServicesApi } from '../../api/appointmentServices'
 import { useAuthStore } from '../../store/authStore'
 import { LoadingSpinner } from '../../components/LoadingSpinner'
 import { resolveApiError } from '../../lib/errorMessages'
 import { instructorAvailabilitySchema } from '../../lib/formSchemas'
 
 const DAYS = [0, 1, 2, 3, 4, 5, 6] as const
+const ALL_SERVICES = 'all'
 
 export function AvailabilityTab() {
   const { t } = useTranslation()
@@ -19,13 +21,26 @@ export function AvailabilityTab() {
 
   const [selectedInstructorId, setSelectedInstructorId] = useState<number | null>(null)
   const [apiError, setApiError] = useState<string | null>(null)
-  const [newWindow, setNewWindow] = useState<Record<number, { start: string; end: string }>>({})
+  const [newWindow, setNewWindow] = useState<
+    Record<number, { start: string; end: string; serviceId: string }>
+  >({})
 
   const { data: instructors = [], isLoading: instructorsLoading } = useQuery({
     queryKey: ['instructors'],
     queryFn: () => instructorsApi.list(),
     enabled: isManager || isInstructor,
   })
+
+  const { data: services = [] } = useQuery({
+    queryKey: ['appointment-services'],
+    queryFn: () => appointmentServicesApi.list(),
+    enabled: isManager || isInstructor,
+  })
+
+  const serviceName = (serviceId: number | null): string => {
+    if (serviceId === null) return t('instructorAvailability.allServices')
+    return services.find((s) => s.id === serviceId)?.name ?? `#${serviceId}`
+  }
 
   // Instructor role: self-service, scoped to their own instructor record only
   // (mirrors the backend's own require_staff + _assert_can_manage restriction
@@ -92,11 +107,13 @@ export function AvailabilityTab() {
     const win = newWindow[day]
     if (!win?.start || !win?.end) return
 
+    const serviceSelection = win.serviceId ?? ALL_SERVICES
     const result = instructorAvailabilitySchema.safeParse({
       instructor_id: selectedInstructorId,
       day_of_week: day,
       start_time: `${win.start}:00`,
       end_time: `${win.end}:00`,
+      service_id: serviceSelection === ALL_SERVICES ? null : Number(serviceSelection),
     })
     if (!result.success) {
       const issue = result.error.issues[0]
@@ -110,7 +127,7 @@ export function AvailabilityTab() {
 
     setApiError(null)
     createMutation.mutate(result.data)
-    setNewWindow((prev) => ({ ...prev, [day]: { start: '', end: '' } }))
+    setNewWindow((prev) => ({ ...prev, [day]: { start: '', end: '', serviceId: ALL_SERVICES } }))
   }
 
   return (
@@ -173,9 +190,20 @@ export function AvailabilityTab() {
                     key={win.id}
                     className="flex items-center justify-between bg-gray-50 rounded-md px-3 py-2"
                   >
-                    <span className="text-sm text-gray-700">
-                      {win.start_time.slice(0, 5)} – {win.end_time.slice(0, 5)}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-700">
+                        {win.start_time.slice(0, 5)} – {win.end_time.slice(0, 5)}
+                      </span>
+                      <span
+                        className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
+                          win.service_id === null
+                            ? 'bg-gray-100 text-gray-600'
+                            : 'bg-indigo-100 text-indigo-700'
+                        }`}
+                      >
+                        {serviceName(win.service_id)}
+                      </span>
+                    </div>
                     <button
                       onClick={() => deleteMutation.mutate(win.id)}
                       disabled={deleteMutation.isPending}
@@ -187,14 +215,18 @@ export function AvailabilityTab() {
                   </div>
                 ))}
 
-                <div className="flex items-center gap-2 pt-1">
+                <div className="flex items-center gap-2 pt-1 flex-wrap">
                   <input
                     type="time"
                     value={newWindow[day]?.start ?? ''}
                     onChange={(e) =>
                       setNewWindow((prev) => ({
                         ...prev,
-                        [day]: { start: e.target.value, end: prev[day]?.end ?? '' },
+                        [day]: {
+                          start: e.target.value,
+                          end: prev[day]?.end ?? '',
+                          serviceId: prev[day]?.serviceId ?? ALL_SERVICES,
+                        },
                       }))
                     }
                     aria-label={t('instructorAvailability.startTime')}
@@ -207,12 +239,38 @@ export function AvailabilityTab() {
                     onChange={(e) =>
                       setNewWindow((prev) => ({
                         ...prev,
-                        [day]: { start: prev[day]?.start ?? '', end: e.target.value },
+                        [day]: {
+                          start: prev[day]?.start ?? '',
+                          end: e.target.value,
+                          serviceId: prev[day]?.serviceId ?? ALL_SERVICES,
+                        },
                       }))
                     }
                     aria-label={t('instructorAvailability.endTime')}
                     className="border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
+                  <select
+                    value={newWindow[day]?.serviceId ?? ALL_SERVICES}
+                    onChange={(e) =>
+                      setNewWindow((prev) => ({
+                        ...prev,
+                        [day]: {
+                          start: prev[day]?.start ?? '',
+                          end: prev[day]?.end ?? '',
+                          serviceId: e.target.value,
+                        },
+                      }))
+                    }
+                    aria-label={t('instructorAvailability.service')}
+                    className="border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <option value={ALL_SERVICES}>{t('instructorAvailability.allServices')}</option>
+                    {services.map((service) => (
+                      <option key={service.id} value={service.id}>
+                        {service.name}
+                      </option>
+                    ))}
+                  </select>
                   <button
                     onClick={() => handleAddWindow(day)}
                     disabled={createMutation.isPending}

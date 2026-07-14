@@ -131,6 +131,8 @@ export const appointmentServiceSchema = z.object({
     .number({ invalid_type_error: 'Buffer must be a number' })
     .int()
     .min(0, 'Buffer must be 0 or greater'),
+  // Empty array = offered at ALL establishments (wildcard).
+  establishment_ids: z.array(z.number()),
 })
 
 export const instructorAvailabilitySchema = z
@@ -139,6 +141,8 @@ export const instructorAvailabilitySchema = z
     day_of_week: z.number().int().min(0).max(6),
     start_time: z.string().min(1, 'Start time is required'),
     end_time: z.string().min(1, 'End time is required'),
+    // null = available for ALL services (wildcard).
+    service_id: z.number().nullable(),
   })
   .refine((data) => data.end_time > data.start_time, {
     message: 'End time must be after start time',

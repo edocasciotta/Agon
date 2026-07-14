@@ -384,6 +384,9 @@ export interface AppointmentService {
   is_active: boolean
   created_at: string
   updated_at: string
+  // Establishments (locations) this service is offered at. Empty array =
+  // offered at ALL establishments (wildcard).
+  establishment_ids: number[]
 }
 
 export interface AppointmentServiceCreate {
@@ -391,6 +394,8 @@ export interface AppointmentServiceCreate {
   description?: string
   duration_minutes: number
   buffer_minutes: number
+  // Omitted/empty = offered at ALL establishments (wildcard).
+  establishment_ids?: number[]
 }
 
 export interface AppointmentServiceUpdate {
@@ -399,6 +404,9 @@ export interface AppointmentServiceUpdate {
   duration_minutes?: number
   buffer_minutes?: number
   is_active?: boolean
+  // When provided (even as an empty array), replaces the entire linked set.
+  // When omitted, the existing links are left untouched.
+  establishment_ids?: number[]
 }
 
 export interface InstructorAvailability {
@@ -411,6 +419,9 @@ export interface InstructorAvailability {
   is_active: boolean
   created_at: string
   updated_at: string
+  // NULL = available for ALL services (wildcard). A specific id scopes this
+  // window to only that service.
+  service_id: number | null
 }
 
 export interface InstructorAvailabilityCreate {
@@ -418,6 +429,8 @@ export interface InstructorAvailabilityCreate {
   day_of_week: number
   start_time: string
   end_time: string
+  // NULL/omitted = available for ALL services (wildcard).
+  service_id?: number | null
 }
 
 export type AppointmentStatus = 'confirmed' | 'cancelled' | 'completed' | 'no_show'

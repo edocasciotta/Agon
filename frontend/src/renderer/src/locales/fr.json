@@ -908,7 +908,10 @@
     "noServices": "Aucun service",
     "emptyDesc": "Créez un service comme le coaching personnel, un massage ou du coaching privé que les clients peuvent réserver individuellement.",
     "failedCreate": "Échec de la création du service",
-    "failedEdit": "Échec de la mise à jour du service"
+    "failedEdit": "Échec de la mise à jour du service",
+    "establishments": "Établissements",
+    "establishmentsHelp": "Laissez vide pour proposer ce service dans tous les établissements.",
+    "allLocations": "Tous les établissements"
   },
   "instructorAvailability": {
     "instructor": "Instructeur",
@@ -923,6 +926,8 @@
     "invalidWindow": "L'heure de fin doit être postérieure à l'heure de début.",
     "failedAdd": "Échec de l'ajout du créneau de disponibilité",
     "failedRemove": "Échec de la suppression du créneau de disponibilité",
+    "service": "Service",
+    "allServices": "Tous les services",
     "day0": "Lundi",
     "day1": "Mardi",
     "day2": "Mercredi",

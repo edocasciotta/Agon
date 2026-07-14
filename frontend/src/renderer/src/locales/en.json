@@ -910,7 +910,10 @@
     "noServices": "No services yet",
     "emptyDesc": "Create a service such as personal training, massage, or private coaching that clients can book 1-on-1.",
     "failedCreate": "Failed to create service",
-    "failedEdit": "Failed to update service"
+    "failedEdit": "Failed to update service",
+    "establishments": "Locations",
+    "establishmentsHelp": "Leave empty to offer this service at all locations.",
+    "allLocations": "All locations"
   },
   "instructorAvailability": {
     "instructor": "Instructor",
@@ -925,6 +928,8 @@
     "invalidWindow": "End time must be after start time.",
     "failedAdd": "Failed to add availability window",
     "failedRemove": "Failed to remove availability window",
+    "service": "Service",
+    "allServices": "All services",
     "day0": "Monday",
     "day1": "Tuesday",
     "day2": "Wednesday",
