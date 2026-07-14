@@ -970,3 +970,35 @@ def test_instructor_a_can_upload_own_photo_not_403(client, instructor_a_with_row
         headers=instructor_a_with_row["headers"],
     )
     assert resp.status_code == 200
+
+
+# ── GET /api/v1/instructors/me ───────────────────────────────────────────────
+
+
+def test_instructor_can_get_own_profile(client, instructor_a_with_row):
+    """An instructor token resolves GET /instructors/me to their own row."""
+    resp = client.get("/api/v1/instructors/me", headers=instructor_a_with_row["headers"])
+    assert resp.status_code == 200
+    assert resp.json()["id"] == instructor_a_with_row["instructor_id"]
+
+
+def test_manager_cannot_get_instructor_me(client, manager_auth_headers):
+    """A manager token must be rejected — /me is instructor-only, not staff-wide."""
+    resp = client.get("/api/v1/instructors/me", headers=manager_auth_headers)
+    assert resp.status_code == 403
+    assert resp.json()["detail"]["error"]["code"] == "AUTH_INSUFFICIENT_PERMISSIONS"
+
+
+def test_client_cannot_get_instructor_me(client, client_auth_headers):
+    """A client token must be rejected by the instructor /me endpoint."""
+    resp = client.get("/api/v1/instructors/me", headers=client_auth_headers)
+    assert resp.status_code == 403
+    assert resp.json()["detail"]["error"]["code"] == "AUTH_INSUFFICIENT_PERMISSIONS"
+
+
+def test_instructor_me_404_when_no_instructor_row(client, instructor_headers):
+    """Edge case: a User with role=instructor but no linked Instructor row
+    (shouldn't happen in practice) must get a clear 404, not a crash."""
+    resp = client.get("/api/v1/instructors/me", headers=instructor_headers)
+    assert resp.status_code == 404
+    assert resp.json()["detail"]["error"]["code"] == "INSTRUCTOR_PROFILE_NOT_FOUND"
