@@ -62,6 +62,57 @@ def _authorize_instructor_photo_upload(
     return instructor
 
 
+def _get_own_instructor(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+) -> Instructor:
+    """Resolve the calling instructor's own Instructor row.
+
+    Role must be checked before any DB lookup that assumes entity type
+    (SECURITY_GUIDELINES.md §1.1) — User.id and Client.id share an integer
+    space, so dispatching on `sub` alone before checking `role` would risk
+    resolving the wrong entity. This is specifically "my own instructor
+    profile": manager and client tokens are rejected outright, not just
+    filtered down to staff.
+    """
+    payload = decode_token(token)
+    if payload.get("type") != "access":
+        raise_api_error("AUTH_TOKEN_INVALID", "Invalid token type", status_code=401)
+
+    role = payload.get("role", "client")
+    if role != "instructor":
+        raise_api_error(
+            "AUTH_INSUFFICIENT_PERMISSIONS",
+            "Instructor access required",
+            status_code=403,
+        )
+
+    sub = payload.get("sub")
+    if sub is None:
+        raise_api_error("AUTH_TOKEN_INVALID", "Token missing subject", status_code=401)
+
+    instructor = db.query(Instructor).filter(Instructor.user_id == int(sub)).first()
+    if not instructor:
+        raise_api_error(
+            "INSTRUCTOR_PROFILE_NOT_FOUND",
+            "No instructor profile exists for this account.",
+            status_code=404,
+        )
+    return instructor
+
+
+# ---- /me routes MUST come before /{instructor_id} ----
+
+
+@router.get("/me", response_model=InstructorResponse)
+def get_own_instructor_profile(
+    db: Session = Depends(get_db),
+    instructor: Instructor = Depends(_get_own_instructor),
+):
+    user = db.query(User).filter(User.id == instructor.user_id).first()
+    return _build_instructor_response(instructor, user)
+
+
 @router.get("", response_model=List[InstructorResponse])
 def list_instructors(
     search: Optional[str] = Query(None),
