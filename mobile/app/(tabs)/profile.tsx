@@ -8,7 +8,6 @@ import { calendarSyncApi } from '../../src/api/calendarSync'
 import { clientsApi, type ClientPhotoUploadResponse } from '../../src/api/memberships'
 import { OfflineBanner } from '../../src/components/OfflineBanner'
 import { useT } from '../../src/i18n'
-import * as Notifications from 'expo-notifications'
 import * as Clipboard from 'expo-clipboard'
 import * as SecureStore from 'expo-secure-store'
 import * as ImagePicker from 'expo-image-picker'
@@ -19,6 +18,8 @@ import type { ClientTag } from '../../src/types'
 import { TOKEN_KEY, type ApiError } from '../../src/api/client'
 import { useTheme } from '../../src/theme/ThemeContext'
 import { getErrorMessage } from '../../src/lib/errorMessages'
+import { isExpoGo } from '../../src/lib/expoGo'
+import { loadExpoNotifications } from '../../src/lib/expoNotifications'
 
 const MAX_PHOTO_SIZE_BYTES = 5 * 1024 * 1024
 
@@ -35,6 +36,13 @@ export default function ProfileScreen() {
   const [authToken, setAuthToken] = useState<string | null>(null)
 
   useEffect(() => {
+    // Expo Go (SDK 53+) has no remote push support, and merely importing `expo-notifications`
+    // there fires a disruptive module-scope console.error on Android — this is the exact crash
+    // this eagerly-mounted tab screen used to trigger right after login. See
+    // `src/lib/expoNotifications.ts`; `loadExpoNotifications()` returns `null` in Expo Go without
+    // ever requiring the package.
+    const Notifications = loadExpoNotifications()
+    if (!Notifications) return
     Notifications.getPermissionsAsync().then(({ status }) => setNotifStatus(status))
   }, [])
 
@@ -154,6 +162,8 @@ export default function ProfileScreen() {
   }
 
   const handleToggleNotifications = async () => {
+    const Notifications = loadExpoNotifications()
+    if (!Notifications) return
     if (notifStatus !== 'granted') {
       const { status } = await Notifications.requestPermissionsAsync()
       setNotifStatus(status)
@@ -281,7 +291,7 @@ export default function ProfileScreen() {
             ]}>
               {notifStatus === 'granted' ? t('profile.enabled') : t('profile.disabled')}
             </Text>
-            {notifStatus !== 'granted' && (
+            {notifStatus !== 'granted' && !isExpoGo() && (
               <TouchableOpacity onPress={handleToggleNotifications} style={[styles.enableButton, { backgroundColor: primary }]}>
                 <Text style={styles.enableButtonText}>{t('profile.enable')}</Text>
               </TouchableOpacity>
