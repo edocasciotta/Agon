@@ -39,16 +39,21 @@ export default function LoginScreen() {
       await authApi.saveToken(tokens.access_token)
       const user = await authApi.me()
       useAuthStore.getState().setUser(user)
-      // Register push notifications
-      try {
-        const pushToken = await registerForPushNotifications()
-        if (pushToken) {
-          await clientsApi.updatePushToken(pushToken)
+      // Register push notifications — client-only. `PUT /clients/me/push-token`
+      // is gated server-side on `get_current_client` (role must be "client"),
+      // so an instructor token would 403 here every login; skip the call
+      // entirely for non-client roles rather than eating a failed request.
+      if (user.role === 'client') {
+        try {
+          const pushToken = await registerForPushNotifications()
+          if (pushToken) {
+            await clientsApi.updatePushToken(pushToken)
+          }
+        } catch {
+          // Non-fatal: proceed even if push registration fails
         }
-      } catch {
-        // Non-fatal: proceed even if push registration fails
       }
-      router.replace('/(tabs)')
+      router.replace(user.role === 'instructor' ? '/(instructor-tabs)' : '/(tabs)')
     } catch (err) {
       const apiErr = err as ApiError
       setError(getErrorMessage(apiErr.code ?? 'SERVER_ERROR'))
