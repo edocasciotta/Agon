@@ -75,6 +75,7 @@ const sidebars: SidebarsConfig = {
             'api/endpoints/studio',
             'api/endpoints/clients',
             'api/endpoints/instructors',
+            'api/endpoints/photos',
             'api/endpoints/class-templates',
             'api/endpoints/classes',
             'api/endpoints/bookings',

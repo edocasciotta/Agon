@@ -7,6 +7,19 @@ sidebar_label: Instructors
 
 > Auto-generated from the OpenAPI spec. Run `node docs-site/scripts/fetch-openapi.js` to regenerate.
 
+## `GET /api/v1/instructors/me`
+
+Get Own Instructor Profile
+
+
+
+
+**Responses**
+
+- **200** — Successful Response
+
+---
+
 ## `GET /api/v1/instructors`
 
 List Instructors
@@ -118,6 +131,26 @@ Deactivate Instructor
 **Responses**
 
 - **204** — Successful Response
+- **422** — Validation Error
+
+---
+
+## `POST /api/v1/instructors/{instructor_id}/photo`
+
+Upload Instructor Photo
+
+
+**Parameters**
+
+| Name | In | Required | Type | Description |
+|------|-----|----------|------|-------------|
+| `instructor_id` | path | Yes | integer |  |
+
+
+
+**Responses**
+
+- **200** — Successful Response
 - **422** — Validation Error
 
 ---
