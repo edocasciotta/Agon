@@ -104,7 +104,7 @@ export function ReportsPage() {
                 <StatCard title={t('reports.totalClasses')} value={attendance.total_classes} />
                 <StatCard title={t('reports.totalBookings')} value={attendance.total_bookings} />
                 <StatCard title={t('reports.totalCheckins')} value={attendance.total_checkins} />
-                <StatCard title={t('reports.checkinRate')} value={`${(attendance.checkin_rate * 100).toFixed(1)}%`} />
+                <StatCard title={t('reports.checkinRate')} value={`${attendance.checkin_rate.toFixed(1)}%`} />
                 <StatCard title={t('reports.avgClassSize')} value={attendance.avg_class_size?.toFixed(1) ?? '—'} />
                 <StatCard title={t('reports.classesCancelled')} value={attendance.classes_cancelled} />
                 <StatCard title={t('reports.classesCompleted')} value={attendance.classes_completed} />
@@ -170,7 +170,7 @@ export function ReportsPage() {
               <StatCard title={t('reports.newClients')} value={retention.new_clients ?? '—'} />
               <StatCard title={t('reports.churnedClients')} value={retention.churned_clients ?? '—'} />
               {retention.retention_rate !== undefined && (
-                <StatCard title={t('reports.retentionRate')} value={`${(retention.retention_rate * 100).toFixed(1)}%`} />
+                <StatCard title={t('reports.retentionRate')} value={`${retention.retention_rate.toFixed(1)}%`} />
               )}
             </div>
           ) : null}
