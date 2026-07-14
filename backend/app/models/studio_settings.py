@@ -1,6 +1,10 @@
-from app.database import Base
+import secrets
+import uuid
+
 from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String
 from sqlalchemy.sql import func
+
+from app.database import Base
 
 
 class StudioSettings(Base):
@@ -31,6 +35,23 @@ class StudioSettings(Base):
     backup_token = Column(String)
     last_backup_at = Column(DateTime)
     tunnel_url = Column(String)
+    # Public identity for the widget / directory-Worker trust boundary. This
+    # UUID — never the internal integer `id` — is the only studio identifier
+    # ever exposed publicly (embeddable widget URLs, the directory Worker's
+    # studio_id -> tunnel_url lookup). Generated once via uuid4() so it can't
+    # be enumerated/guessed the way a sequential integer id could.
+    public_studio_id = Column(
+        String, unique=True, nullable=False, default=lambda: str(uuid.uuid4())
+    )
+    # Bearer credential sent as `Authorization: Bearer {directory_secret}` to
+    # the directory Worker's POST /register (see directory-worker/CLAUDE.md)
+    # so only the studio that first claimed a public_studio_id can update its
+    # registered tunnel URL (trust-on-first-use). Mirrors the
+    # secrets.token_urlsafe(32) generation style already used for the
+    # calendar-sync token in app/services/calendar_sync_service.py. Never
+    # returned by any API response and never logged (see
+    # app/logging_config.py's PII/secret redaction).
+    directory_secret = Column(String, nullable=False, default=lambda: secrets.token_urlsafe(32))
     email_smtp_host = Column(String)
     email_smtp_port = Column(Integer, default=587)
     email_smtp_user = Column(String)
