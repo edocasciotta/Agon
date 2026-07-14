@@ -28,6 +28,13 @@ class Settings(BaseSettings):
     STRIPE_PUBLISHABLE_KEY: str = ""
     STRIPE_WEBHOOK_SECRET: str = "whsec_test"
     EXPO_ACCESS_TOKEN: str = ""
+    # Base URL of the directory Worker (see directory-worker/CLAUDE.md) that
+    # resolves public_studio_id -> current tunnel URL. Placeholder until the
+    # Worker is deployed (separate, parallel track) — real value goes in
+    # .env, never hardcoded here. Registration failures against this default
+    # are swallowed (see app/services/tunnel_registration.py) so an
+    # undeployed/misconfigured Worker never breaks backend startup.
+    DIRECTORY_WORKER_URL: str = "https://agon-directory.example.workers.dev"
 
     model_config = ConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

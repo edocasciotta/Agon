@@ -1,4 +1,6 @@
 import asyncio
+import logging
+import os
 from contextlib import asynccontextmanager
 
 from app.database import create_tables
@@ -40,16 +42,28 @@ from app.routers import (
     support,
     tags,
     waivers,
+    widget,
 )
 from app.routers import auth as auth_router
+from app.services.tunnel_registration import register_with_directory
 from app.tasks.class_reminders import run_class_reminder_loop
 from app.tasks.membership_expiry import run_membership_expiry_loop
 from app.tasks.nightly_backup import run_nightly_backup_loop
 from app.tasks.waitlist_expiry import run_waitlist_expiry_loop
+from app.tunnel import CloudflareTunnelProvider
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+
+_main_logger = logging.getLogger(__name__)
+
+# Holds the running tunnel provider between the startup and shutdown halves
+# of the lifespan context manager, so _stop_tunnel() can stop the exact
+# instance _start_tunnel() created. Module-level because the two calls are
+# separated by `yield` inside lifespan() and there is no per-request/app
+# state object convenient to stash it on at this point in startup.
+_tunnel_provider: CloudflareTunnelProvider | None = None
 
 
 def _seed_email_event_assignments():
@@ -84,6 +98,77 @@ def _seed_sms_event_assignments():
         db.close()
 
 
+def _tunnel_enabled() -> bool:
+    """Whether the Cloudflare tunnel should actually be started this run.
+
+    Mirrors the AGON_ENV-gate mechanism already used for rate limiting in
+    app/limiter.py (read directly from os.environ, default "development"),
+    but the condition is intentionally broader: tunnel startup spawns a real
+    subprocess and opens a public internet-facing URL, which must never
+    happen during automated tests (pytest would spawn `cloudflared` on every
+    `TestClient(app)` lifespan startup — hundreds of times per run) and
+    should not happen silently during ordinary local development either. It
+    only runs when AGON_ENV is explicitly set to something else (e.g.
+    "production").
+    """
+    return os.environ.get("AGON_ENV", "development") not in ("test", "development")
+
+
+async def _start_tunnel() -> None:
+    """Start the Cloudflare Quick Tunnel and register it with the directory Worker.
+
+    Best-effort end to end: a missing `cloudflared` binary, a timeout
+    waiting for the assigned URL, a missing StudioSettings row, or a
+    directory-worker registration failure are all logged and swallowed here
+    (register_with_directory already swallows its own failures) so nothing
+    in this step can prevent the backend from serving LAN traffic.
+    """
+    global _tunnel_provider
+    if not _tunnel_enabled():
+        return
+
+    from app.database import SessionLocal
+    from app.models.studio_settings import StudioSettings
+
+    provider = CloudflareTunnelProvider()
+    try:
+        tunnel_url = await provider.start()
+    except Exception:
+        _main_logger.warning(
+            "Cloudflare tunnel failed to start; public widget/reset-password "
+            "links will not be available this session.",
+            exc_info=True,
+        )
+        return
+
+    _tunnel_provider = provider
+
+    db = SessionLocal()
+    try:
+        studio_settings = db.query(StudioSettings).filter(StudioSettings.id == 1).first()
+        if studio_settings is None:
+            _main_logger.warning(
+                "No StudioSettings row found; skipping directory-worker registration."
+            )
+            return
+        studio_settings.tunnel_url = tunnel_url
+        db.commit()
+        db.refresh(studio_settings)
+        public_studio_id = studio_settings.public_studio_id
+        directory_secret = studio_settings.directory_secret
+    finally:
+        db.close()
+
+    await register_with_directory(public_studio_id, tunnel_url, directory_secret)
+
+
+async def _stop_tunnel() -> None:
+    global _tunnel_provider
+    if _tunnel_provider is not None:
+        await _tunnel_provider.stop()
+        _tunnel_provider = None
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     from app.config import settings
@@ -92,6 +177,7 @@ async def lifespan(app: FastAPI):
     create_tables()
     _seed_email_event_assignments()
     _seed_sms_event_assignments()
+    await _start_tunnel()
     tasks = [
         asyncio.create_task(run_waitlist_expiry_loop()),
         asyncio.create_task(run_membership_expiry_loop()),
@@ -99,6 +185,7 @@ async def lifespan(app: FastAPI):
         asyncio.create_task(run_nightly_backup_loop()),
     ]
     yield
+    await _stop_tunnel()
     for t in tasks:
         t.cancel()
     for t in tasks:
@@ -160,6 +247,7 @@ app.include_router(locations.router)
 app.include_router(tags.router)
 app.include_router(waivers.router)
 app.include_router(agent.router)
+app.include_router(widget.router)
 
 
 @app.get("/health")

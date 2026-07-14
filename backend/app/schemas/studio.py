@@ -53,6 +53,14 @@ class StudioSettingsResponse(BaseModel):
     stripe_connected: bool
     tunnel_url: Optional[str] = None
     lan_url: Optional[str] = None
+    # Public studio identifier (UUID) — never the internal integer `id` — used
+    # by a future desktop Settings UI to show connection status and build the
+    # widget embed snippet. Safe on this manager-only endpoint (require_manager
+    # guards GET /api/v1/studio); note this same value is also what the public,
+    # unauthenticated widget endpoint (app/routers/widget.py) accepts in its
+    # path — it is a public identifier by design, unlike directory_secret
+    # (deliberately NOT exposed by this or any other response schema).
+    public_studio_id: Optional[str] = None
     last_backup_at: Optional[datetime] = None
     updated_at: datetime
     model_config = {"from_attributes": True}
