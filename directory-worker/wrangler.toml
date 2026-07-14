@@ -1,0 +1,17 @@
+name = "agon-directory-worker"
+main = "src/index.ts"
+compatibility_date = "2026-07-14"
+
+# KV namespace binding. Placeholder id — NOT a real, deployable value.
+#
+# Deployer must fill this in before `wrangler deploy`:
+#   1. `wrangler kv namespace create DIRECTORY_KV`
+#   2. Copy the printed `id` into the `id` field below (and `preview_id` from a
+#      `wrangler kv namespace create DIRECTORY_KV --preview` run, for `wrangler dev`).
+# No secret material belongs in this file, ever — the per-studio `directory_secret` values
+# are supplied by each studio's backend on every /register call and are stored in KV only as
+# a sha256 hash, never here.
+[[kv_namespaces]]
+binding = "DIRECTORY_KV"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+preview_id = "REPLACE_WITH_YOUR_KV_PREVIEW_NAMESPACE_ID"

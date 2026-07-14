@@ -1,0 +1,20 @@
+{
+  "name": "directory-worker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agon directory Worker: studio_id -> current tunnel URL lookup (the one centralized piece of infrastructure in an otherwise local-first project).",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.18.4",
+    "@cloudflare/workers-types": "^5.20260714.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10",
+    "wrangler": "^4.110.0"
+  }
+}

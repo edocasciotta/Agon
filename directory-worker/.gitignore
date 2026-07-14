@@ -1,0 +1,6 @@
+# Wrangler local dev state (miniflare's local KV/D1 simulation, build cache)
+.wrangler/
+
+# Local secret overrides for `wrangler dev` (never commit real secrets)
+.dev.vars
+.dev.vars.*
