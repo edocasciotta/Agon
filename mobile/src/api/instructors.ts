@@ -1,5 +1,4 @@
-import { apiClient, type ApiError } from './client'
-import { useAuthStore } from '../store/authStore'
+import { apiClient } from './client'
 import type { Instructor } from '../types'
 
 /** Minimal shape of a picked image asset needed to build the multipart upload body.
@@ -30,31 +29,12 @@ export const instructorsApi = {
     )
     return res.data
   },
-  /**
-   * Resolves the authenticated instructor's own `Instructor` record.
-   *
-   * There is no `GET /api/v1/instructors/me` on the backend (verified against
-   * `main` — the router only exposes list/get/create/update/photo/reactivate/
-   * remove). We resolve "me" client-side instead: the auth store already holds
-   * the caller's email (populated from `/auth/me` at login), and
-   * `GET /instructors?search=` matches against `User.email` via ILIKE, so
-   * searching by our own email returns exactly our own instructor row without
-   * listing every instructor in the studio.
-   */
+  /** Resolves the authenticated instructor's own `Instructor` record via the
+   * backend's dedicated /me endpoint (resolves the JWT sub to Instructor.id
+   * server-side through Instructor.user_id — no params needed). */
   getMe: async (): Promise<Instructor> => {
-    const email = useAuthStore.getState().user?.email
-    if (!email) {
-      const err: ApiError = { code: 'AUTH_TOKEN_INVALID', message: 'Not authenticated' }
-      throw err
-    }
-    const res = await apiClient.get('/api/v1/instructors', { params: { search: email } })
-    const list = res.data as Instructor[]
-    const mine = list.find((i) => i.email.toLowerCase() === email.toLowerCase())
-    if (!mine) {
-      const err: ApiError = { code: 'NOT_FOUND', message: 'Instructor profile not found' }
-      throw err
-    }
-    return mine
+    const res = await apiClient.get('/api/v1/instructors/me')
+    return res.data
   },
   uploadPhoto: async (
     instructorId: number,
