@@ -192,3 +192,28 @@ export interface ClientUser {
   role: string
   photo_url: string | null
 }
+
+/** One row of `GET /api/v1/clients/{client_id}/waivers`. */
+export interface WaiverWithStatus {
+  id: number
+  location_id: number
+  title: string
+  body: string
+  version: number
+  requires_before_booking: boolean
+  is_active: boolean
+  created_at: string
+  updated_at: string
+  is_signed: boolean
+  signed_at: string | null
+}
+
+/** Response of `POST /api/v1/waivers/{waiver_id}/sign`. */
+export interface WaiverSignatureResponse {
+  id: number
+  waiver_id: number
+  client_id: number
+  waiver_version: number
+  signed_name: string
+  signed_at: string
+}

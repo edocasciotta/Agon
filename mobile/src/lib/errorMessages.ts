@@ -35,6 +35,8 @@ export const errorMessages: Record<string, string> = {
   CHECKIN_WINDOW_NOT_OPEN: 'Check-in has not opened yet for this class.',
   CHECKIN_WINDOW_CLOSED: 'Check-in has closed for this class.',
   CHECKIN_BOOKING_NOT_FOUND: 'No confirmed booking was found for this client and class.',
+  WAIVER_NOT_FOUND: 'This waiver could not be found.',
+  WAIVER_SIGNATURE_REQUIRED: 'You need to sign a waiver before booking this class.',
 }
 
 export function getErrorMessage(code: string): string {

@@ -5,6 +5,7 @@ import { useSessionStore } from '../store/sessionStore'
 export interface ApiError {
   code: string
   message: string
+  details?: Record<string, unknown>
 }
 
 export const TOKEN_KEY = 'agon_access_token'

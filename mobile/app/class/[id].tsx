@@ -4,17 +4,25 @@ import { useQuery, useMutation } from '@tanstack/react-query'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { classesApi } from '../../src/api/classes'
 import { bookingsApi } from '../../src/api/bookings'
+import { waiversApi } from '../../src/api/waivers'
+import { useAuthStore } from '../../src/store/authStore'
 import { LoadingView } from '../../src/components/LoadingView'
 import { ErrorView } from '../../src/components/ErrorView'
 import type { ApiError } from '../../src/api/client'
 import { format, parseISO, differenceInMinutes } from 'date-fns'
 import { useTheme } from '../../src/theme/ThemeContext'
+import { useT } from '../../src/i18n'
+
+type BookingState = 'idle' | 'booked' | 'full' | 'duplicate' | 'waiverRequired'
 
 export default function ClassDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
-  const [bookingState, setBookingState] = useState<'idle' | 'booked' | 'full' | 'duplicate'>('idle')
+  const t = useT()
+  const [bookingState, setBookingState] = useState<BookingState>('idle')
+  const [waiverIds, setWaiverIds] = useState<number[]>([])
   const { primary } = useTheme()
+  const user = useAuthStore((s) => s.user)
 
   const classId = Number(id)
 
@@ -22,6 +30,20 @@ export default function ClassDetailScreen() {
     queryKey: ['class', classId],
     queryFn: () => classesApi.get(classId),
   })
+
+  // Only needed to resolve waiver titles for the WAIVER_SIGNATURE_REQUIRED banner below —
+  // reuses the same query key as the waivers list/detail screens so it's usually already cached.
+  const { data: clientWaivers } = useQuery({
+    queryKey: ['client-waivers', user?.id],
+    queryFn: () => waiversApi.listForClient(user!.id),
+    enabled: !!user && bookingState === 'waiverRequired',
+    staleTime: 5 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
+  })
+
+  const blockingWaiverTitles = clientWaivers
+    ? clientWaivers.filter((w) => waiverIds.includes(w.id)).map((w) => w.title)
+    : []
 
   const bookMutation = useMutation({
     mutationFn: () => bookingsApi.create(classId),
@@ -34,6 +56,10 @@ export default function ClassDetailScreen() {
         setBookingState('full')
       } else if (err.code === 'BOOKING_DUPLICATE') {
         setBookingState('duplicate')
+      } else if (err.code === 'WAIVER_SIGNATURE_REQUIRED') {
+        const ids = (err.details?.waiver_ids as number[] | undefined) ?? []
+        setWaiverIds(ids)
+        setBookingState('waiverRequired')
       } else {
         Alert.alert('Booking Error', err.message ?? 'Could not complete booking.')
       }
@@ -100,6 +126,23 @@ export default function ClassDetailScreen() {
         </View>
       )}
 
+      {bookingState === 'waiverRequired' && (
+        <View style={styles.warningBanner}>
+          <Text style={styles.warningText}>{t('classDetail.waiverRequiredTitle')}</Text>
+          <Text style={styles.waiverRequiredMessage}>
+            {blockingWaiverTitles.length > 0
+              ? blockingWaiverTitles.join(', ')
+              : t('classDetail.waiverRequiredMessage')}
+          </Text>
+          <TouchableOpacity
+            style={[styles.signWaiversButton, { backgroundColor: primary }]}
+            onPress={() => router.push('/waivers')}
+          >
+            <Text style={styles.signWaiversButtonText}>{t('classDetail.signWaivers')}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {bookingState === 'full' && (
         <View>
           <View style={styles.warningBanner}>
@@ -119,7 +162,7 @@ export default function ClassDetailScreen() {
         </View>
       )}
 
-      {bookingState === 'idle' && (
+      {(bookingState === 'idle' || bookingState === 'waiverRequired') && (
         <TouchableOpacity
           style={[styles.bookButton, { backgroundColor: primary }]}
           onPress={() => bookMutation.mutate()}
@@ -225,6 +268,24 @@ const styles = StyleSheet.create({
     color: '#DC2626',
     fontSize: 16,
     fontWeight: '600',
+  },
+  waiverRequiredMessage: {
+    color: '#DC2626',
+    fontSize: 13,
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  signWaiversButton: {
+    marginTop: 12,
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+  },
+  signWaiversButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
   },
   waitlistButton: {
     backgroundColor: '#F59E0B',
