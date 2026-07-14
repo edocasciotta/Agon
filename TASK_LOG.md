@@ -12,17 +12,19 @@ Gap Phase 1 (1.1–1.9) and Phase 2's Appointments (2.1) both fully shipped acro
 ### Test Counts
 | Suite | Count | Status | As of |
 |---|---|---|---|
-| Backend (pytest) | 579 | ✅ (independently re-run) | PR #24, unchanged through PR #25 |
-| Frontend (Vitest) | 98 | ✅ (last logged) | PR #19 |
-| Mobile (jest-expo) | 65 | ✅ (last logged) | PR #23 |
-| Docs build | — | ✅ | PR #22 |
+| Backend (pytest) | 640 | ✅ (independently re-run) | PR #46 |
+| Frontend (Vitest) | 126 | ✅ (independently re-run) | PR #47 |
+| Mobile (jest-expo) | 116 | ✅ (independently re-run) | PR #45 |
+| Docs build | — | ✅ | PR #43 |
 
 ### Active branch
-`main` — through PR #42 (instructor mobile login/schedule/check-in/profile), merged 2026-07-14.
-The full 8-item mobile UX request from this session is done: items 1/2/3/5/6/7 (PRs #30–#37),
-item 4 backend+desktop+mobile (PRs #37/#39/#40), item 8 backend+mobile (PRs #41/#42), plus an
-unrelated user-reported bug fix (10000% check-in rate, PR #38). All merged and independently
-verified. See the Shipped Feature / Fix Log entries below for full detail per item.
+`main` — through PR #47 (Mobile Access URL validation), merged 2026-07-14. The full 8-item mobile
+UX request is done (items 1–8, PRs #30–#42), plus 5 follow-on fixes found during live user testing:
+#38 (10000% check-in rate), #43 (missing docs-site pages), #44 (Expo Go crash-on-open: bad
+expo-font/expo-splash-screen SDK pins), #45 (Expo Go crash-on-login: expo-notifications module-scope
+error), #46 (VPN interface hijacking LAN IP auto-detection), #47 (unvalidated Mobile Access URL
+field let a malformed value silently break QR onboarding). All merged and independently verified.
+See the Shipped Feature / Fix Log and new Known Hazard section below for detail.
 
 ### Local dev
 - Backend: `cd backend && .venv/bin/uvicorn main:app --reload` (entry point is top-level `backend/main.py`, not `app/main.py`)
@@ -98,6 +100,53 @@ no unique content was in it.
 - Reinforced repeatedly in practice (see `TASK_LOG_ARCHIVE.md`'s "recovering truncated agent
   sessions" note and every "verified independently, not accepted on self-report alone" line
   throughout the archive) — this is the single most load-bearing habit in this project's workflow.
+
+---
+
+## Known Hazard: Dev-Machine VPN Breaks Mobile Onboarding + Expo Go SDK-Mismatch Crashes (2026-07-14)
+
+Two unrelated but easily-confused classes of "mobile app is broken" reports, both hit live in one
+session — worth recognizing quickly next time instead of re-diagnosing from scratch:
+
+**1. App crashes immediately (before or right after login), "Something went wrong" in Expo Go.**
+Root cause both times was an Expo-Go-specific SDK incompatibility, not application logic:
+- `expo-font`/`expo-splash-screen` pinned to versions wildly newer than what Expo SDK 54 expects
+  (present since original scaffolding) — `SplashScreen.preventAutoHideAsync()` runs at module-load
+  time in `app/_layout.tsx`, so a native-module version mismatch there crashes before any screen
+  renders. Fixed by PR #44 (`npx expo install expo-constants expo-font expo-splash-screen
+  react-native-svg`; `npx expo-doctor` is the fast way to catch this class of bug — run it first).
+- `expo-notifications`: as of Expo Go SDK 53+, remote push was removed from the Expo Go client
+  entirely — merely *importing* the package (not calling any API) fires a disruptive module-scope
+  `console.error` on Android. Since Expo Router eagerly evaluates every tab screen's module, one
+  static import in `app/(tabs)/profile.tsx` broke every login. Fixed by PR #45 — gate the import
+  itself behind an Expo-Go check (`Constants.executionEnvironment === StoreClient`) using a
+  conditional `require()`, not just guarding the API calls (guarding calls alone doesn't help — the
+  crash fires on import, before any call happens).
+- **Diagnostic tip**: the Expo Go in-app red error screen ("Something went wrong") shows no useful
+  detail — the *actual* stack trace only appears in the Metro terminal log (where `npx expo start`
+  is running). Always ask for that log first; it named the exact file/line both times.
+
+**2. "Server unreachable" / login fails / QR code onboarding fails, but the app itself doesn't crash.**
+Root cause: the backend's `_get_lan_url()` (`backend/app/routers/studio.py`) auto-detects its own
+LAN IP via a UDP-connect-to-8.8.8.8 trick — if a VPN is active on the host and is the default route,
+this returns the VPN's internal tunnel address (e.g. `10.5.0.2` on a macOS `utun*` interface)
+instead of the real WiFi address a phone can reach. This silently poisons the QR code / Mobile
+Access URL shown in desktop Settings, with no error until a phone actually tries to connect. Fixed
+by PR #46 (cross-check the detected IP's owning interface by name via `psutil`, skip anything
+`utun*`/`tun*`/`tap*`/`ppp*`/`ipsec*`/`wg*`-named). A **second**, compounding issue found in the
+same investigation: the desktop Settings "Mobile Access URL" field had zero validation before
+saving — a stale malformed value (bare hostname, no `http://`/port) was already sitting in the DB
+from an earlier bad save, and kept silently overriding the (now-fixed) auto-detection. Fixed by
+PR #47 (Zod validation mirroring mobile's own `validateStudioUrl.ts` rules, byte-identical regex,
+inline error before any API call, plus a "reset to detected address" escape hatch).
+- **Diagnostic tip**: `python3 -c "import socket; s=socket.socket(socket.AF_INET,
+  socket.SOCK_DGRAM); s.connect(('8.8.8.8',80)); print(s.getsockname()[0])"` reproduces exactly what
+  the backend sees — run it directly on the host to check if a VPN is currently poisoning the result
+  before assuming it's a code bug. `ifconfig | grep "inet "` shows all active interfaces including
+  VPN tunnels.
+- Also: a stale Metro process from a *previous day's* session (`ps aux | grep expo`) was still
+  holding port 8081 during this same investigation — always check for and kill orphaned dev-server
+  processes when "start clean" instructions don't seem to take effect.
 
 ---
 
@@ -187,6 +236,8 @@ Scaffolding → DB models → Core API → Booking engine → Check-in → Membe
 - **Item 4 completion — service/establishment scoping** (2026-07-13/14, PRs [#37](https://github.com/edocasciotta/Agon/pull/37)/[#39](https://github.com/edocasciotta/Agon/pull/39)/[#40](https://github.com/edocasciotta/Agon/pull/40)): **#37** (backend, already logged above under the batch) added nullable `service_id` on `instructor_availability` (NULL = all services, no backfill) and a new `appointment_service_locations` join table (zero links = all establishments), plus `GET /appointment-services/{id}/available-instructors`. **#39** wires the desktop Availability/Services tabs to these fields (service `<select>`, establishment checkbox list). **#40** switches mobile's appointment-booking instructor step from listing every instructor unconditionally to calling the new scoped endpoint — the actual fix for the originally-reported "no instructors available" confusion.
 - **Item 8 — instructor mobile login** (2026-07-14, PRs [#41](https://github.com/edocasciotta/Agon/pull/41)/[#42](https://github.com/edocasciotta/Agon/pull/42)): mobile was client-only; now branches on JWT `role` at login. **#41** (backend): new `GET /instructors/me` resolves the JWT to the caller's own `Instructor` row (role checked before DB lookup per `SECURITY_GUIDELINES.md` §1.1); confirmed check-in (`POST /checkins` method=manual) and class-completion (`POST /classes/{id}/complete`) already permitted instructor tokens, no auth change needed there. **#42** (mobile): new `(instructor-tabs)` route group (Schedule, Profile) separate from the client tabs; Schedule fetches `GET /classes?instructor_id=...`; tapping a class opens a roster screen merging `GET /classes/{id}/roster` with `GET /checkins/class/{id}` for per-client check-in state, with a manual check-in button and a confirmed "Mark Complete" action (backend has no double-completion guard, so the confirm dialog is a client-side safety net); Profile shows the instructor's own bio/email/photo. Shipped initially with a client-side `getMe()` workaround (email search) since #41 hadn't merged yet when the mobile worktree branched — swapped for the real endpoint in a follow-up commit once #41 landed.
 - **Recurring session pattern — cascading CHANGELOG conflicts**: with ~13 PRs all editing `CHANGELOG.md`'s `[Unreleased]` section in the same session, nearly every PR needed a manual re-merge (sometimes twice) as sibling PRs merged ahead of it — resolved by always keeping both sides' entries under their correct `### Added`/`### Changed`/`### Fixed` headers, never dropping content. One symlinked-`node_modules` shortcut (used to avoid a slow `npm ci` mid-conflict-resolution) caused a false 23-file dual-React test failure on PR #39's second conflict — root-caused to a stray symlink nested inside an already-real `node_modules` dir rather than replacing it; fixed by always doing a full `rm -rf node_modules && npm ci` when verifying a merge-resolution commit, never a symlink.
+- **Docs-site gap closed** (2026-07-14, PR [#43](https://github.com/edocasciotta/Agon/pull/43)): 3 endpoints shipped earlier in the session without docs pages (photo upload/serving, available-instructors, instructors/me) — regenerated via the existing `fetch-openapi.js` pipeline against a live local backend so formatting matches every other auto-generated page exactly; new `photos.md` page (new tag), 3 existing pages extended.
+- **Live-user-testing bug fix chain** (2026-07-14, PRs [#44](https://github.com/edocasciotta/Agon/pull/44)–[#47](https://github.com/edocasciotta/Agon/pull/47)): see the new "Known Hazard: Dev-Machine VPN Breaks Mobile Onboarding + Expo Go SDK-Mismatch Crashes" section above for full technical detail on all four. Found by the user actually using the freshly-merged instructor-login feature on a real device — none of these were caught by any test suite (all are environment/runtime issues: SDK version pins, an Expo-Go-only code path, host VPN state, and unvalidated user input), reinforcing that "all tests pass" and "actually works on a device" are different bars for mobile work specifically.
 
 ---
 
@@ -199,4 +250,3 @@ Scaffolding → DB models → Core API → Booking engine → Check-in → Membe
 - Mobile: add a `lint` script to `mobile/package.json` and install eslint (currently missing entirely).
 - Mobile: install `react-native-web` so `npx expo export` works for the default/web target, not just `--platform ios/android`.
 - Frontend: fix the remaining 15 call sites still using the wrong Zod `.errors` API instead of `.issues`.
-- **Docs-site gap**: several endpoints added in the 2026-07-13/14 session have no `docs-site/` page yet (violates orchestrator rule #2) — `GET /api/v1/photos/{filename}` + upload endpoints (PR #34), `GET /appointment-services/{id}/available-instructors` (PR #37), `GET /instructors/me` (PR #41). Needs a docs-agent pass before these are considered fully "done" per this project's own rules.
