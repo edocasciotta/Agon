@@ -147,6 +147,26 @@ Anonymize Client
 
 ---
 
+## `POST /api/v1/clients/{client_id}/photo`
+
+Upload Client Photo
+
+
+**Parameters**
+
+| Name | In | Required | Type | Description |
+|------|-----|----------|------|-------------|
+| `client_id` | path | Yes | integer |  |
+
+
+
+**Responses**
+
+- **200** — Successful Response
+- **422** — Validation Error
+
+---
+
 ## `GET /api/v1/clients/{client_id}/bookings`
 
 Get Client Bookings
