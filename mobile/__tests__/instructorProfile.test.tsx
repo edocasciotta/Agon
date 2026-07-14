@@ -79,7 +79,9 @@ describe('InstructorProfileScreen', () => {
   })
 
   it('signs out and navigates to login when Sign Out is pressed', async () => {
-    const logoutSpy = jest.spyOn(useAuthStore.getState(), 'logout').mockResolvedValue(undefined)
+    const logoutSpy = jest
+      .spyOn(useAuthStore.getState(), 'logout')
+      .mockImplementation(async () => {})
 
     const { getByText } = renderScreen(makeClient())
     await waitFor(() => expect(getByText('Sign Out')).toBeTruthy())
